@@ -1,0 +1,11 @@
+PASS Initial menu
+PASS Addition, multiplication and subtraction gates
+PASS Squad cap
+PASS Zero allies ends the run
+PASS Retry clears the run
+PASS Pause freezes simulation
+PASS Resume
+PASS Auto-fire hits an approaching enemy
+PASS Destroying a crate grants four allies
+PASS Contact removes an ally and the enemy
+PASS Defeating the boss clears the stage

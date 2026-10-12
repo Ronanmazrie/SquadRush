@@ -43,7 +43,7 @@ namespace SquadRush
             RectTransform track = Panel("ProgressTrack", safeRoot, new Color(0.08f, 0.14f, 0.21f), new Vector2(0, 1), new Vector2(1, 1));
             track.pivot = new Vector2(0.5f, 1); track.sizeDelta = new Vector2(-40, 8); track.anchoredPosition = new Vector2(0, -128);
             progress = Panel("ProgressFill", track, blue, Vector2.zero, Vector2.one).GetComponent<UnityEngine.UI.Image>();
-            progress.type = UnityEngine.UI.Image.Type.Filled; progress.fillMethod = UnityEngine.UI.Image.FillMethod.Horizontal;
+            progress.rectTransform.anchorMax = new Vector2(0, 1);
             phase = Text("Phase", safeRoot, "仲間を増やそう", 21, Color.white, new Vector2(270, -160), new Vector2(460, 35));
             TopAnchor(phase.rectTransform, 0.5f, -160);
             toast = Text("Toast", safeRoot, "", 25, Color.white, new Vector2(270, -215), new Vector2(480, 45));
@@ -87,7 +87,7 @@ namespace SquadRush
             if (game.SquadCount != lastCount) { lastCount = game.SquadCount; count.text = "仲間 " + lastCount; }
             if (game.Kills != lastKills) { lastKills = game.Kills; kills.text = "撃破 " + lastKills; }
             float fill = Mathf.Clamp01(game.Elapsed / SquadRushGame.StageSeconds);
-            if (Mathf.Abs(fill - lastProgress) > 0.005f) { lastProgress = fill; progress.fillAmount = fill; }
+            if (Mathf.Abs(fill - lastProgress) > 0.005f) { lastProgress = fill; progress.rectTransform.anchorMax = new Vector2(fill, 1); }
             string status = game.Elapsed >= SquadRushGame.StageSeconds ? "ボスを倒せ！" : "仲間を増やそう";
             if (phase.text != status) phase.text = status;
         }

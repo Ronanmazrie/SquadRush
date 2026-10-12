@@ -1,0 +1,10 @@
+PASS Scene starts with a three-ally squad and menu
+PASS Start button starts the game
+PASS Keyboard input moves the squad
+PASS Touch drag moves the squad
+PASS Pause button freezes the run
+PASS Continue button resumes the run
+PASS Enemies, squad and automatic bullets run in Play mode
+PASS Visible progress bar follows stage time
+PASS Defeat menu appears in Play mode
+PASS Retry button resets the run

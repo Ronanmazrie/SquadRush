@@ -20,11 +20,12 @@ if (-not ($taskEditors.data | Where-Object { $_.version -eq $taskVersion })) {
     $taskCandidates = @(
         (Join-Path $env:LOCALAPPDATA "Unity/Editors/$taskVersion/Editor/Unity.exe"),
         (Join-Path $env:ProgramFiles "Unity/Hub/Editor/$taskVersion/Editor/Unity.exe"),
+        (Join-Path $env:ProgramFiles "Unity $taskVersion/Editor/Unity.exe"),
         (Join-Path $env:ProgramFiles 'Unity/Editor/Unity.exe')
     )
     $taskCandidate = $taskCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
     if ($taskCandidate) {
-        Invoke-UnityChecked -Arguments @('editors', 'add', (Split-Path -Parent $taskCandidate), '--format', 'json')
+        Invoke-UnityChecked -Arguments @('editors', 'add', $taskCandidate, '--format', 'json')
     } else { throw "Install Unity $taskVersion, then run this script again. The downloaded installer is in AppData/Roaming/UnityHub/downloads." }
 }
 
@@ -33,7 +34,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $taskProject 'ProjectSettings/Projec
         throw 'SquadRush exists and is not a recognized Unity project. Rename that folder before continuing.'
     }
     Invoke-UnityChecked -Arguments @('projects', 'create', 'SquadRush', '--path', $taskParent, '--editor-version', $taskVersion,
-        '--template', 'com.unity.template.3d', '--no-initial-commit', '--non-interactive', '--format', 'json')
+        '--template', 'com.unity.template.3d', '--non-interactive', '--format', 'json')
 }
 $taskRecordedVersion = Get-Content -LiteralPath (Join-Path $taskProject 'ProjectSettings/ProjectVersion.txt')
 if (-not ($taskRecordedVersion | Where-Object { $_ -eq "m_EditorVersion: $taskVersion" })) {
@@ -46,13 +47,26 @@ $taskFonts = Join-Path $taskProject 'Assets/Fonts'
 New-Item -ItemType Directory -Force -Path $taskScripts,$taskEditor,$taskFonts,(Join-Path $taskProject 'Logs') | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Sources/SquadRushGame.cs'),(Join-Path $PSScriptRoot 'Sources/SquadRushHud.cs') -Destination $taskScripts
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeBuilder.cs') -Destination $taskEditor
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Fonts/NotoSansCJKjp-Regular.otf'),(Join-Path $PSScriptRoot 'Fonts/LICENSE.txt') -Destination $taskFonts
 
 Write-Host 'The official 3D template provides com.unity.ugui and com.unity.inputsystem. No extra packages are installed.'
+$taskEditorPathText = & $taskCli editors path $taskVersion --format json
+if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the Unity Editor executable.' }
+$taskEditorPath = ($taskEditorPathText | ConvertFrom-Json).data.path
+if (Test-Path -LiteralPath $taskEditorPath -PathType Container) { $taskEditorPath = Join-Path $taskEditorPath 'Editor/Unity.exe' }
+$taskImportArguments = @('-batchmode', '-projectPath', ('"' + $taskProject + '"'), '-executeMethod',
+    'SquadRush.Editor.PrototypeBuilder.ImportTextResources', '-logFile', ('"' + (Join-Path $taskProject 'Logs/text-resources.log') + '"'))
+$taskImportProcess = Start-Process -FilePath $taskEditorPath -ArgumentList $taskImportArguments -WindowStyle Hidden -PassThru -Wait
+if ($taskImportProcess.ExitCode -ne 0) { throw 'TMP text resource import failed. See Logs/text-resources.log.' }
 Invoke-UnityChecked -Arguments @('run', $taskProject, '--editor-version', $taskVersion, '--', '-executeMethod', 'SquadRush.Editor.PrototypeBuilder.Generate',
     '-logFile', (Join-Path $taskProject 'Logs/generate.log'))
 Invoke-UnityChecked -Arguments @('run', $taskProject, '--editor-version', $taskVersion, '--', '-executeMethod', 'SquadRush.Editor.PrototypeBuilder.Verify',
     '-logFile', (Join-Path $taskProject 'Logs/verify.log'))
-Write-Host "Prototype prepared and gameplay scenarios verified: $taskProject"
+$taskRuntimeArguments = @('-batchmode', '-projectPath', ('"' + $taskProject + '"'), '-executeMethod',
+    'SquadRush.Editor.RuntimeVerifier.Run', '-logFile', ('"' + (Join-Path $taskProject 'Logs/runtime-verify.log') + '"'))
+$taskRuntimeProcess = Start-Process -FilePath $taskEditorPath -ArgumentList $taskRuntimeArguments -WindowStyle Hidden -PassThru -Wait
+if ($taskRuntimeProcess.ExitCode -ne 0) { throw 'Play mode verification failed. See Logs/runtime-verify.log.' }
+Write-Host "Prototype prepared; gameplay and Play mode scenarios verified: $taskProject"
 if (-not $NoOpen) { Invoke-UnityChecked -Arguments @('open', $taskProject, '--editor-version', $taskVersion) }
 
