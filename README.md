@@ -4,7 +4,7 @@
 
 ## スマホで遊ぶ
 
-Android版APKとブラウザ版は作成済みです。GitHubへの公開は認証待ちです。以下は公開予定のリンクで、アップロード完了後に利用できます。
+AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
 - [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.1.0)
@@ -26,7 +26,7 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 - `SquadRush/Assets/Scripts/`：ゲーム処理と日本語HUD。
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
 - `SquadRush/Verification/`：ゲーム処理11ケースと再生モード10ケースの検証記録、画面プレビュー。
-- `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。公開後はGitHub Releasesで配布）。
+- `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
 - `SquadRushPrototype/`：プロジェクト再生成用のソースキット。
 - `docs/`：GitHub Pagesの配布ページとブラウザ版。
 
