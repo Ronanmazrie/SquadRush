@@ -1,0 +1,61 @@
+# スクワッド・ラッシュ：Unityスマホ試作
+
+参考画像の仕組みをもとにした、縦画面の3D部隊シューティングです。Android / iPhone両対応、広告・課金なし。見た目はオリジナルの簡易モデルです。
+
+## 現在の状態
+
+ゲーム処理・日本語UI・シーン生成・検証処理のソースを用意しています。
+**Unity本体のインストールがWindowsの権限エラーで停止したため、まだコンパイル・プレイ・実機確認はできていません。** このフォルダーはセットアップ前のソースキットです。Unityプロジェクトそのものは、下のセットアップ後に隣の `SquadRush` フォルダーへ作成されます。
+
+Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Personalライセンスの有効化は完了しています。選択したEditorはUnity 6.3 LTS `6000.3.26f1` です。
+
+## セットアップ
+
+1. ダウンロード済みの `C:\Users\wakam\AppData\Roaming\UnityHub\downloads\UnitySetup64-6000.3.26f1.exe` を手動で実行し、Windowsの管理者確認を許可してUnityをインストールします。インストール後、Editorが開いていればいったん閉じます。
+2. PowerShellでこのフォルダーの `Initialize-Prototype.ps1` を実行します。Unityの公式3Dテンプレートでプロジェクトを作成し、ソースを配置して、日本語フォント・マテリアル・シーンを生成します。Unityの初回パッケージ取得にはネットワーク接続が必要です。
+3. セットアップはコンパイルとゲーム処理の検証が成功した場合だけEditorを開きます。失敗した場合はログを残して停止します。
+4. `Assets/Scenes/SquadRush.unity` を開き、Unity上部のPlayボタンを押します。
+
+```powershell
+& './Initialize-Prototype.ps1'
+```
+
+このセットアップはUnity UI（TextMeshProを含む）とInput Systemを含む公式テンプレートを使います。追加パッケージの手動編集は行いません。既存のUnityプロジェクトが別バージョンの場合や、同名フォルダーに別のデータがある場合は停止します。
+
+## 遊び方
+
+- 「スタート」を押して開始。
+- スマホでは指を左右にドラッグ。PCではマウスのドラッグ、左右矢印、A / Dキー。
+- 前方への射撃は自動。味方の人数が増えると弾も増えます。
+- 加算・倍率ゲートは仲間を増やし、赤い減算ゲートは仲間を減らします。部隊の中心が左右どちらを通ったかで判定します。
+- 数字付きの箱は弾で壊すと仲間が4人増えます。壊せず接触すると3人減ります。
+- 赤い敵に接触すると仲間が1人減り、0人になると敗北。
+- 60秒後にボスが出現。倒せばクリア。人数の上限は60人です。
+- 「Ⅱ」で一時停止。アプリがバックグラウンドに入っても一時停止します。
+- クリア・敗北画面から何度でも再挑戦できます。
+
+## スマホ用ビルド
+
+Editorのメニューに `Squad Rush` が追加されます。
+
+- `Generate Prototype`：シーンとフォントを生成。
+- `Verify Gameplay Scenarios`：ゲート、人数上限、射撃、箱、接触、敗北・再挑戦、一時停止、ボス撃破の11ケースを確認。
+- `Build Android APK`：`Builds/Android/SquadRush.apk` を生成。Unity Hub / CLIでAndroid Build Support、SDK / NDK、OpenJDKを追加する必要があります。
+- `Export iOS Xcode Project`：`Builds/iOS` にXcodeプロジェクトを出力。iOS Build Supportの追加が必要です。
+
+iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、またはUnityのクラウドビルド環境が必要です。ストア公開は行っていません。現時点ではスマホ用ビルドモジュールも、親のEditorインストール失敗により未導入です。
+
+## ファイル
+
+- `Sources/SquadRushGame.cs`：自動射撃、部隊、敵、箱、ゲート、ボス、オブジェクト再利用。
+- `Sources/SquadRushHud.cs`：日本語メニュー・HUD・セーフエリア対応。
+- `Editor/PrototypeBuilder.cs`：シーン・静的日本語フォント・ビルド・ゲーム処理の検証。
+- `Fonts/`：Noto Sans CJK JP、SIL Open Font License。日本語に使用する文字だけを静的フォントアトラスへ焼きます。
+
+生成される `SquadRush/Verification/gameplay-checks.txt` は、検証がすべて成功した場合の記録です。`SquadRush/Logs/generate.log` と `verify.log` に生成・検証のログが残ります。Unityのインポート後は、`.cs` と生成された `.meta` を一緒にGitで管理します。
+
+## 調整しやすい値
+
+`SquadRushGame.cs` の `MaxSquad`、`StageSeconds`、`shotTimer`、`SpawnWave`、`SpawnGate`、`SpawnBoss` で人数上限・長さ・射撃間隔・敵数・ゲート報酬・ボスHPを調整できます。現在の値は未プレイ確認のため、まずEditorで遊びながらバランスを調整してください。
+
+公式情報：[Unity 6のサポート](https://unity.com/releases/unity-6/support)、[iOS環境の準備](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/iphone/getting-started/ios-environment-setup)、[フォントの配布元](https://github.com/notofonts/noto-cjk)。

@@ -1,0 +1,150 @@
+using System;
+using System.IO;
+using System.Linq;
+using TMPro;
+using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.TextCore.LowLevel;
+
+namespace SquadRush.Editor
+{
+    public static class PrototypeBuilder
+    {
+        const string ScenePath = "Assets/Scenes/SquadRush.unity";
+
+        [MenuItem("Squad Rush/Generate Prototype")]
+        public static void Generate()
+        {
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "Scenes"));
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "Resources"));
+            AssetDatabase.Refresh();
+            CreateFont();
+            CreateSeed("StandardSeed", "Standard");
+            CreateSeed("UnlitSeed", "Unlit/Color");
+            PlayerSettings.productName = "Squad Rush";
+            PlayerSettings.companyName = "Prototype Studio";
+            PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
+            PlayerSettings.defaultIsNativeResolution = false;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+            PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.prototype.squadrush");
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, "com.prototype.squadrush");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
+            var settings = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
+            var input = settings.FindProperty("activeInputHandler");
+            if (input != null) { input.intValue = 1; settings.ApplyModifiedPropertiesWithoutUndo(); }
+            QualitySettings.vSyncCount = 0; QualitySettings.antiAliasing = 2;
+            QualitySettings.shadowDistance = 40; QualitySettings.pixelLightCount = 1;
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            new GameObject("SquadRush").AddComponent<SquadRushGame>();
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            AssetDatabase.SaveAssets();
+            Debug.Log("[SquadRush] Prototype generated. Open SquadRush scene and press Play.");
+        }
+
+        static void CreateSeed(string name, string shaderName)
+        {
+            string path = "Assets/Resources/" + name + ".mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(path) != null) return;
+            Shader shader = Shader.Find(shaderName);
+            if (shader == null) throw new InvalidOperationException("Required shader missing: " + shaderName);
+            AssetDatabase.CreateAsset(new Material(shader) { name = name, enableInstancing = true }, path);
+        }
+        static void CreateFont()
+        {
+            const string fontPath = "Assets/Resources/SquadFont.asset";
+            if (AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(fontPath) != null) return;
+            var tmpSettings = Resources.Load<TMP_Settings>("TMP Settings");
+            if (tmpSettings == null)
+            {
+                tmpSettings = ScriptableObject.CreateInstance<TMP_Settings>();
+                AssetDatabase.CreateAsset(tmpSettings, "Assets/Resources/TMP Settings.asset");
+            }
+            Font source = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NotoSansCJKjp-Regular.otf");
+            if (source == null) throw new InvalidOperationException("Japanese font has not been imported.");
+            TMP_FontAsset font = TMP_FontAsset.CreateFontAsset(source, 48, 5, GlyphRenderMode.SDFAA, 1024, 1024, TMPro.AtlasPopulationMode.Dynamic, false);
+            if (font == null) throw new InvalidOperationException("Could not create Japanese font atlas.");
+            string characters = new string(Enumerable.Range(32, 95).Select(n => (char)n).ToArray()) + "×←→Ⅱ";
+            foreach (string file in Directory.GetFiles(Path.Combine(Application.dataPath, "Scripts"), "*.cs", SearchOption.AllDirectories)) characters += File.ReadAllText(file);
+            characters = new string(characters.Where(c => c >= 32 && !char.IsSurrogate(c)).Distinct().ToArray());
+            if (!font.TryAddCharacters(characters, out string missing) && !string.IsNullOrEmpty(missing))
+                throw new InvalidOperationException("Font atlas is missing characters: " + missing);
+            font.atlasPopulationMode = TMPro.AtlasPopulationMode.Static;
+            font.name = "SquadFont";
+            AssetDatabase.CreateAsset(font, fontPath);
+            AssetDatabase.AddObjectToAsset(font.material, font);
+            foreach (Texture2D atlas in font.atlasTextures) AssetDatabase.AddObjectToAsset(atlas, font);
+            var serializedSettings = new SerializedObject(tmpSettings);
+            SerializedProperty defaultFont = serializedSettings.FindProperty("m_defaultFontAsset");
+            if (defaultFont != null) { defaultFont.objectReferenceValue = font; serializedSettings.ApplyModifiedPropertiesWithoutUndo(); }
+            EditorUtility.SetDirty(font); AssetDatabase.SaveAssets();
+        }
+
+        [MenuItem("Squad Rush/Verify Gameplay Scenarios")]
+        public static void Verify()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play mode before verifying.");
+            if (Resources.Load<TMP_FontAsset>("SquadFont") == null) throw new InvalidOperationException("Generate the prototype first.");
+            var checks = new System.Collections.Generic.List<string>();
+            var root = new GameObject("VerificationOnly");
+            try
+            {
+                var game = root.AddComponent<SquadRushGame>(); game.Initialize();
+                Expect(game.State == RunState.Ready && game.SquadCount == 3, "Initial menu", checks);
+                game.Begin(); game.ApplyGate(5, false); game.ApplyGate(2, true); game.ApplyGate(-4, false);
+                Expect(game.SquadCount == 12, "Addition, multiplication and subtraction gates", checks);
+                game.ChangeSquad(100); Expect(game.SquadCount == 60, "Squad cap", checks);
+                game.ChangeSquad(-100); Expect(game.State == RunState.Lost, "Zero allies ends the run", checks);
+                game.Begin(); Expect(game.State == RunState.Playing && game.SquadCount == 3 && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Retry clears the run", checks);
+                game.TogglePause(); float time = game.Elapsed; game.Tick(1, false);
+                Expect(game.State == RunState.Paused && game.Elapsed == time, "Pause freezes simulation", checks);
+                game.MenuAction(); Expect(game.State == RunState.Playing, "Resume", checks);
+                game.Begin(); game.SpawnTarget(TargetKind.Enemy, 0, 3.5f, 1);
+                for (int i = 0; i < 35; i++) game.Tick(0.02f, false);
+                Expect(game.Kills == 1 && game.SquadCount == 3, "Auto-fire hits an approaching enemy", checks);
+                game.Begin(); game.SpawnTarget(TargetKind.Crate, 0, 5, 1);
+                for (int i = 0; i < 60; i++) game.Tick(0.02f, false);
+                Expect(game.SquadCount == 7, "Destroying a crate grants four allies", checks);
+                game.Begin(); game.SpawnTarget(TargetKind.Enemy, 0, 1.6f, 10); game.Tick(0.02f, false);
+                Expect(game.SquadCount == 2 && game.ActiveTargets == 0, "Contact removes an ally and the enemy", checks);
+                game.Begin(); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 6);
+                for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
+                Expect(game.State == RunState.Won, "Defeating the boss clears the stage", checks);
+                string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
+                Directory.CreateDirectory(output);
+                File.WriteAllLines(Path.Combine(output, "gameplay-checks.txt"), checks);
+                Debug.Log("[SquadRush] " + checks.Count + " gameplay scenarios passed.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+        static void Expect(bool condition, string name, System.Collections.Generic.List<string> checks)
+        { if (!condition) throw new InvalidOperationException("Verification failed: " + name); checks.Add("PASS " + name); }
+
+        [MenuItem("Squad Rush/Build Android APK")]
+        public static void BuildAndroid() { Build(BuildTarget.Android, "Builds/Android/SquadRush.apk"); }
+        [MenuItem("Squad Rush/Export iOS Xcode Project")]
+        public static void BuildIOS() { Build(BuildTarget.iOS, "Builds/iOS"); }
+        static void Build(BuildTarget target, string fallback)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            int index = Array.IndexOf(args, "-buildOutput");
+            string destination = index >= 0 && index + 1 < args.Length ? args[index + 1] : fallback;
+            if (!File.Exists(Path.Combine(Path.GetDirectoryName(Application.dataPath), ScenePath))) throw new InvalidOperationException("Generate the prototype before building.");
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destination)));
+            EditorUserBuildSettings.buildAppBundle = false;
+            BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { ScenePath }, target = target, locationPathName = destination, options = BuildOptions.Development
+            });
+            if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Build failed: " + report.summary.result);
+        }
+    }
+}
