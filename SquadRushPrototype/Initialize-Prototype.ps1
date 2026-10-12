@@ -46,6 +46,7 @@ $taskEditor = Join-Path $taskProject 'Assets/Editor/SquadRush'
 $taskFonts = Join-Path $taskProject 'Assets/Fonts'
 New-Item -ItemType Directory -Force -Path $taskScripts,$taskEditor,$taskFonts,(Join-Path $taskProject 'Logs') | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Sources/SquadRushGame.cs'),(Join-Path $PSScriptRoot 'Sources/SquadRushHud.cs') -Destination $taskScripts
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'link.xml') -Destination (Join-Path $taskProject 'Assets')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeBuilder.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeLauncher.cs') -Destination $taskEditor

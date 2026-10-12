@@ -1,0 +1,20 @@
+Squad Rush 0.1.0 — WebGL distribution smoke check
+Date: 2026-10-12 (Asia/Tokyo)
+Editor: 6000.3.26f1
+Build: WebGL, BuildOptions.None, gzip with decompression fallback
+Build result: Succeeded (11,506,735 bytes)
+Host: local HTTP server with no Content-Encoding header (GitHub Pages equivalent)
+Browser: Codex in-app Chromium browser
+Viewport: 390 x 844
+
+PASS: Unity loads and removes the loading overlay.
+PASS: Japanese menu and HUD render correctly in portrait layout.
+PASS: Start begins play and the squad shoots automatically.
+PASS: Pointer drag moves the squad from center to the right.
+PASS: Pause and Continue stop and resume the run.
+PASS: Enemies spawn, defeats are counted, and zero allies shows the retry screen.
+PASS: Retry resets to three allies and a new run.
+PASS: No warning/error console messages after preserving primitive native components.
+
+This is a desktop browser check at a mobile viewport size.
+Physical Android/iPhone touch input, device performance, and Safari remain untested.
