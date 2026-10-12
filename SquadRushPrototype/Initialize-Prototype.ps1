@@ -49,6 +49,10 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Sources/SquadRushGame.cs'),(Joi
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeBuilder.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeLauncher.cs') -Destination $taskEditor
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/DistributionBuilder.cs') -Destination $taskEditor
+$taskWebTemplates = Join-Path $taskProject 'Assets/WebGLTemplates'
+New-Item -ItemType Directory -Force -Path $taskWebTemplates | Out-Null
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'WebGLTemplates/SquadRush') -Destination $taskWebTemplates -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Fonts/NotoSansCJKjp-Regular.otf'),(Join-Path $PSScriptRoot 'Fonts/LICENSE.txt') -Destination $taskFonts
 
 Write-Host 'The official 3D template provides com.unity.ugui and com.unity.inputsystem. No extra packages are installed.'
