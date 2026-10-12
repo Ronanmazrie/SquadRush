@@ -64,7 +64,11 @@ namespace SquadRush.Editor
                 Require(game.State == RunState.Playing && game.ActiveTargets > 0 && game.ActiveBullets > 0, "Enemies, squad and automatic bullets run in Play mode", checks);
                 var progress = game.Hud.GetComponentsInChildren<RectTransform>().Single(r => r.name == "ProgressFill");
                 Require(Mathf.Abs(progress.anchorMax.x - game.Elapsed / SquadRushGame.StageSeconds) < 0.01f, "Visible progress bar follows stage time", checks);
+                game.SpawnTarget(TargetKind.Crate, -2.5f, 16, 22);
                 Capture(game, "gameplay.png");
+                game.SpawnTarget(TargetKind.Boss, 0, 15, 1000);
+                game.Tick(0.02f, false);
+                Capture(game, "boss.png");
                 game.ChangeSquad(-100); Require(game.State == RunState.Lost, "Defeat menu appears in Play mode", checks);
                 play.onClick.Invoke(); Require(game.State == RunState.Playing && game.SquadCount == 3 && game.ActiveTargets == 0, "Retry button resets the run", checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
@@ -92,7 +96,8 @@ namespace SquadRush.Editor
             try
             {
                 view.rect = new Rect(0, 0, 1, 1); view.targetTexture = texture;
-                view.aspect = 540f / 960; view.orthographicSize = 5.7f / view.aspect;
+                view.aspect = 540f / 960;
+                view.fieldOfView = 2 * Mathf.Atan(Mathf.Tan(15 * Mathf.Deg2Rad) / view.aspect) * Mathf.Rad2Deg;
                 canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = view; canvas.planeDistance = 1;
                 safe.anchorMin = Vector2.zero; safe.anchorMax = Vector2.one; safe.offsetMin = safe.offsetMax = Vector2.zero;
                 Canvas.ForceUpdateCanvases();

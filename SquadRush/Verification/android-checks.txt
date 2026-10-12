@@ -1,21 +1,22 @@
-Squad Rush 0.1.0 — Android distribution artifact verification
+Squad Rush 0.2.0 — Android distribution artifact verification
 Date: 2026-10-12 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build target: Android, IL2CPP, ARM64, BuildOptions.None
 Build result: Succeeded
 APK file: Builds/Android/SquadRush-Android.apk
-APK size: 25,318,276 bytes
-APK SHA-256: c214cf46a6ca92b980093c12531138167f7f7b24718453566782ce32f9ecc81a
+APK size: 25,378,532 bytes
+APK SHA-256: e506e33c187c7d61869580d53303ecbb693d828722dfd8cc5360a83327e3661c
 
 PASS: Android SDK apksigner verifies the APK signature (v2 scheme).
 PASS: Android SDK aapt reads the compiled manifest successfully.
 Package: com.prototype.squadrush
-Version: 0.1.0 (versionCode 1)
+Version: 0.2.0 (versionCode 2)
 Application label: Squad Rush
 Minimum SDK: 26 (Android 8.0)
 Target SDK: 36
 Native ABI: arm64-v8a
 PASS: zipalign -c -P 16 4 verifies APK alignment.
+PASS: Signing certificate matches version 0.1.0 (SHA-256 46b597ae8ca79338cde01e388edb50655bde01515746aa8cd4b447c2116e6936).
 
 This prototype uses the local Android debug signing certificate.
 It is intended for direct installation/testing, not a Google Play production release.

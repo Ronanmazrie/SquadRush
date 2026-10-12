@@ -26,7 +26,7 @@ namespace SquadRush
         sealed class Target
         {
             public GameObject Root; public TargetKind Kind; public int Hp, MaxHp;
-            public float Radius, Speed; public TextMeshPro Label;
+            public float Radius, Speed; public TextMeshPro Label; public SquadRushTrooper Rig;
         }
         sealed class Shot { public Transform Body; public float Life; }
         sealed class Gate
@@ -40,12 +40,16 @@ namespace SquadRush
         readonly List<Gate> gates = new List<Gate>();
         readonly List<Spark> sparks = new List<Spark>();
         readonly List<Transform> soldiers = new List<Transform>();
+        readonly List<SquadRushTrooper> soldierRigs = new List<SquadRushTrooper>();
         readonly List<Transform> roadMarks = new List<Transform>();
         readonly Stack<Transform> shotPool = new Stack<Transform>();
         readonly Stack<Transform> sparkPool = new Stack<Transform>();
         readonly Stack<Target> enemyPool = new Stack<Target>();
         readonly Dictionary<string, Material> materials = new Dictionary<string, Material>();
         Transform world, squadRoot, poolRoot;
+        SquadRushArt art;
+        Material outlinedText;
+        Texture2D asphalt;
         System.Random random;
         Target boss;
         float shotTimer, waveTimer, gateTimer, crateTimer, bossWaveTimer, targetX;
@@ -68,10 +72,11 @@ namespace SquadRush
             squadRoot = new GameObject("BlueSquad").transform;
             squadRoot.SetParent(world);
             CreateEnvironment();
+            art = gameObject.AddComponent<SquadRushArt>(); art.Initialize(View);
             for (int i = 0; i < MaxSquad; i++)
             {
                 Transform soldier = CreateSoldier("Ally", squadRoot, false);
-                soldier.gameObject.SetActive(false); soldiers.Add(soldier);
+                soldier.gameObject.SetActive(false); soldiers.Add(soldier); soldierRigs.Add(soldier.GetComponent<SquadRushTrooper>());
             }
             for (int i = 0; i < 384; i++) shotPool.Push(CreateBullet());
             for (int i = 0; i < 64; i++) sparkPool.Push(CreateSpark());
@@ -106,7 +111,7 @@ namespace SquadRush
             float aspect = (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height);
             float width = Mathf.Min(1, (9f / 16) / aspect);
             View.rect = new Rect((1 - width) * 0.5f, 0, width, 1);
-            View.orthographicSize = 5.7f / (aspect * width);
+            View.fieldOfView = 2 * Mathf.Atan(Mathf.Tan(15 * Mathf.Deg2Rad) / (aspect * width)) * Mathf.Rad2Deg;
             if (Hud != null) Hud.ApplySafeArea();
         }
 
@@ -117,7 +122,7 @@ namespace SquadRush
             if (readInput) ReadInput(dt);
             SquadX = Mathf.MoveTowards(SquadX, targetX, dt * 18);
             squadRoot.position = new Vector3(SquadX, 0, 1.5f);
-            AnimateSquad();
+            AnimateSquad(dt);
             ScrollRoad(dt);
             shotTimer -= dt;
             if (shotTimer <= 0) { FireVolley(); shotTimer += 0.34f; }
@@ -176,6 +181,7 @@ namespace SquadRush
             int columns = Mathf.Min(6, Mathf.Max(1, SquadCount));
             for (int i = 0; i < soldiers.Count; i++)
             {
+                if (i < SquadCount && !soldiers[i].gameObject.activeSelf) soldierRigs[i].ResetPose();
                 soldiers[i].gameObject.SetActive(i < SquadCount);
                 int row = i / columns;
                 int rowCount = Mathf.Min(columns, SquadCount - row * columns);
@@ -183,12 +189,11 @@ namespace SquadRush
             }
             if (SquadCount == 0 && State == RunState.Playing) Finish(false);
         }
-        void AnimateSquad()
+        void AnimateSquad(float dt)
         {
             for (int i = 0; i < SquadCount; i++)
             {
-                Vector3 p = soldiers[i].localPosition;
-                p.y = Mathf.Sin(Elapsed * 12 + i * 1.8f) * 0.035f; soldiers[i].localPosition = p;
+                soldierRigs[i].Animate(Elapsed, dt, i * 1.8f, Mathf.Clamp((SquadX - targetX) * 5, -9, 9));
             }
         }
 
@@ -201,6 +206,7 @@ namespace SquadRush
                 Transform body = shotPool.Pop(); body.gameObject.SetActive(true);
                 body.position = soldiers[i].position + new Vector3(0.12f, 0.65f, 0.5f);
                 shots.Add(new Shot { Body = body, Life = 1.7f });
+                soldierRigs[i].Fire();
             }
         }
         void MoveShots(float dt)
@@ -244,7 +250,7 @@ namespace SquadRush
             if (kind == TargetKind.Enemy)
             {
                 if (enemyPool.Count == 0) return;
-                t = enemyPool.Pop(); t.Root.SetActive(true); t.Radius = 0.32f;
+                t = enemyPool.Pop(); t.Root.SetActive(true); t.Radius = 0.32f; t.Rig.ResetPose();
             }
             else
             {
@@ -252,14 +258,13 @@ namespace SquadRush
                 t.Root.transform.SetParent(world);
                 if (kind == TargetKind.Crate)
                 {
-                    Part(PrimitiveType.Cube, t.Root.transform, new Vector3(0, 0.75f, 0), new Vector3(1.6f, 1.5f, 1.2f), Mat("Wood", new Color(0.68f, 0.36f, 0.15f)));
-                    for (int i = -1; i <= 1; i += 2)
-                        Part(PrimitiveType.Cube, t.Root.transform, new Vector3(i * 0.55f, 0.75f, -0.63f), new Vector3(0.12f, 1.55f, 0.07f), Mat("Metal", new Color(0.23f, 0.29f, 0.34f)));
-                    t.Label = WorldText(t.Root.transform, "", new Vector3(0, 1.8f, -0.65f), 6, Color.white);
+                    art.Crate(t.Root.transform);
+                    t.Label = WorldText(t.Root.transform, "", new Vector3(0, 1.3f, -1.5f), 10, Color.white);
                 }
                 else
                 {
-                    Transform model = CreateSoldier("BossModel", t.Root.transform, true); model.localScale = Vector3.one * 3.4f;
+                    Transform model = art.Trooper("BossModel", t.Root.transform, true, true); model.localScale = Vector3.one * 3.4f;
+                    model.localRotation = Quaternion.Euler(0, 180, 0); t.Rig = model.GetComponent<SquadRushTrooper>();
                     t.Label = WorldText(t.Root.transform, "", new Vector3(0, 4.8f, 0), 5, Color.white);
                     boss = t;
                 }
@@ -280,6 +285,7 @@ namespace SquadRush
             for (int i = targets.Count - 1; i >= 0; i--)
             {
                 Target t = targets[i]; Transform body = t.Root.transform;
+                if (t.Rig != null) t.Rig.Animate(Elapsed, dt, body.position.x * 2);
                 if (t.Kind == TargetKind.Boss)
                 {
                     Vector3 p = body.position; p.z = Mathf.Max(16, p.z - dt * 3.5f);
@@ -309,8 +315,10 @@ namespace SquadRush
         void Damage(Target t, int damage)
         {
             t.Hp -= damage;
+            if (t.Rig != null) t.Rig.Hit();
             if (t.Label != null) t.Label.text = Mathf.Max(0, t.Hp).ToString();
             if (t.Hp > 0) return;
+            Burst(t.Root.transform.position + Vector3.up); Burst(t.Root.transform.position + new Vector3(0.3f, 0.7f, 0.2f));
             TargetKind kind = t.Kind; RemoveTarget(t);
             if (kind == TargetKind.Crate) { ChangeSquad(4); Hud.Flash("箱を撃破！ 仲間 +4"); }
             else if (kind == TargetKind.Boss) Finish(true);
@@ -337,9 +345,8 @@ namespace SquadRush
         }
         void GatePanel(Transform parent, float x, int value, bool multiply)
         {
-            Material material = value > 0 ? Mat("Gain", new Color(0.05f, 0.68f, 0.62f)) : Mat("Loss", new Color(0.86f, 0.2f, 0.3f));
-            Part(PrimitiveType.Cube, parent, new Vector3(x, 1.1f, 0), new Vector3(4.65f, 1.65f, 0.18f), material);
-            WorldText(parent, multiply ? "×" + value : (value > 0 ? "+" : "") + value, new Vector3(x, 1.45f, -0.25f), 11, Color.white);
+            art.Gate(parent, x, value > 0);
+            WorldText(parent, multiply ? "×" + value : (value > 0 ? "+" : "") + value, new Vector3(x, 1.0f, -0.25f), 12, Color.white);
         }
         void MoveGates(float dt)
         {
@@ -381,58 +388,52 @@ namespace SquadRush
         void Burst(Vector3 position)
         {
             if (sparkPool.Count == 0) return;
-            Transform body = sparkPool.Pop(); body.position = position; body.localScale = Vector3.one * 0.2f;
-            body.gameObject.SetActive(true); sparks.Add(new Spark { Body = body, Life = 0.16f });
+            Transform body = sparkPool.Pop(); body.position = position; body.localScale = Vector3.one * 0.28f;
+            body.rotation = View.transform.rotation; body.gameObject.SetActive(true); sparks.Add(new Spark { Body = body, Life = 0.22f });
         }
         void MoveSparks(float dt)
         {
             for (int i = sparks.Count - 1; i >= 0; i--)
             {
-                sparks[i].Life -= dt; sparks[i].Body.localScale += Vector3.one * (dt * 1.5f);
+                sparks[i].Life -= dt; sparks[i].Body.localScale += Vector3.one * (dt * 2.1f);
                 if (sparks[i].Life > 0) continue;
                 sparks[i].Body.gameObject.SetActive(false); sparkPool.Push(sparks[i].Body); sparks.RemoveAt(i);
             }
         }
         Transform CreateBullet()
         {
-            Transform body = Part(PrimitiveType.Cube, poolRoot, Vector3.zero, new Vector3(0.06f, 0.06f, 0.55f), Mat("Bullet", new Color(1, 0.84f, 0.35f), true));
-            body.gameObject.SetActive(false); return body;
+            return art.Projectile(poolRoot);
         }
         Transform CreateSpark()
         {
-            Transform body = Part(PrimitiveType.Sphere, poolRoot, Vector3.zero, Vector3.one * 0.2f, Mat("Hit", new Color(1, 0.94f, 0.6f), true));
-            body.gameObject.SetActive(false); return body;
+            return art.Impact(poolRoot);
         }
         Target CreateEnemy()
         {
             Transform root = CreateSoldier("Enemy", world, true); root.rotation = Quaternion.Euler(0, 180, 0);
-            root.gameObject.SetActive(false); return new Target { Root = root.gameObject, Kind = TargetKind.Enemy };
+            root.gameObject.SetActive(false); return new Target { Root = root.gameObject, Kind = TargetKind.Enemy, Rig = root.GetComponent<SquadRushTrooper>() };
         }
         Transform CreateSoldier(string name, Transform parent, bool red)
         {
-            Transform root = new GameObject(name).transform; root.SetParent(parent, false);
-            Material uniform = red ? Mat("Red", new Color(0.86f, 0.16f, 0.22f)) : Mat("Blue", new Color(0.05f, 0.53f, 0.94f));
-            Material dark = Mat("Dark", new Color(0.1f, 0.17f, 0.25f));
-            Material skin = Mat("Skin", new Color(1, 0.77f, 0.55f));
-            Part(PrimitiveType.Capsule, root, new Vector3(0, 0.46f, 0), new Vector3(0.34f, 0.3f, 0.3f), uniform);
-            Part(PrimitiveType.Sphere, root, new Vector3(0, 0.92f, 0), Vector3.one * 0.3f, skin);
-            Part(PrimitiveType.Sphere, root, new Vector3(0, 1.04f, 0), new Vector3(0.36f, 0.19f, 0.36f), uniform);
-            Part(PrimitiveType.Cube, root, new Vector3(0.15f, 0.61f, 0.32f), new Vector3(0.12f, 0.13f, 0.54f), dark);
-            Part(PrimitiveType.Cube, root, new Vector3(0, 0.12f, 0), new Vector3(0.36f, 0.2f, 0.25f), dark);
-            return root;
+            return art.Trooper(name, parent, red);
         }
         void CreateEnvironment()
         {
             View = new GameObject("Main Camera").AddComponent<Camera>(); View.tag = "MainCamera";
-            View.transform.SetParent(transform); View.transform.position = new Vector3(0, 23, -14);
-            View.transform.LookAt(new Vector3(0, 0, 9)); View.orthographic = true;
-            View.orthographicSize = 15; View.nearClipPlane = 0.1f; View.farClipPlane = 150;
+            View.transform.SetParent(transform); View.transform.position = new Vector3(0, 22, -12);
+            View.transform.LookAt(new Vector3(0, 0, 13)); View.orthographic = false;
+            View.nearClipPlane = 0.1f; View.farClipPlane = 150; View.allowHDR = false;
             View.clearFlags = CameraClearFlags.SolidColor; View.backgroundColor = new Color(0.83f, 0.72f, 0.54f);
             var light = new GameObject("Sun").AddComponent<Light>(); light.transform.SetParent(transform);
-            light.type = LightType.Directional; light.intensity = 1.1f; light.transform.rotation = Quaternion.Euler(50, -35, 0);
+            light.type = LightType.Directional; light.intensity = 1.25f; light.color = new Color(1, 0.94f, 0.84f); light.transform.rotation = Quaternion.Euler(50, -35, 0);
             light.shadows = LightShadows.Soft;
             RenderSettings.ambientLight = new Color(0.68f, 0.73f, 0.8f);
-            Part(PrimitiveType.Cube, world, new Vector3(0, -0.28f, 14), new Vector3(11, 0.5f, 70), Mat("Road", new Color(0.32f, 0.36f, 0.4f)));
+            Material road = Mat("Road", new Color(0.47f, 0.46f, 0.44f));
+            asphalt = new Texture2D(128, 128, TextureFormat.RGB24, false) { name = "Asphalt grain", wrapMode = TextureWrapMode.Repeat };
+            var pixels = new Color[128 * 128];
+            for (int i = 0; i < pixels.Length; i++) { float grain = 0.89f + ((i * 73 + i / 128 * 137) % 31) / 310f; pixels[i] = new Color(grain, grain, grain); }
+            asphalt.SetPixels(pixels); asphalt.Apply(false, true); road.mainTexture = asphalt; road.mainTextureScale = new Vector2(6, 38); road.SetFloat("_Glossiness", 0.04f);
+            Part(PrimitiveType.Cube, world, new Vector3(0, -0.28f, 14), new Vector3(11, 0.5f, 70), road);
             Material white = Mat("Marking", new Color(0.91f, 0.9f, 0.83f));
             for (int i = 0; i < 18; i++)
                 roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(0, 0.01f, -8 + i * 3.3f), new Vector3(0.12f, 0.025f, 1.4f), white));
@@ -441,7 +442,16 @@ namespace SquadRush
                 Part(PrimitiveType.Cube, world, new Vector3(side * 4.85f, 0.02f, 14), new Vector3(0.08f, 0.025f, 70), white);
                 Part(PrimitiveType.Cube, world, new Vector3(side * 5.35f, 0.18f, 14), new Vector3(0.3f, 0.45f, 70), Mat("Curb", new Color(0.61f, 0.67f, 0.71f)));
                 Part(PrimitiveType.Cube, world, new Vector3(side * 13, -0.34f, 14), new Vector3(15, 0.25f, 70), Mat("Sand", new Color(0.76f, 0.62f, 0.4f)));
+                Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.67f, 14), new Vector3(0.16f, 0.12f, 70), Mat("Rail", new Color(0.37f, 0.47f, 0.53f)));
+                for (int i = 0; i < 18; i++)
+                {
+                    float z = -8 + i * 3.3f;
+                    roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.40f, z), new Vector3(0.18f, 0.63f, 0.18f), Mat("Rail", new Color(0.37f, 0.47f, 0.53f))));
+                    roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.67f, z), new Vector3(0.21f, 0.12f, 0.12f), Mat("Reflector", new Color(1, 0.67f, 0.18f))));
+                    if (i % 3 == 0) roadMarks.Add(Part(PrimitiveType.Sphere, world, new Vector3(side * (7 + i % 3), 0, z), new Vector3(1.4f, 0.6f, 1.1f), Mat("Rock", new Color(0.60f, 0.48f, 0.31f))));
+                }
             }
+            ResizeView();
         }
         void ScrollRoad(float dt)
         {
@@ -472,6 +482,12 @@ namespace SquadRush
             obj.transform.rotation = View.transform.rotation;
             var label = obj.AddComponent<TextMeshPro>(); label.text = text;
             label.font = Resources.Load<TMP_FontAsset>("SquadFont"); label.fontSize = size; label.color = color;
+            if (outlinedText == null)
+            {
+                outlinedText = new Material(label.font.material); outlinedText.SetColor("_OutlineColor", new Color(0.025f, 0.04f, 0.07f));
+                outlinedText.SetFloat("_OutlineWidth", 0.22f); outlinedText.EnableKeyword("OUTLINE_ON");
+            }
+            label.fontSharedMaterial = outlinedText; label.extraPadding = true;
             label.alignment = TextAlignmentOptions.Center; label.enableAutoSizing = false;
             label.rectTransform.sizeDelta = new Vector2(5, 2); return label;
         }
@@ -479,6 +495,8 @@ namespace SquadRush
         {
             foreach (Material mat in materials.Values)
                 if (mat != null) { if (Application.isPlaying) Destroy(mat); else DestroyImmediate(mat); }
+            if (outlinedText != null) { if (Application.isPlaying) Destroy(outlinedText); else DestroyImmediate(outlinedText); }
+            if (asphalt != null) { if (Application.isPlaying) Destroy(asphalt); else DestroyImmediate(asphalt); }
         }
     }
 }

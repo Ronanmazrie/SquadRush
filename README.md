@@ -7,11 +7,13 @@
 AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
-- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.1.0)
+- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.2.0)
 
 AndroidアプリはAndroid 8.0以降のARM64端末向けです。iPhoneではSafariからブラウザ版を開きます。Android用APKはiPhoneにインストールできません。iPhone用ネイティブアプリは未配布です。
 
 ## 遊び方
+
+0.2.0では広告の表現を参考にグラフィックを改善しました。装備付きの兵士と歩行アニメーション、装甲ボス、木製の数字付き箱、半透明ゲート、光る弾と着弾、遠近感のある道路を実装しています。メッシュと素材は部隊内で共有し、弾と着弾は再利用します。
 
 「スタート」を押し、指を左右にドラッグして部隊を移動します。射撃は自動です。加算・倍率ゲートを通り、箱を撃破して仲間を増やしてください。赤い敵との接触や減算ゲートで人数が減り、0人になると敗北します。60秒後に出現するボスを倒すとクリアです。PCではマウス、左右矢印、A / Dでも遊べます。
 
@@ -23,7 +25,8 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 
 ## 開発と検証
 
-- `SquadRush/Assets/Scripts/`：ゲーム処理と日本語HUD。
+- `SquadRush/Assets/Scripts/`：ゲーム処理、日本語HUD、共有モデル生成と兵士アニメーション。
+- `SquadRush/Assets/Resources/*.shader`：兵士の色・陰影と半透明エフェクト。
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
 - `SquadRush/Verification/`：ゲーム処理11ケースと再生モード10ケースの検証記録、画面プレビュー。
 - `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
@@ -34,4 +37,4 @@ Editor内の検証に合格しています。ブラウザ版はスマホサイ�
 
 ## 素材
 
-キャラクターと背景は試作用のオリジナル簡易モデルです。日本語フォントはNoto Sans CJK JP（SIL Open Font License）を使い、ライセンスを `SquadRush/Assets/Fonts/LICENSE.txt` に含めています。Unity TextMeshPro付属フォントのライセンスも対応する素材フォルダーに含めています。
+キャラクターと背景はオリジナルのプログラム生成モデルです。参考広告の画像・動画・3Dモデルはゲームへ取り込んでいません。日本語フォントはNoto Sans CJK JP（SIL Open Font License）を使い、ライセンスを `SquadRush/Assets/Fonts/LICENSE.txt` に含めています。Unity TextMeshPro付属フォントのライセンスも対応する素材フォルダーに含めています。

@@ -16,7 +16,9 @@ namespace SquadRush
         int lastCount = -1, lastKills = -1;
         float lastProgress = -1;
         TMP_FontAsset font;
-        readonly Color ink = new Color(0.06f, 0.11f, 0.2f);
+        Sprite rounded;
+        Texture2D roundedTexture;
+        readonly Color ink = new Color(0.035f, 0.075f, 0.135f, 0.96f);
         readonly Color blue = new Color(0.08f, 0.66f, 0.96f);
 
         public void Build(SquadRushGame owner)
@@ -32,7 +34,7 @@ namespace SquadRush
             ApplySafeArea();
 
             RectTransform header = Panel("Header", safeRoot, ink, new Vector2(0, 1), new Vector2(1, 1));
-            header.pivot = new Vector2(0.5f, 1); header.sizeDelta = new Vector2(0, 112);
+            header.pivot = new Vector2(0.5f, 1); header.sizeDelta = new Vector2(0, 96);
             Text("StageLabel", header, "STAGE 01", 17, new Color(0.6f, 0.75f, 0.89f), new Vector2(88, -25), new Vector2(135, 28));
             count = Text("SquadCount", header, "仲間 3", 34, Color.white, new Vector2(114, -67), new Vector2(205, 48));
             TopAnchor(count.rectTransform, 0.23f, -67);
@@ -41,13 +43,18 @@ namespace SquadRush
             var pause = Button("Pause", header, "Ⅱ", new Vector2(483, -50), new Vector2(64, 60), new Color(0.18f, 0.27f, 0.4f), game.TogglePause);
             TopAnchor(pause.GetComponent<RectTransform>(), 0.9f, -50);
             RectTransform track = Panel("ProgressTrack", safeRoot, new Color(0.08f, 0.14f, 0.21f), new Vector2(0, 1), new Vector2(1, 1));
-            track.pivot = new Vector2(0.5f, 1); track.sizeDelta = new Vector2(-40, 8); track.anchoredPosition = new Vector2(0, -128);
+            track.pivot = new Vector2(0.5f, 1); track.sizeDelta = new Vector2(-40, 6); track.anchoredPosition = new Vector2(0, -112);
             progress = Panel("ProgressFill", track, blue, Vector2.zero, Vector2.one).GetComponent<UnityEngine.UI.Image>();
             progress.rectTransform.anchorMax = new Vector2(0, 1);
             phase = Text("Phase", safeRoot, "仲間を増やそう", 21, Color.white, new Vector2(270, -160), new Vector2(460, 35));
-            TopAnchor(phase.rectTransform, 0.5f, -160);
+            TopAnchor(phase.rectTransform, 0.5f, -142);
             toast = Text("Toast", safeRoot, "", 25, Color.white, new Vector2(270, -215), new Vector2(480, 45));
-            TopAnchor(toast.rectTransform, 0.5f, -215);
+            TopAnchor(toast.rectTransform, 0.5f, -190);
+            foreach (var label in new[] { phase, toast })
+            {
+                var textShadow = label.gameObject.AddComponent<UnityEngine.UI.Shadow>();
+                textShadow.effectColor = new Color(0.025f, 0.04f, 0.07f, 0.85f); textShadow.effectDistance = new Vector2(1.5f, -2);
+            }
             var footer = Panel("ControlHint", safeRoot, new Color(0.05f, 0.1f, 0.17f, 0.9f), new Vector2(0.05f, 0.025f), new Vector2(0.95f, 0.085f));
             var hint = Text("Hint", footer, "←   指を左右にドラッグ   →", 20, Color.white, Vector2.zero, Vector2.zero);
             Stretch(hint.rectTransform);
@@ -55,6 +62,7 @@ namespace SquadRush
             RectTransform scrim = Panel("Menu", safeRoot, new Color(0.03f, 0.07f, 0.13f, 0.67f), Vector2.zero, Vector2.one);
             scrim.GetComponent<UnityEngine.UI.Image>().raycastTarget = true; menu = scrim.gameObject;
             RectTransform card = Panel("Card", scrim, ink, new Vector2(0.08f, 0.27f), new Vector2(0.92f, 0.77f));
+            var shadow = card.gameObject.AddComponent<UnityEngine.UI.Shadow>(); shadow.effectColor = new Color(0, 0, 0, 0.35f); shadow.effectDistance = new Vector2(0, -8);
             RectTransform accent = Panel("Accent", card, blue, new Vector2(0, 0.97f), Vector2.one);
             title = Text("Title", card, "SQUAD\nRUSH", 53, Color.white, Vector2.zero, Vector2.zero);
             SetAnchors(title.rectTransform, new Vector2(0.05f, 0.53f), new Vector2(0.95f, 0.92f)); title.fontStyle = FontStyles.Bold;
@@ -93,7 +101,7 @@ namespace SquadRush
         }
         public void ShowMenu(string heading, string body, string action)
         {
-            title.text = heading; title.fontSize = heading.StartsWith("SQUAD") ? 53 : 34;
+            title.text = heading.StartsWith("SQUAD") ? "SQUAD\n<color=#53CFFF>RUSH</color>" : heading; title.fontSize = heading.StartsWith("SQUAD") ? 53 : 34;
             description.text = body; actionText.text = action; menu.SetActive(true);
         }
         public void HideMenu() { menu.SetActive(false); }
@@ -110,6 +118,8 @@ namespace SquadRush
             var obj = new GameObject(name, typeof(RectTransform), typeof(UnityEngine.UI.Image));
             obj.transform.SetParent(parent, false);
             var image = obj.GetComponent<UnityEngine.UI.Image>(); image.color = color; image.raycastTarget = false;
+            if (name == "Card" || name == "Play" || name == "Pause" || name == "ControlHint")
+            { image.sprite = RoundedSprite(); image.type = UnityEngine.UI.Image.Type.Sliced; }
             var rect = obj.GetComponent<RectTransform>(); SetAnchors(rect, min, max); return rect;
         }
         TextMeshProUGUI Text(string name, Transform parent, string value, int size, Color color, Vector2 position, Vector2 dimensions)
@@ -128,8 +138,29 @@ namespace SquadRush
             rect.GetComponent<UnityEngine.UI.Image>().raycastTarget = true;
             var button = rect.gameObject.AddComponent<UnityEngine.UI.Button>(); button.onClick.AddListener(onClick);
             button.targetGraphic = rect.GetComponent<UnityEngine.UI.Image>();
+            var colors = button.colors; colors.highlightedColor = new Color(0.90f, 0.96f, 1); colors.pressedColor = new Color(0.63f, 0.77f, 0.90f); colors.fadeDuration = 0.12f; button.colors = colors;
             var text = Text("Label", rect, label, 24, Color.white, Vector2.zero, Vector2.zero); Stretch(text.rectTransform);
             return rect.gameObject;
+        }
+        Sprite RoundedSprite()
+        {
+            if (rounded != null) return rounded;
+            const int size = 64;
+            roundedTexture = new Texture2D(size, size, TextureFormat.RGBA32, false) { name = "Rounded UI corners", filterMode = FilterMode.Bilinear };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
+            {
+                float dx = Mathf.Max(Mathf.Abs(x + 0.5f - size / 2f) - 19, 0), dy = Mathf.Max(Mathf.Abs(y + 0.5f - size / 2f) - 19, 0);
+                pixels[y * size + x] = new Color(1, 1, 1, Mathf.Clamp01(12.5f - Mathf.Sqrt(dx * dx + dy * dy)));
+            }
+            roundedTexture.SetPixels(pixels); roundedTexture.Apply(false, true);
+            rounded = Sprite.Create(roundedTexture, new Rect(0, 0, size, size), Vector2.one * 0.5f, 100, 0, SpriteMeshType.FullRect, Vector4.one * 14);
+            return rounded;
+        }
+        void OnDestroy()
+        {
+            if (Application.isPlaying) { if (rounded != null) Destroy(rounded); if (roundedTexture != null) Destroy(roundedTexture); }
+            else { if (rounded != null) DestroyImmediate(rounded); if (roundedTexture != null) DestroyImmediate(roundedTexture); }
         }
         static void Stretch(RectTransform rect) { SetAnchors(rect, Vector2.zero, Vector2.one); }
         static void TopAnchor(RectTransform rect, float x, float y)

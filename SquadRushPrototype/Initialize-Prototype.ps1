@@ -44,8 +44,10 @@ if (-not ($taskRecordedVersion | Where-Object { $_ -eq "m_EditorVersion: $taskVe
 $taskScripts = Join-Path $taskProject 'Assets/Scripts'
 $taskEditor = Join-Path $taskProject 'Assets/Editor/SquadRush'
 $taskFonts = Join-Path $taskProject 'Assets/Fonts'
-New-Item -ItemType Directory -Force -Path $taskScripts,$taskEditor,$taskFonts,(Join-Path $taskProject 'Logs') | Out-Null
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Sources/SquadRushGame.cs'),(Join-Path $PSScriptRoot 'Sources/SquadRushHud.cs') -Destination $taskScripts
+$taskResources = Join-Path $taskProject 'Assets/Resources'
+New-Item -ItemType Directory -Force -Path $taskScripts,$taskEditor,$taskFonts,$taskResources,(Join-Path $taskProject 'Logs') | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Sources') -Filter '*.cs' | Copy-Item -Destination $taskScripts -Force
+Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Shaders') -Filter '*.shader' | Copy-Item -Destination $taskResources -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'link.xml') -Destination (Join-Path $taskProject 'Assets')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeBuilder.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -Destination $taskEditor
