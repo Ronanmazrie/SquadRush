@@ -1,12 +1,28 @@
 PASS Initial menu
 PASS Addition, multiplication and subtraction gates
-PASS Squad cap
+PASS Squad grows beyond the old 60-ally cap
+PASS Squad counts 999 allies exactly
+PASS Multiplication clamps at 1000 allies
+PASS Loss below the 1000 cap remains exact
+PASS 1000 allies contribute full volley damage with bounded actors and tracers
+PASS Aggregated projectiles apply real damage to a 20-health enemy
+PASS Contact at 1000 allies removes exactly one ally
+PASS Sustained large-squad combat stays within fixed pools
 PASS Zero allies ends the run
 PASS Retry clears the run
 PASS Pause freezes simulation
 PASS Resume
 PASS Auto-fire hits an approaching enemy
 PASS Destroying a crate grants four allies
+PASS Power crate doubles base bullet damage without adding allies
+PASS Weapon power applies to the whole squad volley
+PASS Rapid-fire crate reduces the real firing interval
+PASS Retry starts with base weapons
+PASS Maximum power upgrade converts excess crates to allies
+PASS 1000 allies all benefit from the strongest weapon
+PASS Maximum rapid-fire upgrade converts excess crates to allies
+PASS Fastest weapon with 1000 allies keeps bounded projectile work
+PASS Touching an unopened weapon crate grants no upgrade
 PASS Contact removes an ally and the enemy
 PASS Defeating the boss clears the stage
 PASS Clear saves the next stage before pressing Next

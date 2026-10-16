@@ -1,26 +1,25 @@
-Squad Rush 0.4.0 — WebGL distribution and stage progression check
+Squad Rush 0.5.0 — WebGL distribution and gameplay check
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,595,842 bytes; published files 11,595,882 bytes after enabling HTML auto-sync)
+Build result: Succeeded (11,620,638 bytes)
 Host: local HTTP server with no Content-Encoding header (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser
 Viewport: 390 x 844
 
 PASS: Unity loads and removes the loading overlay.
-PASS: Japanese menu and HUD render correctly in portrait layout.
-PASS: Outlined models, shadows, glass gates, procedural desert/forest/snow props and cyan tracers render without missing/pink shaders.
-PASS: Start begins play and the squad shoots automatically.
-PASS: Pointer drag moves the squad from center to the right.
-PASS: Pause and Continue stop and resume the run.
-PASS: Stage one cleared through normal pointer play (52 defeats, 38 allies at clear).
-PASS: Reloading from the clear screen offers stage two in the forest, before pressing Next.
-PASS: Stage two cleared through normal pointer play (78 defeats, 55 allies at clear).
-PASS: Clicking Next starts stage three in the snow; reload offers stage three with Continue.
-PASS: New attempts/previews show different prop arrangements, and scrolling rerolls passing slots.
-PASS: No console errors. One manual-sync deprecation warning was seen before setting autoSyncPersistentDataPath=true; no new warning occurred on stage-two saving afterward.
+PASS: Japanese menu, squad counter and two-line weapon HUD render in portrait.
+PASS: Weathered props/ground, shadows, colored crates, gates and tracers render without missing/pink shaders.
+PASS: Start, automatic fire, pointer movement, Pause and Continue work.
+PASS: Normal play collects the first power crate: weapon damage becomes 2 and rifle modules appear.
+PASS: Normal play collects an allies crate: recruitment adds 4 allies.
+PASS: Normal play collects a rapid-fire crate: HUD shows increased firing rate (rounded 1.2x).
+PASS: A second power crate increases damage to 3.
+PASS: Stage one cleared through normal pointer play: 77 defeats, 45 allies, power 3 and one rapid-fire upgrade.
+PASS: Next starts the forest stage with base weapons and 3 allies.
+PASS: Reloading retains stage two and offers Continue from the opening menu.
+PASS: No browser console errors or warnings occurred, including progress saving.
 
-The Web template enables automatic persistent-data synchronization. This setting is mirrored in the source kit and generated distribution HTML. Tests run on localhost; the public game's progress is a separate origin. Defeat/retry and isolated progress-key cleanup are additionally covered by the Unity scenarios.
+The template enables autoSyncPersistentDataPath. Verification uses a fresh localhost port and does not overwrite the public game's progress. The 1000-member counter and weighted damage, fixed visual/projectile capacities, both upgrade caps, and maximum-speed large-squad stress are covered by 37 gameplay and 18 Play-mode scenarios.
 
-This is a desktop browser check at a mobile viewport size.
-Physical Android/iPhone touch input, device performance, and Safari remain untested.
+This is a desktop browser check at a mobile viewport size. Physical Android/iPhone input, performance, and Safari remain untested.

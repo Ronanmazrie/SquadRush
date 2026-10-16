@@ -8,10 +8,21 @@ namespace SquadRush
 {
     public enum RunState { Ready, Playing, Won, Lost, Paused }
     public enum TargetKind { Enemy, Crate, Boss }
+    public enum SupplyReward { Allies, Power, RapidFire }
 
     public sealed class SquadRushGame : MonoBehaviour
     {
-        public const int MaxSquad = 60;
+        public const int MaxSquad = 1000;
+        public const int MaxVisibleSquad = 96;
+        const int MaxVolleyTracers = 40;
+        public const int MaxWeaponUpgrade = 5;
+        public int VisibleAllies => Mathf.Min(SquadCount, MaxVisibleSquad);
+        public int PowerLevel { get; private set; }
+        public int RapidFireLevel { get; private set; }
+        public int WeaponDamage => 1 + PowerLevel;
+        public float FireRateMultiplier => 1 + RapidFireLevel * 0.16f;
+        public float FireInterval => 0.34f / FireRateMultiplier;
+        public int LastVolleyDamage { get; private set; }
         public int StageNumber { get; private set; }
         public SquadRushStage Stage => new SquadRushStage(StageNumber);
         public float StageDuration => Stage.Duration;
@@ -30,8 +41,9 @@ namespace SquadRush
         {
             public GameObject Root; public TargetKind Kind; public int Hp, MaxHp;
             public float Radius, Speed; public TextMeshPro Label; public SquadRushTrooper Rig;
+            public SupplyReward Reward;
         }
-        sealed class Shot { public Transform Body; public float Life; }
+        sealed class Shot { public Transform Body; public float Life; public int Damage; }
         sealed class Gate
         {
             public Transform Root; public int Left, Right; public bool LeftMultiply, RightMultiply;
@@ -52,7 +64,7 @@ namespace SquadRush
         Transform world, squadRoot, poolRoot;
         SquadRushArt art;
         Material outlinedText;
-        Texture2D asphalt;
+        Texture2D asphalt, terrainGrain;
         SquadRushProgress progress = new SquadRushProgress();
         System.Random random;
         Target boss;
@@ -61,6 +73,7 @@ namespace SquadRush
         Vector2 lastPointer;
         Rect previousSafeArea;
         int previousWidth, previousHeight;
+        int crateSequence;
 
         void Awake() { Initialize(); }
         public void Initialize()
@@ -80,7 +93,7 @@ namespace SquadRush
             art = gameObject.AddComponent<SquadRushArt>(); art.Initialize(View);
             Scenery = gameObject.AddComponent<SquadRushScenery>(); Scenery.Initialize(art, world);
             GenerateLandscape(NewSeed());
-            for (int i = 0; i < MaxSquad; i++)
+            for (int i = 0; i < MaxVisibleSquad; i++)
             {
                 Transform soldier = CreateSoldier("Ally", squadRoot, false);
                 soldier.gameObject.SetActive(false); soldiers.Add(soldier); soldierRigs.Add(soldier.GetComponent<SquadRushTrooper>());
@@ -103,6 +116,8 @@ namespace SquadRush
             random = new System.Random(seed ^ 0x51F15E);
             GenerateLandscape(seed);
             Elapsed = 0; Kills = 0; SquadX = targetX = 0;
+            PowerLevel = RapidFireLevel = LastVolleyDamage = crateSequence = 0;
+            UpdateWeapons();
             squadRoot.position = new Vector3(0, 0, 1.5f);
             shotTimer = 0; waveTimer = 1.5f; gateTimer = 0.5f; crateTimer = 4;
             bossWaveTimer = 3; dragging = false; boss = null;
@@ -152,13 +167,19 @@ namespace SquadRush
             AnimateSquad(dt);
             ScrollRoad(dt);
             shotTimer -= dt;
-            if (shotTimer <= 0) { FireVolley(); shotTimer += 0.34f; }
+            if (shotTimer <= 0) { FireVolley(); shotTimer += FireInterval; }
             if (Elapsed < StageDuration)
             {
                 waveTimer -= dt; gateTimer -= dt; crateTimer -= dt;
                 if (waveTimer <= 0) { SpawnWave(); waveTimer = Stage.WaveInterval(Elapsed / StageDuration); }
                 if (gateTimer <= 0) { SpawnGate(); gateTimer = 9f; }
-                if (crateTimer <= 0) { SpawnTarget(TargetKind.Crate, Next(-3.2f, 3.2f), 30, 8 + Stage.Difficulty + (int)(Elapsed / 5)); crateTimer = 10; }
+                if (crateTimer <= 0)
+                {
+                    SupplyReward reward = crateSequence % 3 == 0 ? SupplyReward.Power : crateSequence % 3 == 1 ? SupplyReward.Allies : SupplyReward.RapidFire;
+                    crateSequence++;
+                    SpawnTarget(TargetKind.Crate, Next(-3.2f, 3.2f), 30, 8 + Stage.Difficulty + (int)(Elapsed / 5), reward);
+                    crateTimer = 10;
+                }
             }
             else if (boss == null) SpawnBoss();
             else
@@ -206,21 +227,24 @@ namespace SquadRush
         {
             SquadCount = Mathf.Clamp(count, 0, MaxSquad);
             // Keep the back rows clear of the bottom control hint as the formation grows.
-            View.transform.LookAt(new Vector3(0, 0, Mathf.Lerp(13, 10, Mathf.InverseLerp(30, 60, SquadCount))));
-            int columns = Mathf.Min(6, Mathf.Max(1, SquadCount));
+            View.transform.LookAt(new Vector3(0, 0, Mathf.Lerp(13, 10, Mathf.InverseLerp(30, 96, SquadCount))));
+            int visible = VisibleAllies;
+            int columns = Mathf.Min(visible > 60 ? 8 : 6, Mathf.Max(1, visible));
+            float scale = visible > 60 ? 0.82f : 1;
             for (int i = 0; i < soldiers.Count; i++)
             {
-                if (i < SquadCount && !soldiers[i].gameObject.activeSelf) soldierRigs[i].ResetPose();
-                soldiers[i].gameObject.SetActive(i < SquadCount);
+                if (i < visible && !soldiers[i].gameObject.activeSelf) soldierRigs[i].ResetPose();
+                soldiers[i].gameObject.SetActive(i < visible);
+                soldiers[i].localScale = Vector3.one * scale;
                 int row = i / columns;
-                int rowCount = Mathf.Min(columns, SquadCount - row * columns);
-                soldiers[i].localPosition = new Vector3((i % columns - (rowCount - 1) * 0.5f) * 0.48f, 0, -row * 0.4f);
+                int rowCount = Mathf.Min(columns, visible - row * columns);
+                soldiers[i].localPosition = new Vector3((i % columns - (rowCount - 1) * 0.5f) * 0.48f * scale, 0, -row * 0.4f * scale);
             }
             if (SquadCount == 0 && State == RunState.Playing) Finish(false);
         }
         void AnimateSquad(float dt)
         {
-            for (int i = 0; i < SquadCount; i++)
+            for (int i = 0; i < VisibleAllies; i++)
             {
                 soldierRigs[i].Animate(Elapsed, dt, i * 1.8f, Mathf.Clamp((SquadX - targetX) * 5, -9, 9));
             }
@@ -228,22 +252,29 @@ namespace SquadRush
 
         void FireVolley()
         {
-            // Every ally contributes one bullet; pools bound the visual workload.
-            for (int i = 0; i < SquadCount; i++)
+            // Each tracer represents an exact share of the logical squad. All 1000 allies
+            // contribute, while renderer, animation and collision costs remain bounded.
+            int tracers = Mathf.Min(MaxVolleyTracers, Mathf.Min(VisibleAllies, shotPool.Count));
+            LastVolleyDamage = 0;
+            for (int i = 0; i < tracers; i++)
             {
-                if (shotPool.Count == 0) break;
+                int actor = i * VisibleAllies / tracers;
+                int members = (i + 1) * SquadCount / tracers - i * SquadCount / tracers;
                 Transform body = shotPool.Pop(); body.gameObject.SetActive(true);
-                body.position = soldiers[i].position + new Vector3(0.12f, 0.65f, 0.5f);
-                shots.Add(new Shot { Body = body, Life = 1.7f });
-                soldierRigs[i].Fire();
+                body.position = soldiers[actor].position + new Vector3(0.12f, 0.65f, 0.5f);
+                body.localScale = new Vector3(1 + PowerLevel * 0.16f, 1, 1);
+                int damage = members * WeaponDamage;
+                LastVolleyDamage += damage;
+                shots.Add(new Shot { Body = body, Life = 1.5f, Damage = damage });
             }
+            for (int i = 0; i < VisibleAllies; i++) soldierRigs[i].Fire();
         }
         void MoveShots(float dt)
         {
             for (int i = shots.Count - 1; i >= 0; i--)
             {
                 Shot shot = shots[i]; Vector3 old = shot.Body.position;
-                Vector3 next = old + Vector3.forward * (29 * dt);
+                Vector3 next = old + Vector3.forward * (32 * dt);
                 shot.Body.position = next; shot.Life -= dt;
                 Target hit = null; float nearest = float.MaxValue;
                 foreach (Target target in targets)
@@ -254,7 +285,7 @@ namespace SquadRush
                 }
                 if (hit != null)
                 {
-                    Burst(shot.Body.position); Damage(hit, 1); ReturnShot(i);
+                    Burst(shot.Body.position); Damage(hit, shot.Damage); ReturnShot(i);
                     if (State != RunState.Playing) return;
                 }
                 else if (shot.Life <= 0 || next.z > 40) ReturnShot(i);
@@ -273,7 +304,7 @@ namespace SquadRush
                 SpawnTarget(TargetKind.Enemy, Next(-4f, 4f), z + Next(0, 3), Stage.EnemyHealth + (int)(Elapsed / 30));
         }
         float Next(float min, float max) { return min + (float)random.NextDouble() * (max - min); }
-        public void SpawnTarget(TargetKind kind, float x, float z, int hp)
+        public void SpawnTarget(TargetKind kind, float x, float z, int hp, SupplyReward reward = SupplyReward.Allies)
         {
             Target t;
             if (kind == TargetKind.Enemy)
@@ -287,8 +318,11 @@ namespace SquadRush
                 t.Root.transform.SetParent(world);
                 if (kind == TargetKind.Crate)
                 {
-                    art.Crate(t.Root.transform);
+                    t.Reward = reward;
+                    art.Crate(t.Root.transform, reward);
                     t.Label = WorldText(t.Root.transform, "", new Vector3(0, 1.3f, -1.5f), 10, Color.white);
+                    string supplyName = reward == SupplyReward.Power ? "威力 UP" : reward == SupplyReward.RapidFire ? "連射 UP" : "仲間補給";
+                    WorldText(t.Root.transform, supplyName, new Vector3(0, 2.5f, -0.5f), 5.2f, reward == SupplyReward.Power ? new Color(1, 0.83f, 0.3f) : reward == SupplyReward.RapidFire ? new Color(0.65f, 1, 0.65f) : new Color(0.4f, 0.9f, 1));
                 }
                 else
                 {
@@ -324,7 +358,7 @@ namespace SquadRush
                 {
                     Vector3 old = body.position; body.position += Vector3.back * (t.Speed * dt);
                     bool collision = false;
-                    for (int s = 0; s < SquadCount; s++)
+                    for (int s = 0; s < VisibleAllies; s++)
                     {
                         Vector3 p = soldiers[s].position;
                         if (Mathf.Abs(p.x - body.position.x) < t.Radius + 0.2f && old.z + t.Radius >= p.z && body.position.z - t.Radius <= p.z)
@@ -349,9 +383,32 @@ namespace SquadRush
             if (t.Hp > 0) return;
             Burst(t.Root.transform.position + Vector3.up); Burst(t.Root.transform.position + new Vector3(0.3f, 0.7f, 0.2f));
             TargetKind kind = t.Kind; RemoveTarget(t);
-            if (kind == TargetKind.Crate) { ChangeSquad(4); Hud.Flash("箱を撃破！ 仲間 +4"); }
+            if (kind == TargetKind.Crate) GrantSupply(t.Reward);
             else if (kind == TargetKind.Boss) Finish(true);
             else Kills++;
+        }
+        int AllySupplyAmount => Mathf.Max(4, Mathf.CeilToInt(SquadCount * 0.1f));
+        void GrantSupply(SupplyReward reward)
+        {
+            if (reward == SupplyReward.Power && PowerLevel < MaxWeaponUpgrade)
+            {
+                PowerLevel++; UpdateWeapons(); Hud.Flash("威力アップ！ 弾の威力 " + WeaponDamage);
+            }
+            else if (reward == SupplyReward.RapidFire && RapidFireLevel < MaxWeaponUpgrade)
+            {
+                RapidFireLevel++; shotTimer = Mathf.Min(shotTimer, FireInterval); UpdateWeapons();
+                Hud.Flash("連射アップ！ " + FireRateMultiplier.ToString("0.0") + "倍");
+            }
+            else
+            {
+                int amount = AllySupplyAmount, before = SquadCount; ChangeSquad(amount);
+                Hud.Flash(SquadCount == before ? "仲間は最大1000人！" : "補給！ 仲間 +" + (SquadCount - before));
+            }
+            Hud.UpdateStats();
+        }
+        void UpdateWeapons()
+        {
+            foreach (var rig in soldierRigs) rig.SetUpgradedWeapon(PowerLevel > 0 || RapidFireLevel > 0);
         }
         void RemoveTarget(Target t)
         {
@@ -479,6 +536,16 @@ namespace SquadRush
                 pixels[y * 256 + x] = new Color(grain, grain, grain);
             }
             asphalt.SetPixels(pixels); asphalt.Apply(true, true); road.mainTexture = asphalt; road.mainTextureScale = new Vector2(3, 20); road.SetFloat("_Glossiness", 0.02f);
+            terrainGrain = new Texture2D(256, 256, TextureFormat.RGB24, true) { name = "Soil mottling and gravel", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Trilinear };
+            for (int y = 0; y < 256; y++) for (int x = 0; x < 256; x++)
+            {
+                float broad = Mathf.PerlinNoise(x / 44f, y / 44f), detail = Mathf.PerlinNoise(x / 7f, y / 7f);
+                float tone = 0.80f + broad * 0.20f + detail * 0.08f;
+                pixels[y * 256 + x] = new Color(tone, tone * (0.98f + broad * 0.02f), tone * 0.96f);
+            }
+            terrainGrain.SetPixels(pixels); terrainGrain.Apply(true, true);
+            Material soil = Mat("Sand", Color.white); soil.mainTexture = terrainGrain; soil.mainTextureScale = new Vector2(3, 12); soil.SetFloat("_Glossiness", 0.01f);
+            Material curb = Mat("Curb", Color.gray); curb.mainTexture = terrainGrain; curb.mainTextureScale = new Vector2(1, 18); curb.SetFloat("_Glossiness", 0.02f);
             Part(PrimitiveType.Cube, world, new Vector3(0, -0.28f, 14), new Vector3(11, 0.5f, 70), road);
             Material white = Mat("Marking", new Color(0.91f, 0.9f, 0.83f));
             for (int i = 0; i < 18; i++)
@@ -543,6 +610,7 @@ namespace SquadRush
                 if (mat != null) { if (Application.isPlaying) Destroy(mat); else DestroyImmediate(mat); }
             if (outlinedText != null) { if (Application.isPlaying) Destroy(outlinedText); else DestroyImmediate(outlinedText); }
             if (asphalt != null) { if (Application.isPlaying) Destroy(asphalt); else DestroyImmediate(asphalt); }
+            if (terrainGrain != null) { if (Application.isPlaying) Destroy(terrainGrain); else DestroyImmediate(terrainGrain); }
         }
     }
 }

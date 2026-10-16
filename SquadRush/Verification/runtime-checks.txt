@@ -8,7 +8,10 @@ PASS Enemies, squad and automatic bullets run in Play mode
 PASS Visible progress bar follows the current stage duration
 PASS Defeat menu appears in Play mode
 PASS Retry button resets the run
-PASS Crowded scene runs with 60 allies, 72 enemies and automatic fire
+PASS 1000 allies, 96 displayed troops, 72 enemies and weighted automatic fire run in Play mode
+PASS 1000-ally HUD is fully visible without clipping
+PASS Weapon crates upgrade damage, firing rate and visible rifles
+PASS Weapon HUD shows acquired upgrades without clipping
 PASS A real boss defeat saves stage two
 PASS The clear screen Next button advances to stage two
 PASS Reloading the saved progress offers stage two in the menu

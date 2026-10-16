@@ -5,7 +5,8 @@ namespace SquadRush
     // Animation is driven by the simulation, so pause and deterministic checks also freeze visuals.
     public sealed class SquadRushTrooper : MonoBehaviour
     {
-        public Transform Body, LeftLeg, RightLeg, Muzzle;
+        public Transform Body, LeftLeg, RightLeg, Muzzle, WeaponModule;
+        public void SetUpgradedWeapon(bool upgraded) { if (WeaponModule != null) WeaponModule.gameObject.SetActive(upgraded); }
         public MeshRenderer[] ColoredRenderers;
         float flashTime, hitTime;
         MaterialPropertyBlock hitProperties;

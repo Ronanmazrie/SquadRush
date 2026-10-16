@@ -1,6 +1,11 @@
 Shader "SquadRush/Toon"
 {
-    Properties { _Flash ("Hit flash", Range(0,1)) = 0 }
+    Properties
+    {
+        _Flash ("Hit flash", Range(0,1)) = 0
+        _Weathering ("Surface weathering", Range(0,1)) = 0
+        _SurfaceGrain ("Surface grain", 2D) = "gray" {}
+    }
     SubShader
     {
         Tags { "RenderType"="Opaque" "Queue"="Geometry" }
@@ -36,7 +41,9 @@ Shader "SquadRush/Toon"
             #include "Lighting.cginc"
             #include "AutoLight.cginc"
             struct appdata { float4 vertex:POSITION; float3 normal:NORMAL; fixed4 color:COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct v2f { float4 pos:SV_POSITION; float3 normal:TEXCOORD0; float3 world:TEXCOORD1; fixed4 color:COLOR; SHADOW_COORDS(2) UNITY_FOG_COORDS(3) UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct v2f { float4 pos:SV_POSITION; float3 normal:TEXCOORD0; float3 world:TEXCOORD1; fixed4 color:COLOR; SHADOW_COORDS(2) UNITY_FOG_COORDS(3) float3 local:TEXCOORD4; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            float _Weathering;
+            sampler2D _SurfaceGrain;
             UNITY_INSTANCING_BUFFER_START(Props)
                 UNITY_DEFINE_INSTANCED_PROP(float, _Flash)
             UNITY_INSTANCING_BUFFER_END(Props)
@@ -45,7 +52,7 @@ Shader "SquadRush/Toon"
                 v2f o;
                 UNITY_SETUP_INSTANCE_ID(v); UNITY_TRANSFER_INSTANCE_ID(v,o);
                 o.pos=UnityObjectToClipPos(v.vertex); o.normal=UnityObjectToWorldNormal(v.normal);
-                o.world=mul(unity_ObjectToWorld,v.vertex).xyz; o.color=v.color;
+                o.world=mul(unity_ObjectToWorld,v.vertex).xyz; o.color=v.color; o.local=v.vertex.xyz;
                 TRANSFER_SHADOW(o)
                 UNITY_TRANSFER_FOG(o,o.pos);
                 return o;
@@ -59,7 +66,18 @@ Shader "SquadRush/Toon"
                 float rim=pow(1-saturate(dot(n,eye)),3);
                 float spec=pow(saturate(dot(n,normalize(l+eye))),40)*0.22;
                 float shadow=SHADOW_ATTENUATION(i);
-                fixed3 color=i.color.rgb*(fixed3(0.31,0.37,0.46)+fixed3(0.73,0.68,0.58)*diffuse*shadow);
+                fixed3 surface=i.color.rgb;
+                if (_Weathering > 0.01)
+                {
+                    // One cached texture fetch supplies both scales of object-space dirt.
+                    float2 grain=tex2D(_SurfaceGrain,(i.local.xz+i.local.y*float2(0.37,0.23))*0.6).rg;
+                    float dirt=(1-smoothstep(0.05,0.65,i.local.y))*0.18;
+                    float mottling=(grain.r-0.5)*0.22+(grain.g-0.5)*0.075;
+                    surface*=1+mottling-dirt;
+                    surface=lerp(surface,surface*fixed3(1.10,0.94,0.77),dirt);
+                    spec*=0.28;
+                }
+                fixed3 color=surface*(fixed3(0.31,0.37,0.46)+fixed3(0.73,0.68,0.58)*diffuse*shadow);
                 color+=rim*fixed3(0.04,0.11,0.16)+spec*shadow;
                 color=lerp(color,fixed3(1,0.96,0.82),UNITY_ACCESS_INSTANCED_PROP(Props,_Flash));
                 fixed4 result=fixed4(color,1); UNITY_APPLY_FOG(i.fogCoord,result); return result;

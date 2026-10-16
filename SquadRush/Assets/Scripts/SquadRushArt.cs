@@ -10,7 +10,7 @@ namespace SquadRush
         readonly Dictionary<string, Mesh> models = new Dictionary<string, Mesh>();
         readonly Dictionary<PrimitiveType, Mesh> primitives = new Dictionary<PrimitiveType, Mesh>();
         readonly List<Object> owned = new List<Object>();
-        Material toon, glow;
+        Material toon, glow, weathered;
         Camera view;
         static readonly Color Gear = new Color(0.085f, 0.13f, 0.19f);
         static readonly Color Steel = new Color(0.4f, 0.54f, 0.63f);
@@ -21,7 +21,15 @@ namespace SquadRush
             view = camera;
             toon = new Material(Shader.Find("SquadRush/Toon")) { name = "Toy soldier shading", enableInstancing = true };
             glow = new Material(Shader.Find("SquadRush/Glow")) { name = "Soft glows and contact shadows", enableInstancing = true };
-            owned.Add(toon); owned.Add(glow);
+            weathered = new Material(toon) { name = "Weathered stone wood and metal" };
+            weathered.SetFloat("_Weathering", 1);
+            var surfaceGrain = new Texture2D(128, 128, TextureFormat.RGB24, true) { name = "Shared prop wear", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Trilinear };
+            var grainPixels = new Color[128 * 128];
+            for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
+                grainPixels[y * 128 + x] = new Color(Mathf.PerlinNoise(x / 23f, y / 23f), Mathf.PerlinNoise(x / 3f, y / 3f), 0);
+            surfaceGrain.SetPixels(grainPixels); surfaceGrain.Apply(true, true);
+            weathered.SetTexture("_SurfaceGrain", surfaceGrain); owned.Add(surfaceGrain);
+            owned.Add(toon); owned.Add(glow); owned.Add(weathered);
         }
         public Transform Trooper(string name, Transform parent, bool red, bool boss = false)
         {
@@ -91,14 +99,28 @@ namespace SquadRush
             shadow.localPosition = new Vector3(0.05f, 0.035f, 0); shadow.localRotation = Quaternion.Euler(90, 0, 0); shadow.localScale = new Vector3(boss ? 1.2f : 0.62f, 0.43f, 1);
             rig.Muzzle = ObjectMesh("Muzzle flash", root, Star("muzzle", new Color(1, 0.68f, 0.12f, 0.7f)), glow);
             rig.Muzzle.localPosition = new Vector3(0.15f, 0.64f, 0.70f); rig.Muzzle.rotation = view.transform.rotation; rig.Muzzle.localScale = Vector3.one * 0.22f;
+            if (!red)
+            {
+                const string moduleKey = "Upgraded rifle module";
+                if (!models.TryGetValue(moduleKey, out Mesh module))
+                {
+                    var b = new Recipe(this);
+                    b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.70f, 0.41f), new Vector3(0.17f, 0.055f, 0.35f), new Color(1, 0.67f, 0.12f));
+                    b.Add(PrimitiveType.Cylinder, new Vector3(0.15f, 0.61f, 0.63f), new Vector3(0.12f, 0.065f, 0.12f), new Color(0.26f, 0.85f, 1), new Vector3(90, 0, 0));
+                    module = b.Bake(moduleKey); models.Add(moduleKey, module);
+                }
+                rig.WeaponModule = ObjectMesh(moduleKey, rig.Body, module, toon); rig.WeaponModule.gameObject.SetActive(false);
+            }
             rig.ResetPose(); return root;
         }
-        public void Crate(Transform parent)
+        public void Crate(Transform parent, SupplyReward reward)
         {
-            if (!models.TryGetValue("supply crate", out Mesh mesh))
+            string key = "supply crate " + reward;
+            if (!models.TryGetValue(key, out Mesh mesh))
             {
                 var b = new Recipe(this);
                 Color wood = new Color(0.72f, 0.36f, 0.12f);
+                Color accent = reward == SupplyReward.Power ? new Color(1, 0.68f, 0.08f) : reward == SupplyReward.RapidFire ? new Color(0.24f, 0.87f, 0.36f) : new Color(0.08f, 0.65f, 1);
                 b.Add(PrimitiveType.Cube, new Vector3(0, 0.76f, 0), new Vector3(1.62f, 1.5f, 1.25f), new Color(0.27f, 0.14f, 0.07f));
                 for (int p = 0; p < 5; p++)
                 {
@@ -112,11 +134,12 @@ namespace SquadRush
                     b.Add(PrimitiveType.Cube, new Vector3(s * 0.82f, 0.76f, 0), new Vector3(0.08f, 1.50f, 1.34f), wood * 0.7f);
                     for (int y = 0; y < 3; y++) b.Add(PrimitiveType.Sphere, new Vector3(s * 0.55f, 0.17f + y * 0.57f, -0.767f), Vector3.one * 0.08f, Steel);
                 }
-                b.Add(PrimitiveType.Cube, new Vector3(0, 1.6f, 0), new Vector3(0.28f, 0.07f, 0.7f), new Color(0.08f, 0.65f, 1));
-                b.Add(PrimitiveType.Cube, new Vector3(0, 1.66f, 0), new Vector3(0.7f, 0.07f, 0.28f), new Color(0.08f, 0.65f, 1));
-                mesh = b.Bake("Supply crate"); models.Add("supply crate", mesh);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.6f, 0), new Vector3(0.28f, 0.07f, 0.7f), accent);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.66f, 0), new Vector3(0.7f, 0.07f, 0.28f), accent);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.12f, -0.73f), new Vector3(0.8f, 0.17f, 0.045f), accent);
+                mesh = b.Bake(key); models.Add(key, mesh);
             }
-            ObjectMesh("Wooden planks and metal straps", parent, mesh, toon);
+            ObjectMesh("Wooden planks and metal straps", parent, mesh, weathered);
         }
         public void Gate(Transform parent, float x, bool gain)
         {
@@ -154,7 +177,7 @@ namespace SquadRush
             var halo = ObjectMesh("Gate floor glow", parent, Disc("gate halo " + gain, new Color(color.r, color.g, color.b, 0.21f)), glow);
             halo.localPosition = new Vector3(x, 0.04f, 0); halo.localRotation = Quaternion.Euler(90, 0, 0); halo.localScale = new Vector3(4.5f, 1.25f, 1);
         }
-        public Transform SceneryObject(Transform parent) => ObjectMesh("Landscape prop", parent, null, toon);
+        public Transform SceneryObject(Transform parent) => ObjectMesh("Landscape prop", parent, null, weathered);
         public Mesh LandscapeModel(LandscapeBiome biome, int kind)
         {
             string key = "Landscape " + biome + " " + kind;
@@ -167,6 +190,8 @@ namespace SquadRush
             rock.Add(PrimitiveType.Cube, new Vector3(0, 0.35f, 0), new Vector3(1.3f, 0.7f, 0.95f), new Color(0.66f, 0.38f, 0.22f), new Vector3(0, 22, 9));
             rock.Add(PrimitiveType.Cube, new Vector3(0.1f, 0.84f, 0.07f), new Vector3(0.92f, 0.44f, 0.72f), new Color(0.84f, 0.56f, 0.32f), new Vector3(0, -8, -5));
             rock.Add(PrimitiveType.Cube, new Vector3(-0.6f, 0.2f, 0.4f), new Vector3(0.58f, 0.4f, 0.64f), new Color(0.71f, 0.43f, 0.24f), new Vector3(5, 35, -9));
+                for (int layer = 0; layer < 3; layer++)
+                    rock.Add(PrimitiveType.Cube, new Vector3(0, 0.18f + layer * 0.17f, -0.465f), new Vector3(1.08f - layer * 0.14f, 0.025f, 0.025f), new Color(0.50f + layer * 0.06f, 0.29f + layer * 0.04f, 0.18f), new Vector3(0, 22, 9));
                 var mesh = rock.Bake(key); models.Add(key, mesh); return mesh;
             }
             var cactus = new Recipe(this);
@@ -219,6 +244,12 @@ namespace SquadRush
             if (kind == 0 || kind == 1)
             {
                 b.Add(PrimitiveType.Cylinder, new Vector3(0, 0.9f, 0), new Vector3(0.22f, 0.9f, 0.22f), new Color(0.37f, 0.24f, 0.14f));
+                for (int rib = 0; rib < 5; rib++)
+                {
+                    float a = rib * Mathf.PI * 0.4f;
+                    b.Add(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 0.104f, 0.65f, Mathf.Sin(a) * 0.104f), new Vector3(0.025f, 1.1f - rib * 0.08f, 0.027f), new Color(0.23f, 0.16f, 0.10f));
+                }
+                b.Add(PrimitiveType.Sphere, new Vector3(0, 0.05f, 0), new Vector3(0.65f, 0.12f, 0.6f), snow ? new Color(0.70f, 0.82f, 0.87f) : new Color(0.27f, 0.34f, 0.16f));
                 if (kind == 0)
                 {
                     for (int layer = 0; layer < 3; layer++)
@@ -240,11 +271,18 @@ namespace SquadRush
                 b.Add(PrimitiveType.Cube, new Vector3(0, 0.5f, 0), new Vector3(1.25f, 0.95f, 1), stone, new Vector3(7, 22, 9));
                 b.Add(PrimitiveType.Cube, new Vector3(-0.6f, 0.23f, 0.3f), new Vector3(0.65f, 0.46f, 0.64f), stone * 0.85f, new Vector3(-4, 38, -8));
                 if (snow) b.Add(PrimitiveType.Sphere, new Vector3(0, 0.96f, 0), new Vector3(1.3f, 0.25f, 1.1f), Color.white);
+                else
+                {
+                    b.Add(PrimitiveType.Sphere, new Vector3(-0.26f, 0.94f, 0.1f), new Vector3(0.75f, 0.065f, 0.66f), new Color(0.31f, 0.42f, 0.19f));
+                    b.Add(PrimitiveType.Sphere, new Vector3(-0.6f, 0.43f, 0.3f), new Vector3(0.44f, 0.07f, 0.38f), new Color(0.40f, 0.49f, 0.23f));
+                }
             }
             else if (kind == 3)
             {
                 b.Add(PrimitiveType.Cylinder, new Vector3(0, 0.25f, 0), new Vector3(0.45f, 0.9f, 0.45f), new Color(0.42f, 0.29f, 0.18f), new Vector3(0, 0, 90));
                 b.Add(PrimitiveType.Cylinder, new Vector3(-0.91f, 0.25f, 0), new Vector3(0.34f, 0.012f, 0.34f), new Color(0.74f, 0.59f, 0.35f), new Vector3(0, 0, 90));
+                b.Add(PrimitiveType.Cylinder, new Vector3(-0.926f, 0.25f, 0), new Vector3(0.22f, 0.014f, 0.22f), new Color(0.57f, 0.43f, 0.26f), new Vector3(0, 0, 90));
+                b.Add(PrimitiveType.Cylinder, new Vector3(-0.943f, 0.25f, 0), new Vector3(0.16f, 0.014f, 0.16f), new Color(0.74f, 0.59f, 0.35f), new Vector3(0, 0, 90));
                 if (snow) b.Add(PrimitiveType.Cube, new Vector3(0, 0.46f, 0), new Vector3(1.65f, 0.08f, 0.3f), Color.white);
             }
             else
@@ -310,7 +348,8 @@ namespace SquadRush
         {
             var obj = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer)); obj.transform.SetParent(parent, false);
             obj.GetComponent<MeshFilter>().sharedMesh=mesh; var renderer=obj.GetComponent<MeshRenderer>(); renderer.sharedMaterial=material;
-            renderer.shadowCastingMode=material == toon ? ShadowCastingMode.On : ShadowCastingMode.Off; renderer.receiveShadows=material == toon; return obj.transform;
+            bool solid = material == toon || material == weathered;
+            renderer.shadowCastingMode=solid ? ShadowCastingMode.On : ShadowCastingMode.Off; renderer.receiveShadows=solid; return obj.transform;
         }
         Mesh Primitive(PrimitiveType kind)
         {

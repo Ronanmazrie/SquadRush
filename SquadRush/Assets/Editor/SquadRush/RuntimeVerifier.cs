@@ -88,13 +88,27 @@ namespace SquadRush.Editor
                 Capture(game, "boss.png");
                 game.ChangeSquad(-100); Require(game.State == RunState.Lost, "Defeat menu appears in Play mode", checks);
                 play.onClick.Invoke(); Require(game.State == RunState.Playing && game.SquadCount == 3 && game.ActiveTargets == 0, "Retry button resets the run", checks);
-                game.ChangeSquad(57);
+                game.ChangeSquad(997);
                 for (int row = 0; row < 9; row++) for (int column = 0; column < 8; column++)
                     game.SpawnTarget(TargetKind.Enemy, -3.5f + column, 13 + row * 2.2f, 999);
                 game.Tick(0.02f, false);
-                Require(game.SquadCount == 60 && game.ActiveTargets == 72 && game.ActiveBullets == 60, "Crowded scene runs with 60 allies, 72 enemies and automatic fire", checks);
+                Require(game.SquadCount == 1000 && game.VisibleAllies == 96 && game.ActiveTargets == 72 && game.ActiveBullets == 40 && game.LastVolleyDamage == 1000, "1000 allies, 96 displayed troops, 72 enemies and weighted automatic fire run in Play mode", checks);
                 yield return null;
                 Capture(game, "crowd.png");
+                var countLabel = game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "SquadCount");
+                Require(countLabel.text == "仲間 1000" && !countLabel.isTextOverflowing, "1000-ally HUD is fully visible without clipping", checks);
+                game.StartVerificationStage(1, 5104);
+                game.SpawnTarget(TargetKind.Crate, 0, 5, 1, SupplyReward.Power);
+                for (int i = 0; i < 30; i++) game.Tick(0.02f, false);
+                game.SpawnTarget(TargetKind.Crate, 0, 5, 1, SupplyReward.RapidFire);
+                for (int i = 0; i < 30; i++) game.Tick(0.02f, false);
+                Require(game.WeaponDamage == 2 && game.RapidFireLevel == 1 && game.GetComponentsInChildren<SquadRushTrooper>().Where(t => t.WeaponModule != null).All(t => t.WeaponModule.gameObject.activeSelf), "Weapon crates upgrade damage, firing rate and visible rifles", checks);
+                game.ChangeSquad(27);
+                game.SpawnTarget(TargetKind.Crate, -2.8f, 14, 18, SupplyReward.Power);
+                game.SpawnTarget(TargetKind.Crate, 2.8f, 17, 22, SupplyReward.RapidFire);
+                game.Hud.Flash(""); yield return null; Capture(game, "weapons.png");
+                var weaponLabel = game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "WeaponStats");
+                Require(weaponLabel.text.Contains("威力 2") && !weaponLabel.isTextOverflowing, "Weapon HUD shows acquired upgrades without clipping", checks);
                 game.StartVerificationStage(1, 5104); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Require(game.State == RunState.Won && new SquadRushProgress(storageKey).ResumeStage == 2, "A real boss defeat saves stage two", checks);
@@ -126,6 +140,7 @@ namespace SquadRush.Editor
         { if (!condition) throw new InvalidOperationException(name); checks.Add("PASS " + name); }
         static void Capture(SquadRushGame game, string name)
         {
+            game.Hud.UpdateStats();
             var view = game.View;
             var canvas = game.Hud.GetComponentInChildren<Canvas>();
             var safe = (RectTransform)canvas.transform.Find("SafeArea");

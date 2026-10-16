@@ -181,8 +181,20 @@ namespace SquadRush.Editor
                 Expect(game.State == RunState.Ready && game.SquadCount == 3, "Initial menu", checks);
                 game.Begin(); game.ApplyGate(5, false); game.ApplyGate(2, true); game.ApplyGate(-4, false);
                 Expect(game.SquadCount == 12, "Addition, multiplication and subtraction gates", checks);
-                game.ChangeSquad(100); Expect(game.SquadCount == 60, "Squad cap", checks);
-                game.ChangeSquad(-100); Expect(game.State == RunState.Lost, "Zero allies ends the run", checks);
+                game.ChangeSquad(100); Expect(game.SquadCount == 112, "Squad grows beyond the old 60-ally cap", checks);
+                game.ChangeSquad(887); Expect(game.SquadCount == 999, "Squad counts 999 allies exactly", checks);
+                game.ApplyGate(2, true); Expect(game.SquadCount == 1000, "Multiplication clamps at 1000 allies", checks);
+                game.ChangeSquad(-1); Expect(game.SquadCount == 999, "Loss below the 1000 cap remains exact", checks);
+                game.ChangeSquad(2000); game.Tick(0.02f, false);
+                Expect(game.VisibleAllies == 96 && game.ActiveBullets == 40 && game.LastVolleyDamage == 1000, "1000 allies contribute full volley damage with bounded actors and tracers", checks);
+                game.SpawnTarget(TargetKind.Enemy, 0, 8, 20);
+                for (int i = 0; i < 25; i++) game.Tick(0.02f, false);
+                Expect(game.Kills == 1, "Aggregated projectiles apply real damage to a 20-health enemy", checks);
+                game.SpawnTarget(TargetKind.Enemy, 0, 1.6f, 9999); game.Tick(0.02f, false);
+                Expect(game.SquadCount == 999, "Contact at 1000 allies removes exactly one ally", checks);
+                for (int i = 0; i < 200; i++) game.Tick(0.02f, false);
+                Expect(game.ActiveBullets <= 384 && game.VisibleAllies <= 96, "Sustained large-squad combat stays within fixed pools", checks);
+                game.ChangeSquad(-10000); Expect(game.State == RunState.Lost, "Zero allies ends the run", checks);
                 game.Begin(); Expect(game.State == RunState.Playing && game.SquadCount == 3 && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Retry clears the run", checks);
                 game.TogglePause(); float time = game.Elapsed; game.Tick(1, false);
                 Expect(game.State == RunState.Paused && game.Elapsed == time, "Pause freezes simulation", checks);
@@ -193,6 +205,26 @@ namespace SquadRush.Editor
                 game.Begin(); game.SpawnTarget(TargetKind.Crate, 0, 5, 1);
                 for (int i = 0; i < 60; i++) game.Tick(0.02f, false);
                 Expect(game.SquadCount == 7, "Destroying a crate grants four allies", checks);
+                game.Begin(); ShootSupply(game, SupplyReward.Power);
+                Expect(game.PowerLevel == 1 && game.WeaponDamage == 2 && game.SquadCount == 3, "Power crate doubles base bullet damage without adding allies", checks);
+                game.Tick(0.34f, false);
+                Expect(game.LastVolleyDamage == 6, "Weapon power applies to the whole squad volley", checks);
+                ShootSupply(game, SupplyReward.RapidFire);
+                Expect(game.RapidFireLevel == 1 && game.FireInterval < 0.34f && game.FireRateMultiplier > 1, "Rapid-fire crate reduces the real firing interval", checks);
+                game.Begin();
+                Expect(game.WeaponDamage == 1 && game.RapidFireLevel == 0, "Retry starts with base weapons", checks);
+                for (int i = 0; i < 6; i++) ShootSupply(game, SupplyReward.Power);
+                Expect(game.PowerLevel == 5 && game.SquadCount == 7, "Maximum power upgrade converts excess crates to allies", checks);
+                game.ChangeSquad(993); game.Tick(0.34f, false);
+                Expect(game.SquadCount == 1000 && game.LastVolleyDamage == 6000, "1000 allies all benefit from the strongest weapon", checks);
+                game.Begin();
+                for (int i = 0; i < 6; i++) ShootSupply(game, SupplyReward.RapidFire);
+                Expect(game.RapidFireLevel == 5 && game.SquadCount == 7, "Maximum rapid-fire upgrade converts excess crates to allies", checks);
+                game.ChangeSquad(993); game.Tick(0.02f, false);
+                for (int i = 0; i < 220; i++) game.Tick(0.02f, false);
+                Expect(game.State == RunState.Playing && game.ActiveBullets <= 384, "Fastest weapon with 1000 allies keeps bounded projectile work", checks);
+                game.Begin(); game.SpawnTarget(TargetKind.Crate, 0, 1.6f, 100, SupplyReward.Power); game.Tick(0.02f, false);
+                Expect(game.SquadCount == 0 && game.PowerLevel == 0 && game.State == RunState.Lost, "Touching an unopened weapon crate grants no upgrade", checks);
                 game.Begin(); game.SpawnTarget(TargetKind.Enemy, 0, 1.6f, 10); game.Tick(0.02f, false);
                 Expect(game.SquadCount == 2 && game.ActiveTargets == 0, "Contact removes an ally and the enemy", checks);
                 game.Begin(); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 6);
@@ -228,6 +260,11 @@ namespace SquadRush.Editor
         }
         static void Expect(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException("Verification failed: " + name); checks.Add("PASS " + name); }
+        static void ShootSupply(SquadRushGame game, SupplyReward reward)
+        {
+            game.SpawnTarget(TargetKind.Crate, 0, 5, 1, reward);
+            for (int i = 0; i < 27; i++) game.Tick(0.02f, false);
+        }
 
         [MenuItem("Squad Rush/Build Android APK")]
         public static void BuildAndroid() { Build(BuildTarget.Android, "Builds/Android/SquadRush.apk"); }
