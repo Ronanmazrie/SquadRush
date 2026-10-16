@@ -1,0 +1,6 @@
+Body triangles: 4388
+Leg triangles each: 616
+Soldier total triangles: 5620
+Solid renderers: 3
+Shared ally instances: 96
+Tripo generation and processing credits spent: 0

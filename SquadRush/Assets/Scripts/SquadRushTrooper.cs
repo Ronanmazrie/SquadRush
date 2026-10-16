@@ -16,15 +16,17 @@ namespace SquadRush
         {
             if (hitProperties == null) hitProperties = new MaterialPropertyBlock();
             flashTime = hitTime = 0; Muzzle.gameObject.SetActive(false);
+            Body.localPosition = Vector3.zero; Body.localRotation = Quaternion.identity;
+            LeftLeg.localRotation = RightLeg.localRotation = Quaternion.identity;
             hitProperties.SetFloat("_Flash", 0);
             foreach (var renderer in ColoredRenderers) renderer.SetPropertyBlock(hitProperties);
         }
         public void Animate(float time, float dt, float phase, float lean = 0)
         {
-            float step = time * 13 + phase;
-            LeftLeg.localRotation = Quaternion.Euler(Mathf.Sin(step) * 24, 0, 0);
-            RightLeg.localRotation = Quaternion.Euler(-Mathf.Sin(step) * 24, 0, 0);
-            Body.localPosition = new Vector3(0, Mathf.Abs(Mathf.Sin(step)) * 0.035f, 0);
+            float step = time * 11 + phase;
+            LeftLeg.localRotation = Quaternion.Euler(Mathf.Sin(step) * 20, 0, Mathf.Sin(step) * 2);
+            RightLeg.localRotation = Quaternion.Euler(-Mathf.Sin(step) * 20, 0, -Mathf.Sin(step) * 2);
+            Body.localPosition = new Vector3(0, Mathf.Abs(Mathf.Sin(step)) * 0.018f, 0);
             Body.localRotation = Quaternion.Euler(flashTime > 0 ? -3 : 0, 0, lean);
             if (flashTime > 0) { flashTime -= dt; if (flashTime <= 0) Muzzle.gameObject.SetActive(false); }
             if (hitTime > 0)

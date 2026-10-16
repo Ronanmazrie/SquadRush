@@ -5,12 +5,12 @@ using UnityEngine.Rendering;
 namespace SquadRush
 {
     // Colored parts are baked into shared meshes: each soldier uses three solid renderers.
-    public sealed class SquadRushArt : MonoBehaviour
+    public sealed partial class SquadRushArt : MonoBehaviour
     {
         readonly Dictionary<string, Mesh> models = new Dictionary<string, Mesh>();
         readonly Dictionary<PrimitiveType, Mesh> primitives = new Dictionary<PrimitiveType, Mesh>();
         readonly List<Object> owned = new List<Object>();
-        Material toon, glow, weathered;
+        Material toon, glow, weathered, character;
         Camera view;
         static readonly Color Gear = new Color(0.085f, 0.13f, 0.19f);
         static readonly Color Steel = new Color(0.4f, 0.54f, 0.63f);
@@ -21,6 +21,8 @@ namespace SquadRush
             view = camera;
             toon = new Material(Shader.Find("SquadRush/Toon")) { name = "Toy soldier shading", enableInstancing = true };
             glow = new Material(Shader.Find("SquadRush/Glow")) { name = "Soft glows and contact shadows", enableInstancing = true };
+            character = new Material(toon) { name = "Soft soldier fabric and skin" };
+            character.SetFloat("_OutlineWidth", 0.0025f); character.SetFloat("_SpecularStrength", 0.075f);
             weathered = new Material(toon) { name = "Weathered stone wood and metal" };
             weathered.SetFloat("_Weathering", 1);
             var surfaceGrain = new Texture2D(128, 128, TextureFormat.RGB24, true) { name = "Shared prop wear", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Trilinear };
@@ -29,7 +31,7 @@ namespace SquadRush
                 grainPixels[y * 128 + x] = new Color(Mathf.PerlinNoise(x / 23f, y / 23f), Mathf.PerlinNoise(x / 3f, y / 3f), 0);
             surfaceGrain.SetPixels(grainPixels); surfaceGrain.Apply(true, true);
             weathered.SetTexture("_SurfaceGrain", surfaceGrain); owned.Add(surfaceGrain);
-            owned.Add(toon); owned.Add(glow); owned.Add(weathered);
+            owned.Add(toon); owned.Add(glow); owned.Add(weathered); owned.Add(character);
         }
         public Transform Trooper(string name, Transform parent, bool red, bool boss = false)
         {
@@ -38,78 +40,29 @@ namespace SquadRush
             string key = boss ? "warden" : red ? "red" : "blue";
             Color uniform = boss ? new Color(0.32f, 0.38f, 0.43f) : red ? new Color(0.91f, 0.15f, 0.22f) : new Color(0.035f, 0.55f, 0.98f);
             if (!models.TryGetValue(key, out Mesh body))
-            {
-                var b = new Recipe(this);
-                b.Add(PrimitiveType.Sphere, new Vector3(0, 0.70f, 0), new Vector3(boss ? 0.68f : 0.37f, 0.55f, 0.30f), uniform);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.73f, 0.135f), new Vector3(0.29f, 0.28f, 0.085f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.67f, -0.19f), new Vector3(0.30f, 0.35f, 0.16f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.72f, -0.285f), new Vector3(0.25f, 0.17f, 0.045f), uniform * 0.7f);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.58f, -0.285f), new Vector3(0.23f, 0.07f, 0.04f), new Color(0.83f, 0.66f, 0.33f));
-                for (int stripe = -1; stripe <= 1; stripe += 2)
-                    b.Add(PrimitiveType.Cube, new Vector3(stripe * 0.085f, 0.72f, -0.313f), new Vector3(0.035f, 0.12f, 0.018f), Steel);
-                for (int s = -1; s <= 1; s += 2)
-                {
-                    b.Add(PrimitiveType.Cube, new Vector3(s * 0.10f, 0.78f, 0.19f), new Vector3(0.09f, 0.105f, 0.045f), Steel);
-                    b.Add(PrimitiveType.Sphere, new Vector3(s * (boss ? 0.38f : 0.23f), 0.80f, 0.005f), new Vector3(boss ? 0.29f : 0.17f, 0.27f, 0.19f), uniform);
-                    b.Add(PrimitiveType.Sphere, new Vector3(s * (boss ? 0.39f : 0.215f), 0.64f, 0.13f), new Vector3(0.13f, 0.26f, 0.14f), Skin, new Vector3(-32, 0, s * 8));
-                    b.Add(PrimitiveType.Sphere, new Vector3(s * 0.18f, 0.57f, 0.26f), new Vector3(0.14f, 0.13f, 0.13f), Gear);
-                    b.Add(PrimitiveType.Cube, new Vector3(s * 0.135f, 0.50f, 0.10f), new Vector3(0.095f, 0.10f, 0.08f), Gear);
-                    b.Add(PrimitiveType.Cube, new Vector3(s * 0.24f, 0.83f, -0.025f), new Vector3(0.035f, 0.055f, 0.12f), new Color(1, 0.78f, 0.20f));
-                }
-                b.Add(PrimitiveType.Sphere, new Vector3(0, 1.03f, 0.015f), new Vector3(0.34f, 0.32f, 0.32f), boss ? new Color(0.71f, 0.77f, 0.66f) : Skin);
-                b.Add(PrimitiveType.Sphere, new Vector3(0, 1.15f, -0.018f), new Vector3(0.45f, 0.25f, 0.43f), uniform);
-                b.Add(PrimitiveType.Cylinder, new Vector3(0, 1.095f, 0.015f), new Vector3(0.46f, 0.024f, 0.44f), uniform);
-                b.Add(PrimitiveType.Sphere, new Vector3(0, 1.23f, -0.035f), new Vector3(0.27f, 0.085f, 0.31f), uniform * 1.25f);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 1.16f, -0.221f), new Vector3(0.20f, 0.038f, 0.015f), new Color(0.78f, 0.94f, 1));
-                b.Add(PrimitiveType.Cube, new Vector3(0.17f, 0.91f, -0.19f), new Vector3(0.026f, 0.30f, 0.026f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 1.055f, 0.169f), new Vector3(0.235f, 0.09f, 0.055f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 1.065f, 0.200f), new Vector3(0.17f, 0.036f, 0.018f), boss ? new Color(1, 0.56f, 0.05f) : new Color(0.23f, 0.81f, 0.95f));
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.96f, 0.188f), new Vector3(0.07f, 0.025f, 0.016f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.61f, 0.34f), new Vector3(0.11f, 0.13f, 0.46f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.68f, 0.28f), new Vector3(0.06f, 0.05f, 0.18f), Steel);
-                b.Add(PrimitiveType.Cylinder, new Vector3(0.15f, 0.61f, 0.59f), new Vector3(0.075f, 0.045f, 0.075f), Steel, new Vector3(90, 0, 0));
-                for (int rail = 0; rail < 3; rail++)
-                    b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.69f, 0.39f + rail * 0.065f), new Vector3(0.14f, 0.035f, 0.025f), Steel);
-                if (boss)
-                {
-                    b.Add(PrimitiveType.Cube, new Vector3(0, 0.74f, 0.20f), new Vector3(0.52f, 0.19f, 0.13f), new Color(0.91f, 0.23f, 0.12f));
-                    for (int n = -1; n <= 1; n++) b.Add(PrimitiveType.Cube, new Vector3(n * 0.11f, 0.77f, 0.277f), new Vector3(0.05f, 0.12f, 0.03f), new Color(1, 0.67f, 0.08f));
-                    for (int side = -1; side <= 1; side += 2)
-                    {
-                        b.Add(PrimitiveType.Cube, new Vector3(side * 0.42f, 0.87f, 0), new Vector3(0.28f, 0.16f, 0.34f), Gear, new Vector3(0, 0, side * 12));
-                        b.Add(PrimitiveType.Cube, new Vector3(side * 0.42f, 0.96f, 0.02f), new Vector3(0.18f, 0.035f, 0.26f), new Color(1, 0.60f, 0.05f));
-                    }
-                }
-                body = b.Bake(key); models.Add(key, body);
-            }
+            { body = HumanBody(uniform, boss, key); models.Add(key, body); }
             string legsKey = key + " legs";
             if (!models.TryGetValue(legsKey, out Mesh leg))
-            {
-                var b = new Recipe(this);
-                b.Add(PrimitiveType.Sphere, new Vector3(0, -0.13f, 0), new Vector3(0.14f, 0.34f, 0.15f), uniform);
-                b.Add(PrimitiveType.Cube, new Vector3(0, -0.30f, 0.045f), new Vector3(0.15f, 0.14f, 0.23f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, -0.12f, 0.085f), new Vector3(0.11f, 0.11f, 0.035f), Steel * 0.8f);
-                leg = b.Bake(legsKey); models.Add(legsKey, leg);
-            }
-            rig.Body = ObjectMesh("Armored body", root, body, toon);
-            rig.LeftLeg = ObjectMesh("Left boot", root, leg, toon); rig.LeftLeg.localPosition = new Vector3(-0.095f, 0.38f, 0);
-            rig.RightLeg = ObjectMesh("Right boot", root, leg, toon); rig.RightLeg.localPosition = new Vector3(0.095f, 0.38f, 0);
+            { leg = HumanLeg(uniform, legsKey); models.Add(legsKey, leg); }
+            rig.Body = ObjectMesh("Armored body", root, body, character);
+            rig.LeftLeg = ObjectMesh("Left boot", root, leg, character); rig.LeftLeg.localPosition = new Vector3(-0.088f, 0.51f, 0);
+            rig.RightLeg = ObjectMesh("Right boot", root, leg, character); rig.RightLeg.localPosition = new Vector3(0.088f, 0.51f, 0);
             rig.ColoredRenderers = new[] { rig.Body.GetComponent<MeshRenderer>(), rig.LeftLeg.GetComponent<MeshRenderer>(), rig.RightLeg.GetComponent<MeshRenderer>() };
             var shadow = ObjectMesh("Contact shadow", root, Disc("shadow", new Color(0.025f, 0.035f, 0.065f, 0.35f)), glow);
             shadow.localPosition = new Vector3(0.05f, 0.035f, 0); shadow.localRotation = Quaternion.Euler(90, 0, 0); shadow.localScale = new Vector3(boss ? 1.2f : 0.62f, 0.43f, 1);
             rig.Muzzle = ObjectMesh("Muzzle flash", root, Star("muzzle", new Color(1, 0.68f, 0.12f, 0.7f)), glow);
-            rig.Muzzle.localPosition = new Vector3(0.15f, 0.64f, 0.70f); rig.Muzzle.rotation = view.transform.rotation; rig.Muzzle.localScale = Vector3.one * 0.22f;
+            rig.Muzzle.localPosition = new Vector3(0.15f, 0.71f, 0.70f); rig.Muzzle.rotation = view.transform.rotation; rig.Muzzle.localScale = Vector3.one * 0.22f;
             if (!red)
             {
                 const string moduleKey = "Upgraded rifle module";
                 if (!models.TryGetValue(moduleKey, out Mesh module))
                 {
                     var b = new Recipe(this);
-                    b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.70f, 0.41f), new Vector3(0.17f, 0.055f, 0.35f), new Color(1, 0.67f, 0.12f));
-                    b.Add(PrimitiveType.Cylinder, new Vector3(0.15f, 0.61f, 0.63f), new Vector3(0.12f, 0.065f, 0.12f), new Color(0.26f, 0.85f, 1), new Vector3(90, 0, 0));
+                    b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.78f, 0.41f), new Vector3(0.17f, 0.055f, 0.35f), new Color(1, 0.67f, 0.12f));
+                    b.Add(PrimitiveType.Cylinder, new Vector3(0.15f, 0.71f, 0.63f), new Vector3(0.12f, 0.065f, 0.12f), new Color(0.26f, 0.85f, 1), new Vector3(90, 0, 0));
                     module = b.Bake(moduleKey); models.Add(moduleKey, module);
                 }
-                rig.WeaponModule = ObjectMesh(moduleKey, rig.Body, module, toon); rig.WeaponModule.gameObject.SetActive(false);
+                rig.WeaponModule = ObjectMesh(moduleKey, rig.Body, module, character); rig.WeaponModule.gameObject.SetActive(false);
             }
             rig.ResetPose(); return root;
         }
@@ -348,7 +301,7 @@ namespace SquadRush
         {
             var obj = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer)); obj.transform.SetParent(parent, false);
             obj.GetComponent<MeshFilter>().sharedMesh=mesh; var renderer=obj.GetComponent<MeshRenderer>(); renderer.sharedMaterial=material;
-            bool solid = material == toon || material == weathered;
+            bool solid = material == toon || material == weathered || material == character;
             renderer.shadowCastingMode=solid ? ShadowCastingMode.On : ShadowCastingMode.Off; renderer.receiveShadows=solid; return obj.transform;
         }
         Mesh Primitive(PrimitiveType kind)
@@ -378,8 +331,12 @@ namespace SquadRush
             readonly SquadRushArt art; readonly List<CombineInstance> parts = new List<CombineInstance>(); readonly List<Mesh> temporary = new List<Mesh>();
             public Recipe(SquadRushArt owner) { art=owner; }
             public void Add(PrimitiveType kind, Vector3 position, Vector3 scale, Color color, Vector3 rotation = default)
+            { AddMesh(art.Primitive(kind), position, scale, color, rotation); }
+            public void AddMesh(Mesh source, Vector3 position, Vector3 scale, Color color, Vector3 rotation = default)
             {
-                Mesh mesh=Instantiate(art.Primitive(kind)); var colors=new Color[mesh.vertexCount]; for(int i=0;i<colors.Length;i++) colors[i]=color;
+                Mesh mesh=Instantiate(source); var colors=mesh.colors;
+                if (colors.Length != mesh.vertexCount) { colors=new Color[mesh.vertexCount]; for(int i=0;i<colors.Length;i++) colors[i]=Color.white; }
+                for(int i=0;i<colors.Length;i++) colors[i]*=color;
                 mesh.colors=colors; temporary.Add(mesh); parts.Add(new CombineInstance { mesh=mesh,transform=Matrix4x4.TRS(position,Quaternion.Euler(rotation),scale) });
             }
             public Mesh Bake(string name)

@@ -1,3 +1,8 @@
+PASS All 96 allies share the new body and leg meshes
+PASS Rounded soldier stays within 6500 triangles and three solid renderers
+PASS Generated character surfaces have valid vertices and smooth normals
+PASS Natural body and boots fit the existing ground and portrait framing
+PASS Reusing a soldier resets stride, body pose and muzzle flash
 PASS Scene starts with a three-ally squad and menu
 PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog

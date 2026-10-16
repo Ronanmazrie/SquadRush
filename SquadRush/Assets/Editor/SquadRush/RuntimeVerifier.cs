@@ -53,6 +53,7 @@ namespace SquadRush.Editor
             {
                 game.ConfigureVerification(storageKey);
                 var checks = new System.Collections.Generic.List<string>();
+                VerifyCharacterMeshes(game, checks);
                 Require(game.State == RunState.Ready && game.SquadCount == 3, "Scene starts with a three-ally squad and menu", checks);
                 var play = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Play");
                 Capture(game, "menu.png");
@@ -179,6 +180,21 @@ namespace SquadRush.Editor
         }
         static void Require(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException(name); checks.Add("PASS " + name); }
+        static void VerifyCharacterMeshes(SquadRushGame game, System.Collections.Generic.List<string> checks)
+        {
+            var allies=game.GetComponentsInChildren<SquadRushTrooper>(true).Where(t=>t.name=="Ally").ToArray();
+            var rig=allies[0]; Mesh body=rig.Body.GetComponent<MeshFilter>().sharedMesh, leg=rig.LeftLeg.GetComponent<MeshFilter>().sharedMesh;
+            int triangles=(body.triangles.Length+2*leg.triangles.Length)/3;
+            Require(allies.Length==96 && allies.All(t=>t.Body.GetComponent<MeshFilter>().sharedMesh==body && t.LeftLeg.GetComponent<MeshFilter>().sharedMesh==leg && t.RightLeg.GetComponent<MeshFilter>().sharedMesh==leg), "All 96 allies share the new body and leg meshes", checks);
+            Require(triangles<=6500 && rig.ColoredRenderers.Length==3 && rig.ColoredRenderers.All(r=>r.sharedMaterial.enableInstancing), "Rounded soldier stays within 6500 triangles and three solid renderers", checks);
+            Require(new[]{body,leg}.All(m=>m.vertices.All(v=>Finite(v.x)&&Finite(v.y)&&Finite(v.z)) && m.normals.Length==m.vertexCount && m.normals.All(n=>Finite(n.x)&&Finite(n.y)&&Finite(n.z)&&n.sqrMagnitude>0.1f)), "Generated character surfaces have valid vertices and smooth normals", checks);
+            Require(rig.LeftLeg.localPosition.y+leg.bounds.min.y>=-0.01f && body.bounds.max.y<1.45f, "Natural body and boots fit the existing ground and portrait framing", checks);
+            rig.Animate(1,0.02f,0); rig.Fire(); rig.ResetPose();
+            Require(rig.Body.localPosition==Vector3.zero && Quaternion.Angle(rig.LeftLeg.localRotation,Quaternion.identity)<0.01f && Quaternion.Angle(rig.RightLeg.localRotation,Quaternion.identity)<0.01f && !rig.Muzzle.gameObject.activeSelf, "Reusing a soldier resets stride, body pose and muzzle flash", checks);
+            string folder=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Verification"); Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder,"character-mesh-metrics.txt"),"Body triangles: "+body.triangles.Length/3+"\nLeg triangles each: "+leg.triangles.Length/3+"\nSoldier total triangles: "+triangles+"\nSolid renderers: 3\nShared ally instances: "+allies.Length+"\nTripo generation and processing credits spent: 0\n");
+        }
+        static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         static UnityEngine.UI.Button Button(SquadRushGame game, string name) => game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == name);
         static void Click(SquadRushGame game, string name)
         {

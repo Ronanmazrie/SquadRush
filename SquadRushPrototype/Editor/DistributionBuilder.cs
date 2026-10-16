@@ -10,13 +10,13 @@ namespace SquadRush.Editor
     public static class DistributionBuilder
     {
         const string ScenePath = "Assets/Scenes/SquadRush.unity";
-        const string Version = "0.7.1";
+        const string Version = "0.8.0";
 
         [MenuItem("Squad Rush/Distribution/Build Android Download")]
         public static void BuildAndroid()
         {
             PlayerSettings.bundleVersion = Version;
-            PlayerSettings.Android.bundleVersionCode = 8;
+            PlayerSettings.Android.bundleVersionCode = 9;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);

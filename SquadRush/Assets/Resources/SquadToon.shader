@@ -5,6 +5,8 @@ Shader "SquadRush/Toon"
         _Flash ("Hit flash", Range(0,1)) = 0
         _Weathering ("Surface weathering", Range(0,1)) = 0
         _SurfaceGrain ("Surface grain", 2D) = "gray" {}
+        _OutlineWidth ("Outline width", Float) = 0.009
+        _SpecularStrength ("Surface shine", Range(0,1)) = 0.22
     }
     SubShader
     {
@@ -19,10 +21,11 @@ Shader "SquadRush/Toon"
             #pragma multi_compile_instancing
             #include "UnityCG.cginc"
             struct appdata { float4 vertex:POSITION; float3 normal:NORMAL; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            float _OutlineWidth;
             float4 outline(appdata v):SV_POSITION
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                v.vertex.xyz += v.normal * 0.009;
+                v.vertex.xyz += v.normal * _OutlineWidth;
                 return UnityObjectToClipPos(v.vertex);
             }
             fixed4 ink():SV_Target { return fixed4(0.035,0.075,0.11,1); }
@@ -43,6 +46,7 @@ Shader "SquadRush/Toon"
             struct appdata { float4 vertex:POSITION; float3 normal:NORMAL; fixed4 color:COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct v2f { float4 pos:SV_POSITION; float3 normal:TEXCOORD0; float3 world:TEXCOORD1; fixed4 color:COLOR; SHADOW_COORDS(2) UNITY_FOG_COORDS(3) float3 local:TEXCOORD4; UNITY_VERTEX_INPUT_INSTANCE_ID };
             float _Weathering;
+            float _SpecularStrength;
             sampler2D _SurfaceGrain;
             UNITY_INSTANCING_BUFFER_START(Props)
                 UNITY_DEFINE_INSTANCED_PROP(float, _Flash)
@@ -64,7 +68,7 @@ Shader "SquadRush/Toon"
                 float3 eye=normalize(_WorldSpaceCameraPos-i.world);
                 float diffuse=smoothstep(-0.05,0.75,dot(n,l));
                 float rim=pow(1-saturate(dot(n,eye)),3);
-                float spec=pow(saturate(dot(n,normalize(l+eye))),40)*0.22;
+                float spec=pow(saturate(dot(n,normalize(l+eye))),40)*_SpecularStrength;
                 float shadow=SHADOW_ATTENUATION(i);
                 fixed3 surface=i.color.rgb;
                 if (_Weathering > 0.01)

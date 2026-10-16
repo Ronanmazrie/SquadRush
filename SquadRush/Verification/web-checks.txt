@@ -1,19 +1,19 @@
-Squad Rush 0.7.1 — WebGL combat smoke check
+Squad Rush 0.8.0 — WebGL rounded character smoke check
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,727,324 bytes)
+Build result: Succeeded (11,728,517 bytes)
 Host: localhost HTTP server without Content-Encoding (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser, viewport 390 x 844
 
-PASS: Updated build loads Home with prior stage two, 1/6 owned equipment and equipped Scout rifle.
-PASS: Home Sortie starts forest combat with 3 allies and weapon power 2.
-PASS: Automatic shooting defeats normal enemies; pause freezes combat.
-PASS: Pointer drag moves the squad to the left; positive gate increases allies to 8 and a power box raises weapon power to 3.
-PASS: Combat continues with 3 kills after movement, gate and supply collection.
-PASS: Pause resumes and returns Home normally.
+PASS: Home loads the new face, curved helmet, rounded sleeves and boots without pink/missing materials or clipping.
+PASS: Previous stage two, 1/6 owned equipment and the equipped Scout rifle are retained.
+PASS: Equipment shows the same new model with its upgraded rifle and correct equipped status.
+PASS: Unowned-item inspection opens its source stage and disabled Equip action; closing returns to the inventory.
+PASS: Bottom Home navigation and Sortie start forest combat with 3 updated allies and equipped weapon power 2.
+PASS: Pause and Return Home work, and the portrait remains correctly posed after returning.
 PASS: No browser console errors or warnings occurred.
 
-64 gameplay and 36 Play-mode checks pass, including actual opening-wave HP, multi-hit kills, upgraded damage, stage progress, equipment and the existing UI flows. The browser session retained the prior version's localhost save and did not clear public save data.
+64 gameplay and 41 Play-mode checks pass. The runtime checks cover red enemies and boss models, shooting and input, 1000 logical allies, shared meshes, triangle/renderer budgets, valid normals and pooled pose reset. Browser smoke checks retained the previous localhost save and did not clear public save data.
 
-Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested. Enemy HP and shot counts are verified by the gameplay checks rather than inferred from screenshots.
+Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested. No real-device frame-rate claim is made.
