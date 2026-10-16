@@ -1,25 +1,26 @@
-Squad Rush 0.5.0 — WebGL distribution and gameplay check
+Squad Rush 0.6.0 — WebGL distribution, Home and equipment check
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,620,638 bytes)
-Host: local HTTP server with no Content-Encoding header (GitHub Pages equivalent)
+Build result: Succeeded (11,707,514 bytes)
+Host: local HTTP server without Content-Encoding (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser
 Viewport: 390 x 844
 
-PASS: Unity loads and removes the loading overlay.
-PASS: Japanese menu, squad counter and two-line weapon HUD render in portrait.
-PASS: Weathered props/ground, shadows, colored crates, gates and tracers render without missing/pink shaders.
-PASS: Start, automatic fire, pointer movement, Pause and Continue work.
-PASS: Normal play collects the first power crate: weapon damage becomes 2 and rifle modules appear.
-PASS: Normal play collects an allies crate: recruitment adds 4 allies.
-PASS: Normal play collects a rapid-fire crate: HUD shows increased firing rate (rounded 1.2x).
-PASS: A second power crate increases damage to 3.
-PASS: Stage one cleared through normal pointer play: 77 defeats, 45 allies, power 3 and one rapid-fire upgrade.
-PASS: Next starts the forest stage with base weapons and 3 allies.
-PASS: Reloading retains stage two and offers Continue from the opening menu.
-PASS: No browser console errors or warnings occurred, including progress saving.
+PASS: Unity loads into the new Home with Stage, Equipment and Gacha entries.
+PASS: Gacha opens a Coming Soon page and navigates to Equipment/Home without draws, currency or rewards.
+PASS: New equipment inventory is empty; locked item controls show their source stages and do not equip.
+PASS: Home opens Stage selection; locked navigation is disabled and Sortie begins combat.
+PASS: Road/soil/curb grain scrolls with props and markings; pause freezes the field.
+PASS: Normal pointer play collects supply boxes and passes positive gates.
+PASS: Normal play clears stage one with 53 defeats and 35 allies; results show the Scout rifle reward.
+PASS: Return Home shows stage two unlocked and 1/6 owned equipment.
+PASS: Equipment page allows equipping the earned rifle, shows +1 power and Equipped/Remove.
+PASS: Reload retains stage two, the earned rifle and its equipped state.
+PASS: Stage selection replays stage one and labels its reward Already Owned.
+PASS: Replayed stage starts with power 2, proving equipped rifle bonus survives reload and sortie.
+PASS: No browser console errors or warnings occurred, including saving progression/equipment.
 
-The template enables autoSyncPersistentDataPath. Verification uses a fresh localhost port and does not overwrite the public game's progress. The 1000-member counter and weighted damage, fixed visual/projectile capacities, both upgrade caps, and maximum-speed large-squad stress are covered by 37 gameplay and 18 Play-mode scenarios.
+60 gameplay and 31 Play-mode scenarios additionally cover all three slot effects, slot replacement, unequip, retry, actual boss reward saves, legacy progress migration, terrain orientation/speed/wrap/reset and the earlier 1000-ally/scenery cases. Verification uses isolated local progress/inventory keys. Browser checks use a fresh localhost port; no public save data is cleared.
 
-This is a desktop browser check at a mobile viewport size. Physical Android/iPhone input, performance, and Safari remain untested.
+This is a desktop browser check at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested.

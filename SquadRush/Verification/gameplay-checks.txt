@@ -1,4 +1,14 @@
 PASS Initial menu
+PASS New profile opens Home without unearned equipment
+PASS Stage selection restricts play to unlocked stages
+PASS Gacha is a non-playing placeholder with no rewards
+PASS Unowned gear cannot be equipped
+PASS Road, soil and curb texture features all scroll backward at 3.5 metres per second
+PASS Ground UV orientation matches forward world distance
+PASS Pause freezes both terrain distance and visible texture offset
+PASS Retry resets terrain phase
+PASS Ground scrolling wraps after 70 metres without growing UV values
+PASS Returning Home clears combat and freezes the field
 PASS Addition, multiplication and subtraction gates
 PASS Squad grows beyond the old 60-ally cap
 PASS Squad counts 999 allies exactly
@@ -25,6 +35,7 @@ PASS Fastest weapon with 1000 allies keeps bounded projectile work
 PASS Touching an unopened weapon crate grants no upgrade
 PASS Contact removes an ally and the enemy
 PASS Defeating the boss clears the stage
+PASS Stage clear saves its gear reward before leaving the result screen
 PASS Clear saves the next stage before pressing Next
 PASS Next starts a clean forest stage
 PASS Defeat retries the same stage with a fresh landscape
@@ -35,3 +46,15 @@ PASS Passing landscape slots reroll without growing object count
 PASS Pause also freezes procedural scenery
 PASS Later stages increase boss strength and wave frequency
 PASS Stage three has a snow landscape and its own duration
+PASS Equipping the earned rifle saves and increases real weapon damage
+PASS Equipped rifle affects the volley and cannot be swapped mid-battle
+PASS Permanent equipment survives defeat while supply upgrades reset
+PASS Unequip removes the bonus and persists an empty weapon slot
+PASS Stage 2 clear awards its defined equipment
+PASS Stage 3 clear awards its defined equipment
+PASS Stage 4 clear awards its defined equipment
+PASS Weapon, armor and support bonuses apply together at sortie
+PASS Changing a weapon replaces only that slot
+PASS Previously owned stage rewards are idempotent
+PASS Reload restores inventory and all three equipment slots on Home
+PASS Existing stage progress grants earlier rewards without auto-equipping or changing progress

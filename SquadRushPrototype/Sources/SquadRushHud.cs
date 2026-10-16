@@ -5,17 +5,19 @@ using UnityEngine.InputSystem.UI;
 
 namespace SquadRush
 {
-    public sealed class SquadRushHud : MonoBehaviour
+    public sealed partial class SquadRushHud : MonoBehaviour
     {
         SquadRushGame game;
         RectTransform safeRoot;
+        RectTransform battleRoot;
         GameObject menu;
         TextMeshProUGUI count, kills, phase, title, description, actionText, toast, stageLabel, weapon;
         UnityEngine.UI.Image progress;
         float toastTime;
         int lastCount = -1, lastKills = -1, lastStage = -1;
         float lastProgress = -1;
-        int lastPower = -1, lastRapid = -1;
+        int lastPower = -1;
+        float lastFireRate = -1;
         TMP_FontAsset font;
         Sprite rounded;
         Texture2D roundedTexture;
@@ -33,8 +35,9 @@ namespace SquadRush
             scaler.referenceResolution = new Vector2(540, 960); scaler.matchWidthOrHeight = 1f;
             safeRoot = Panel("SafeArea", canvasObject.transform, Color.clear, new Vector2(0, 0), new Vector2(1, 1));
             ApplySafeArea();
+            battleRoot = Panel("BattleHud", safeRoot, Color.clear, Vector2.zero, Vector2.one);
 
-            RectTransform header = Panel("Header", safeRoot, ink, new Vector2(0, 1), new Vector2(1, 1));
+            RectTransform header = Panel("Header", battleRoot, ink, new Vector2(0, 1), new Vector2(1, 1));
             header.pivot = new Vector2(0.5f, 1); header.sizeDelta = new Vector2(0, 96);
             stageLabel = Text("StageLabel", header, "STAGE 01", 17, new Color(0.6f, 0.75f, 0.89f), new Vector2(110, -25), new Vector2(195, 28));
             count = Text("SquadCount", header, "仲間 3", 34, Color.white, new Vector2(114, -67), new Vector2(240, 56));
@@ -45,22 +48,22 @@ namespace SquadRush
             TopAnchor(weapon.rectTransform, 0.66f, -68);
             var pause = Button("Pause", header, "Ⅱ", new Vector2(483, -50), new Vector2(64, 60), new Color(0.18f, 0.27f, 0.4f), game.TogglePause);
             TopAnchor(pause.GetComponent<RectTransform>(), 0.9f, -50);
-            RectTransform track = Panel("ProgressTrack", safeRoot, new Color(0.08f, 0.14f, 0.21f), new Vector2(0, 1), new Vector2(1, 1));
+            RectTransform track = Panel("ProgressTrack", battleRoot, new Color(0.08f, 0.14f, 0.21f), new Vector2(0, 1), new Vector2(1, 1));
             track.pivot = new Vector2(0.5f, 1); track.sizeDelta = new Vector2(-40, 6); track.anchoredPosition = new Vector2(0, -112);
             progress = Panel("ProgressFill", track, blue, Vector2.zero, Vector2.one).GetComponent<UnityEngine.UI.Image>();
             progress.rectTransform.anchorMax = new Vector2(0, 1);
-            var phasePlate = Panel("PhasePlate", safeRoot, new Color(0.04f, 0.09f, 0.15f, 0.72f), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
+            var phasePlate = Panel("PhasePlate", battleRoot, new Color(0.04f, 0.09f, 0.15f, 0.72f), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             phasePlate.sizeDelta = new Vector2(220, 34); phasePlate.anchoredPosition = new Vector2(0, -142);
-            phase = Text("Phase", safeRoot, "仲間を増やそう", 21, Color.white, new Vector2(270, -160), new Vector2(460, 35));
+            phase = Text("Phase", battleRoot, "仲間を増やそう", 21, Color.white, new Vector2(270, -160), new Vector2(460, 35));
             TopAnchor(phase.rectTransform, 0.5f, -142);
-            toast = Text("Toast", safeRoot, "", 25, Color.white, new Vector2(270, -215), new Vector2(480, 45));
+            toast = Text("Toast", battleRoot, "", 25, Color.white, new Vector2(270, -215), new Vector2(480, 45));
             TopAnchor(toast.rectTransform, 0.5f, -190);
             foreach (var label in new[] { phase, toast })
             {
                 var textShadow = label.gameObject.AddComponent<UnityEngine.UI.Shadow>();
                 textShadow.effectColor = new Color(0.025f, 0.04f, 0.07f, 0.85f); textShadow.effectDistance = new Vector2(1.5f, -2);
             }
-            var footer = Panel("ControlHint", safeRoot, new Color(0.05f, 0.1f, 0.17f, 0.9f), new Vector2(0.05f, 0.025f), new Vector2(0.95f, 0.085f));
+            var footer = Panel("ControlHint", battleRoot, new Color(0.05f, 0.1f, 0.17f, 0.9f), new Vector2(0.05f, 0.025f), new Vector2(0.95f, 0.085f));
             var hint = Text("Hint", footer, "←   指を左右にドラッグ   →", 20, Color.white, Vector2.zero, Vector2.zero);
             Stretch(hint.rectTransform);
 
@@ -74,9 +77,13 @@ namespace SquadRush
             description = Text("Description", card, "", 21, new Color(0.76f, 0.85f, 0.92f), Vector2.zero, Vector2.zero);
             SetAnchors(description.rectTransform, new Vector2(0.08f, 0.27f), new Vector2(0.92f, 0.52f));
             var action = Button("Play", card, "スタート", Vector2.zero, new Vector2(330, 66), blue, game.MenuAction);
-            action.GetComponent<RectTransform>().anchorMin = action.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.15f);
+            action.GetComponent<RectTransform>().anchorMin = action.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.20f);
             action.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             actionText = action.GetComponentInChildren<TextMeshProUGUI>();
+            var homeButton = Button("ReturnHome", card, "ホームへ", Vector2.zero, new Vector2(300, 38), new Color(0.13f, 0.21f, 0.31f), game.ShowHome);
+            homeButton.GetComponent<RectTransform>().anchorMin = homeButton.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.065f);
+            homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
+            BuildFrontEnd();
             if (Object.FindFirstObjectByType<EventSystem>() == null)
             {
                 var events = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
@@ -100,9 +107,9 @@ namespace SquadRush
             if (lastStage != game.StageNumber) { lastStage = game.StageNumber; stageLabel.text = "STAGE " + game.StageNumber.ToString("D2") + " · " + game.Stage.Name; }
             if (game.SquadCount != lastCount) { lastCount = game.SquadCount; count.text = "仲間 " + lastCount; }
             if (game.Kills != lastKills) { lastKills = game.Kills; kills.text = "撃破 " + lastKills; }
-            if (lastPower != game.PowerLevel || lastRapid != game.RapidFireLevel)
+            if (lastPower != game.WeaponDamage || !Mathf.Approximately(lastFireRate, game.FireRateMultiplier))
             {
-                lastPower = game.PowerLevel; lastRapid = game.RapidFireLevel;
+                lastPower = game.WeaponDamage; lastFireRate = game.FireRateMultiplier;
                 weapon.text = "武器 威力 " + game.WeaponDamage + "\n連射 " + game.FireRateMultiplier.ToString("0.0") + "倍";
             }
             float fill = Mathf.Clamp01(game.Elapsed / game.StageDuration);
@@ -112,6 +119,7 @@ namespace SquadRush
         }
         public void ShowMenu(string heading, string body, string action)
         {
+            HideFrontEnd();
             title.text = heading.StartsWith("SQUAD") ? "SQUAD\n<color=#53CFFF>RUSH</color>" : heading; title.fontSize = heading.StartsWith("SQUAD") ? 53 : 34;
             description.text = body; actionText.text = action; menu.SetActive(true);
         }

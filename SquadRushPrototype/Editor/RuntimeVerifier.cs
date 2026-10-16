@@ -56,7 +56,21 @@ namespace SquadRush.Editor
                 Require(game.State == RunState.Ready && game.SquadCount == 3, "Scene starts with a three-ally squad and menu", checks);
                 var play = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Play");
                 Capture(game, "menu.png");
-                play.onClick.Invoke(); Require(game.State == RunState.Playing, "Start button starts the game", checks);
+                Require(game.Hud.CurrentPage == FrontEndPage.Home && !play.gameObject.activeInHierarchy, "Home replaces the old opening dialog", checks);
+                Click(game, "HomeGacha");
+                Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation shows a placeholder without granting items", checks);
+                Capture(game, "gacha.png");
+                Click(game, "GachaEquipment");
+                Require(game.Hud.CurrentPage == FrontEndPage.Equipment && !Button(game, "EquipItem0").interactable, "Equipment screen prevents equipping unearned items", checks);
+                Capture(game, "equipment-locked.png");
+                Click(game, "EquipmentHome"); Click(game, "HomeStages");
+                Require(game.Hud.CurrentPage == FrontEndPage.Stages && !Button(game, "NextStage").interactable, "Home opens stage selection with locked progression", checks);
+                Capture(game, "stages.png");
+                Click(game, "StageStart"); Require(game.State == RunState.Playing && game.Hud.CurrentPage == FrontEndPage.Hidden, "Stage sortie button starts combat and hides Home", checks);
+                Capture(game, "ground-before.png");
+                game.Tick(0.25f, false);
+                Require(Mathf.Abs(game.GroundTravel - 0.875f) < 0.001f && game.transform.Find("World/SoilSurface").GetComponent<Renderer>().sharedMaterial.mainTextureOffset.y > 0, "Play-mode ground textures advance with terrain distance", checks);
+                Capture(game, "ground-after.png");
                 Keyboard keyboard = Keyboard.current ?? InputSystem.AddDevice<Keyboard>();
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.RightArrow)); InputSystem.Update();
                 game.Tick(0.05f, true);
@@ -112,6 +126,7 @@ namespace SquadRush.Editor
                 game.StartVerificationStage(1, 5104); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Require(game.State == RunState.Won && new SquadRushProgress(storageKey).ResumeStage == 2, "A real boss defeat saves stage two", checks);
+                Require(game.Equipment.Owns(0) && new SquadRushEquipment(storageKey).Owns(0), "Boss clear permanently saves the rifle reward", checks);
                 yield return null;
                 Capture(game, "clear.png");
                 play.onClick.Invoke();
@@ -124,6 +139,23 @@ namespace SquadRush.Editor
                 game.Hud.Flash(""); yield return null; Capture(game, "snow.png");
                 game.ConfigureVerification(storageKey);
                 Require(game.StageNumber == 2 && game.State == RunState.Ready, "Reloading the saved progress offers stage two in the menu", checks);
+                Click(game, "HomeEquipment"); Click(game, "EquipItem0");
+                Require(game.Equipment.IsEquipped(0) && game.WeaponDamage == 2 && Button(game, "EquipItem0").GetComponentInChildren<TMP_Text>().text.Contains("装備中"), "Equipment button equips the earned rifle and updates its state", checks);
+                yield return null; Capture(game, "equipment.png");
+                Require(game.Hud.GetComponentsInChildren<TMP_Text>().Where(t => t.gameObject.activeInHierarchy).All(t => !t.isTextOverflowing), "Equipment page labels fit their visible controls", checks);
+                Click(game, "EquipmentHome"); Click(game, "HomeStages"); Click(game, "PreviousStage"); Click(game, "StageStart");
+                Require(game.StageNumber == 1 && game.WeaponDamage == 2 && game.Equipment.IsEquipped(0), "An earlier unlocked stage starts with permanent equipped bonuses", checks);
+                game.TogglePause(); Click(game, "ReturnHome");
+                Require(game.State == RunState.Ready && game.Hud.CurrentPage == FrontEndPage.Home && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Pause screen returns cleanly to Home", checks);
+                game.ConfigureVerification(storageKey); Click(game, "HomeEquipment");
+                Require(game.Equipment.IsEquipped(0) && Button(game, "EquipItem0").GetComponentInChildren<TMP_Text>().text.Contains("装備中"), "Reload restores both the equipped rifle and equipment UI", checks);
+                Click(game, "EquipItem0");
+                Require(game.WeaponDamage == 1 && !game.Equipment.IsEquipped(0), "Equipment button also unequips the rifle", checks);
+                Click(game, "EquipmentHome");
+                Click(game, "HomeStages"); Click(game, "PreviousStage");
+                Capture(game, "stages-owned.png");
+                Require(game.Hud.GetComponentsInChildren<TMP_Text>().Where(t => t.gameObject.activeInHierarchy).All(t => !t.isTextOverflowing), "Stage page fits already-owned reward and navigation labels", checks);
+                Click(game, "StagesHome");
                 Require(game.Hud.GetComponentsInChildren<TMP_Text>(true).All(t => t.font == null || t.text.All(c => c < 32 || t.font.HasCharacter(c))), "Menu, stage names and Next button have baked Japanese glyphs", checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
@@ -132,12 +164,19 @@ namespace SquadRush.Editor
             finally
             {
                 if (touch != null) InputSystem.RemoveDevice(touch);
-                PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.Save();
+                PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.Save();
                 SessionState.SetBool(Pending, false);
             }
         }
         static void Require(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException(name); checks.Add("PASS " + name); }
+        static UnityEngine.UI.Button Button(SquadRushGame game, string name) => game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == name);
+        static void Click(SquadRushGame game, string name)
+        {
+            var button = Button(game, name);
+            if (!button.gameObject.activeInHierarchy || !button.interactable) throw new InvalidOperationException("Button unavailable: " + name);
+            button.onClick.Invoke();
+        }
         static void Capture(SquadRushGame game, string name)
         {
             game.Hud.UpdateStats();

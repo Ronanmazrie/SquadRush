@@ -179,6 +179,25 @@ namespace SquadRush.Editor
                 var game = root.AddComponent<SquadRushGame>(); game.Initialize();
                 game.ConfigureVerification(storageKey);
                 Expect(game.State == RunState.Ready && game.SquadCount == 3, "Initial menu", checks);
+                Expect(game.Hud.CurrentPage == FrontEndPage.Home && game.Equipment.OwnedCount == 0, "New profile opens Home without unearned equipment", checks);
+                game.OpenStages(); game.SelectStage(999);
+                Expect(game.Hud.CurrentPage == FrontEndPage.Stages && game.StageNumber == 1, "Stage selection restricts play to unlocked stages", checks);
+                game.OpenGacha(); game.Tick(1, false);
+                Expect(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0 && game.Elapsed == 0, "Gacha is a non-playing placeholder with no rewards", checks);
+                game.OpenEquipment(); game.ToggleEquipment(0);
+                Expect(game.Equipment.WeaponPower == 0 && !game.Equipment.IsEquipped(0), "Unowned gear cannot be equipped", checks);
+                game.Begin(); game.Tick(0.2f, false);
+                Expect(Mathf.Abs(game.GroundTravel - 0.7f) < 0.001f && Mathf.Abs(GroundOffset(game, "RoadSurface") - 0.2f) < 0.001f && Mathf.Abs(GroundOffset(game, "SoilSurface") - 0.12f) < 0.001f && Mathf.Abs(GroundOffset(game, "CurbSurface") - 0.18f) < 0.001f, "Road, soil and curb texture features all scroll backward at 3.5 metres per second", checks);
+                var ground = game.transform.Find("World/RoadSurface").GetComponent<MeshFilter>().sharedMesh;
+                Expect(ground.vertices[1].z > ground.vertices[0].z && ground.uv[1].y > ground.uv[0].y, "Ground UV orientation matches forward world distance", checks);
+                game.TogglePause(); game.Tick(1, false);
+                Expect(Mathf.Abs(game.GroundTravel - 0.7f) < 0.001f && Mathf.Abs(GroundOffset(game, "SoilSurface") - 0.12f) < 0.001f, "Pause freezes both terrain distance and visible texture offset", checks);
+                game.Begin(); Expect(game.GroundTravel == 0 && GroundOffset(game, "RoadSurface") == 0, "Retry resets terrain phase", checks);
+                game.ChangeSquad(997);
+                for (int i = 0; i < 1050; i++) game.Tick(0.02f, false);
+                Expect(game.State == RunState.Playing && Mathf.Abs(game.GroundTravel - 3.5f) < 0.02f && GroundOffset(game, "SoilSurface") >= 0 && GroundOffset(game, "SoilSurface") < 1, "Ground scrolling wraps after 70 metres without growing UV values", checks);
+                game.ShowHome(); game.Tick(1, false);
+                Expect(game.State == RunState.Ready && game.GroundTravel == 0 && game.Hud.CurrentPage == FrontEndPage.Home && game.ActiveTargets == 0, "Returning Home clears combat and freezes the field", checks);
                 game.Begin(); game.ApplyGate(5, false); game.ApplyGate(2, true); game.ApplyGate(-4, false);
                 Expect(game.SquadCount == 12, "Addition, multiplication and subtraction gates", checks);
                 game.ChangeSquad(100); Expect(game.SquadCount == 112, "Squad grows beyond the old 60-ally cap", checks);
@@ -230,6 +249,7 @@ namespace SquadRush.Editor
                 game.Begin(); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 6);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Expect(game.State == RunState.Won, "Defeating the boss clears the stage", checks);
+                Expect(game.Equipment.Owns(0) && new SquadRushEquipment(storageKey).Owns(0) && !game.Equipment.IsEquipped(0), "Stage clear saves its gear reward before leaving the result screen", checks);
                 Expect(new SquadRushProgress(storageKey).ResumeStage == 2 && game.StageNumber == 1, "Clear saves the next stage before pressing Next", checks);
                 game.MenuAction();
                 Expect(game.StageNumber == 2 && game.Stage.Biome == LandscapeBiome.Forest && game.Elapsed == 0 && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Next starts a clean forest stage", checks);
@@ -251,13 +271,44 @@ namespace SquadRush.Editor
                 Expect(new SquadRushStage(10).BossHealth > new SquadRushStage(1).BossHealth && new SquadRushStage(10).WaveInterval(1) < new SquadRushStage(1).WaveInterval(1), "Later stages increase boss strength and wave frequency", checks);
                 game.StartVerificationStage(3, 93);
                 Expect(game.Stage.Biome == LandscapeBiome.Snow && game.StageDuration == 46, "Stage three has a snow landscape and its own duration", checks);
+                game.ShowHome(); game.OpenEquipment(); game.ToggleEquipment(0);
+                Expect(game.Equipment.IsEquipped(0) && game.WeaponDamage == 2 && new SquadRushEquipment(storageKey).IsEquipped(0), "Equipping the earned rifle saves and increases real weapon damage", checks);
+                game.Begin(); game.Tick(0.02f, false); game.ToggleEquipment(0);
+                Expect(game.LastVolleyDamage == 6 && game.Equipment.IsEquipped(0), "Equipped rifle affects the volley and cannot be swapped mid-battle", checks);
+                game.ChangeSquad(-10000); game.MenuAction();
+                Expect(game.WeaponDamage == 2 && game.PowerLevel == 0 && game.Equipment.IsEquipped(0), "Permanent equipment survives defeat while supply upgrades reset", checks);
+                game.ShowHome(); game.ToggleEquipment(0);
+                Expect(game.WeaponDamage == 1 && !new SquadRushEquipment(storageKey).IsEquipped(0), "Unequip removes the bonus and persists an empty weapon slot", checks);
+                for (int stage = 2; stage <= 4; stage++)
+                {
+                    game.StartVerificationStage(stage, 93); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
+                    for (int i = 0; i < 300 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
+                    Expect(game.State == RunState.Won && game.Equipment.Owns(stage - 1), "Stage " + stage + " clear awards its defined equipment", checks);
+                }
+                game.ShowHome(); game.ToggleEquipment(0); game.ToggleEquipment(1); game.ToggleEquipment(2); game.Begin(); game.Tick(0.02f, false);
+                Expect(game.SquadCount == game.Stage.StartingAllies + 2 && game.WeaponDamage == 2 && Mathf.Abs(game.FireRateMultiplier - 1.1f) < 0.001f, "Weapon, armor and support bonuses apply together at sortie", checks);
+                game.ShowHome(); game.ToggleEquipment(3);
+                Expect(game.Equipment.IsEquipped(3) && !game.Equipment.IsEquipped(0) && game.Equipment.IsEquipped(1) && game.Equipment.IsEquipped(2), "Changing a weapon replaces only that slot", checks);
+                int ownedBefore = game.Equipment.OwnedCount;
+                Expect(!game.Equipment.Acquire(0) && game.Equipment.OwnedCount == ownedBefore, "Previously owned stage rewards are idempotent", checks);
+                game.ConfigureVerification(storageKey);
+                Expect(game.Equipment.IsEquipped(3) && game.Equipment.IsEquipped(1) && game.Equipment.IsEquipped(2) && game.Hud.CurrentPage == FrontEndPage.Home, "Reload restores inventory and all three equipment slots on Home", checks);
+                string legacy = storageKey + ".legacy";
+                try
+                {
+                    PlayerPrefs.SetInt(legacy, 4);
+                    var migrated = new SquadRushEquipment(legacy, new SquadRushProgress(legacy).ResumeStage - 1);
+                    Expect(migrated.OwnedCount == 3 && !migrated.IsEquipped(0) && new SquadRushProgress(legacy).ResumeStage == 4, "Existing stage progress grants earlier rewards without auto-equipping or changing progress", checks);
+                }
+                finally { PlayerPrefs.DeleteKey(legacy); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(legacy)); }
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output);
                 File.WriteAllLines(Path.Combine(output, "gameplay-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " gameplay scenarios passed.");
             }
-            finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.Save(); }
+            finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.Save(); }
         }
+        static float GroundOffset(SquadRushGame game, string surface) => game.transform.Find("World/" + surface).GetComponent<Renderer>().sharedMaterial.mainTextureOffset.y;
         static void Expect(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException("Verification failed: " + name); checks.Add("PASS " + name); }
         static void ShootSupply(SquadRushGame game, SupplyReward reward)

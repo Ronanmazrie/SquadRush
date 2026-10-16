@@ -19,8 +19,8 @@ namespace SquadRush
         public int VisibleAllies => Mathf.Min(SquadCount, MaxVisibleSquad);
         public int PowerLevel { get; private set; }
         public int RapidFireLevel { get; private set; }
-        public int WeaponDamage => 1 + PowerLevel;
-        public float FireRateMultiplier => 1 + RapidFireLevel * 0.16f;
+        public int WeaponDamage => 1 + PowerLevel + (Equipment?.WeaponPower ?? 0);
+        public float FireRateMultiplier => 1 + RapidFireLevel * 0.16f + (Equipment?.FireRateBonus ?? 0);
         public float FireInterval => 0.34f / FireRateMultiplier;
         public int LastVolleyDamage { get; private set; }
         public int StageNumber { get; private set; }
@@ -36,6 +36,11 @@ namespace SquadRush
         public SquadRushHud Hud { get; private set; }
         public int ActiveTargets => targets.Count;
         public int ActiveBullets => shots.Count;
+        public SquadRushEquipment Equipment { get; private set; }
+        public int UnlockedStage => progress.ResumeStage;
+        public float GroundTravel { get; private set; }
+        const float GroundSpeed = 3.5f, GroundLength = 70;
+        static readonly string[] scrollingMaterials = { "Road", "Sand", "Curb" };
 
         sealed class Target
         {
@@ -65,6 +70,7 @@ namespace SquadRush
         SquadRushArt art;
         Material outlinedText;
         Texture2D asphalt, terrainGrain;
+        Mesh groundMesh;
         SquadRushProgress progress = new SquadRushProgress();
         System.Random random;
         Target boss;
@@ -81,6 +87,7 @@ namespace SquadRush
             if (initialized) return;
             initialized = true;
             StageNumber = progress.ResumeStage;
+            Equipment = new SquadRushEquipment(SquadRushProgress.DefaultKey, StageNumber - 1, !Application.isBatchMode);
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             world = new GameObject("World").transform;
@@ -103,8 +110,7 @@ namespace SquadRush
             for (int i = 0; i < 96; i++) enemyPool.Push(CreateEnemy());
             Hud = gameObject.AddComponent<SquadRushHud>();
             Hud.Build(this);
-            SetSquad(Stage.StartingAllies); Hud.UpdateStats();
-            ShowOpening();
+            ShowHome();
         }
 
         public void Begin()
@@ -113,6 +119,7 @@ namespace SquadRush
         void StartRun(int seed)
         {
             ClearRun();
+            ResetGround();
             random = new System.Random(seed ^ 0x51F15E);
             GenerateLandscape(seed);
             Elapsed = 0; Kills = 0; SquadX = targetX = 0;
@@ -121,9 +128,32 @@ namespace SquadRush
             squadRoot.position = new Vector3(0, 0, 1.5f);
             shotTimer = 0; waveTimer = 1.5f; gateTimer = 0.5f; crateTimer = 4;
             bossWaveTimer = 3; dragging = false; boss = null;
-            State = RunState.Playing; SetSquad(Stage.StartingAllies); Hud.HideMenu(); Hud.UpdateStats();
+            State = RunState.Playing; SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.HideMenu(); Hud.HideFrontEnd(); Hud.UpdateStats();
         }
-        void ShowOpening() => Hud.ShowMenu("SQUAD\nRUSH", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n指で左右に移動して、仲間を増やそう", StageNumber == 1 ? "スタート" : "つづきから遊ぶ");
+        public void ShowHome()
+        {
+            ClearRun(); ResetGround(); State = RunState.Ready; dragging = false; boss = null;
+            StageNumber = progress.ResumeStage; Elapsed = 0; Kills = 0; SquadX = targetX = 0;
+            PowerLevel = RapidFireLevel = 0; squadRoot.position = new Vector3(0, 0, 1.5f);
+            GenerateLandscape(NewSeed()); UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies);
+            Hud.HideMenu(); Hud.UpdateStats(); Hud.ShowHome();
+        }
+        public void OpenStages() { if (State == RunState.Ready) Hud.ShowStages(); }
+        public void OpenEquipment() { if (State == RunState.Ready) Hud.ShowEquipment(); }
+        public void OpenGacha() { if (State == RunState.Ready) Hud.ShowGacha(); }
+        public void SelectStage(int number)
+        {
+            if (State != RunState.Ready) return;
+            StageNumber = Mathf.Clamp(number, 1, UnlockedStage); GenerateLandscape(NewSeed());
+            SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowStages();
+        }
+        public void PlaySelectedStage()
+        { if (State == RunState.Ready && StageNumber <= UnlockedStage) Begin(); }
+        public void ToggleEquipment(int id)
+        {
+            if (State != RunState.Ready || !Equipment.Toggle(id)) return;
+            UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowEquipment();
+        }
         void GenerateLandscape(int seed)
         {
             Scenery.Generate(Stage.Biome, seed);
@@ -134,8 +164,8 @@ namespace SquadRush
 #if UNITY_EDITOR
         public void ConfigureVerification(string storageKey)
         {
-            ClearRun(); progress = new SquadRushProgress(storageKey); StageNumber = progress.ResumeStage;
-            State = RunState.Ready; GenerateLandscape(12345); SetSquad(Stage.StartingAllies); Hud.UpdateStats(); ShowOpening();
+            ClearRun(); progress = new SquadRushProgress(storageKey);
+            Equipment = new SquadRushEquipment(storageKey, progress.ResumeStage - 1); ShowHome();
         }
         public void StartVerificationStage(int number, int seed) { StageNumber = Mathf.Max(1, number); StartRun(seed); }
 #endif
@@ -408,7 +438,7 @@ namespace SquadRush
         }
         void UpdateWeapons()
         {
-            foreach (var rig in soldierRigs) rig.SetUpgradedWeapon(PowerLevel > 0 || RapidFireLevel > 0);
+            foreach (var rig in soldierRigs) rig.SetUpgradedWeapon(PowerLevel > 0 || RapidFireLevel > 0 || Equipment.WeaponPower > 0);
         }
         void RemoveTarget(Target t)
         {
@@ -463,9 +493,15 @@ namespace SquadRush
         void Finish(bool won)
         {
             State = won ? RunState.Won : RunState.Lost; dragging = false;
-            if (won) progress.Complete(StageNumber);
+            string reward = "";
+            if (won)
+            {
+                EquipmentItem item = SquadRushEquipment.StageReward(StageNumber);
+                bool received = Equipment.Acquire(item.Id); progress.Complete(StageNumber);
+                reward = "\n" + (received ? "装備入手：" : "入手済み：") + item.Name;
+            }
             Hud.UpdateStats();
-            Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人", won ? "次のステージへ" : "もう一度遊ぶ");
+            Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人" + reward, won ? "次のステージへ" : "もう一度遊ぶ");
         }
         void ClearRun()
         {
@@ -536,6 +572,10 @@ namespace SquadRush
                 pixels[y * 256 + x] = new Color(grain, grain, grain);
             }
             asphalt.SetPixels(pixels); asphalt.Apply(true, true); road.mainTexture = asphalt; road.mainTextureScale = new Vector2(3, 20); road.SetFloat("_Glossiness", 0.02f);
+            groundMesh = new Mesh { name = "Ground with forward-aligned UVs" };
+            groundMesh.vertices = new[] { new Vector3(-0.5f, 0, -0.5f), new Vector3(-0.5f, 0, 0.5f), new Vector3(0.5f, 0, 0.5f), new Vector3(0.5f, 0, -0.5f) };
+            groundMesh.uv = new[] { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
+            groundMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 }; groundMesh.RecalculateNormals(); groundMesh.RecalculateBounds();
             terrainGrain = new Texture2D(256, 256, TextureFormat.RGB24, true) { name = "Soil mottling and gravel", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Trilinear };
             for (int y = 0; y < 256; y++) for (int x = 0; x < 256; x++)
             {
@@ -547,6 +587,7 @@ namespace SquadRush
             Material soil = Mat("Sand", Color.white); soil.mainTexture = terrainGrain; soil.mainTextureScale = new Vector2(3, 12); soil.SetFloat("_Glossiness", 0.01f);
             Material curb = Mat("Curb", Color.gray); curb.mainTexture = terrainGrain; curb.mainTextureScale = new Vector2(1, 18); curb.SetFloat("_Glossiness", 0.02f);
             Part(PrimitiveType.Cube, world, new Vector3(0, -0.28f, 14), new Vector3(11, 0.5f, 70), road);
+            GroundSurface("RoadSurface", 0, -0.028f, 11, road);
             Material white = Mat("Marking", new Color(0.91f, 0.9f, 0.83f));
             for (int i = 0; i < 18; i++)
                 roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(0, 0.01f, -8 + i * 3.3f), new Vector3(0.12f, 0.025f, 1.4f), white));
@@ -555,6 +596,8 @@ namespace SquadRush
                 Part(PrimitiveType.Cube, world, new Vector3(side * 4.85f, 0.02f, 14), new Vector3(0.08f, 0.025f, 70), white);
                 Part(PrimitiveType.Cube, world, new Vector3(side * 5.35f, 0.18f, 14), new Vector3(0.3f, 0.45f, 70), Mat("Curb", new Color(0.61f, 0.67f, 0.71f)));
                 Part(PrimitiveType.Cube, world, new Vector3(side * 13, -0.34f, 14), new Vector3(15, 0.25f, 70), Mat("Sand", new Color(0.76f, 0.62f, 0.4f)));
+                GroundSurface("SoilSurface", side * 13, -0.213f, 15, soil);
+                GroundSurface("CurbSurface", side * 5.35f, 0.407f, 0.3f, curb);
                 Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.67f, 14), new Vector3(0.16f, 0.12f, 70), Mat("Rail", new Color(0.37f, 0.47f, 0.53f)));
                 for (int i = 0; i < 18; i++)
                 {
@@ -568,8 +611,27 @@ namespace SquadRush
         void ScrollRoad(float dt)
         {
             Scenery.Scroll(dt);
+            GroundTravel = Mathf.Repeat(GroundTravel + GroundSpeed * dt, GroundLength);
+            UpdateGroundOffsets();
             foreach (Transform marking in roadMarks)
-            { marking.position += Vector3.back * (dt * 3.5f); if (marking.position.z < -8) marking.position += Vector3.forward * 59.4f; }
+            { marking.position += Vector3.back * (dt * GroundSpeed); if (marking.position.z < -8) marking.position += Vector3.forward * 59.4f; }
+        }
+        void ResetGround() { GroundTravel = 0; UpdateGroundOffsets(); }
+        void UpdateGroundOffsets()
+        {
+            foreach (string key in scrollingMaterials)
+            {
+                Material material = materials[key];
+                // UV increases with world Z, so a positive offset moves features toward the player.
+                material.mainTextureOffset = new Vector2(0, Mathf.Repeat(GroundTravel * material.mainTextureScale.y / GroundLength, 1));
+            }
+        }
+        void GroundSurface(string name, float x, float y, float width, Material material)
+        {
+            var surface = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+            surface.transform.SetParent(world, false); surface.transform.localPosition = new Vector3(x, y, 14);
+            surface.transform.localScale = new Vector3(width, 1, GroundLength);
+            surface.GetComponent<MeshFilter>().sharedMesh = groundMesh; surface.GetComponent<MeshRenderer>().sharedMaterial = material;
         }
         Material Mat(string key, Color color, bool unlit = false)
         {
@@ -611,6 +673,7 @@ namespace SquadRush
             if (outlinedText != null) { if (Application.isPlaying) Destroy(outlinedText); else DestroyImmediate(outlinedText); }
             if (asphalt != null) { if (Application.isPlaying) Destroy(asphalt); else DestroyImmediate(asphalt); }
             if (terrainGrain != null) { if (Application.isPlaying) Destroy(terrainGrain); else DestroyImmediate(terrainGrain); }
+            if (groundMesh != null) { if (Application.isPlaying) Destroy(groundMesh); else DestroyImmediate(groundMesh); }
         }
     }
 }
