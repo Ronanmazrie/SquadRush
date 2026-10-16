@@ -5,7 +5,11 @@ PASS Touch drag moves the squad
 PASS Pause button freezes the run
 PASS Continue button resumes the run
 PASS Enemies, squad and automatic bullets run in Play mode
-PASS Visible progress bar follows stage time
+PASS Visible progress bar follows the current stage duration
 PASS Defeat menu appears in Play mode
 PASS Retry button resets the run
 PASS Crowded scene runs with 60 allies, 72 enemies and automatic fire
+PASS A real boss defeat saves stage two
+PASS The clear screen Next button advances to stage two
+PASS Reloading the saved progress offers stage two in the menu
+PASS Menu, stage names and Next button have baked Japanese glyphs

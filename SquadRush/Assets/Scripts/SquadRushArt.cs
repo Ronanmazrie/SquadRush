@@ -154,15 +154,24 @@ namespace SquadRush
             var halo = ObjectMesh("Gate floor glow", parent, Disc("gate halo " + gain, new Color(color.r, color.g, color.b, 0.21f)), glow);
             halo.localPosition = new Vector3(x, 0.04f, 0); halo.localRotation = Quaternion.Euler(90, 0, 0); halo.localScale = new Vector3(4.5f, 1.25f, 1);
         }
-        public void DesertScenery(Transform parent, List<Transform> scrolling)
+        public Transform SceneryObject(Transform parent) => ObjectMesh("Landscape prop", parent, null, toon);
+        public Mesh LandscapeModel(LandscapeBiome biome, int kind)
         {
-            // Repeated props share baked meshes and follow the road's existing wrap distance.
+            string key = "Landscape " + biome + " " + kind;
+            if (models.TryGetValue(key, out Mesh existing)) return existing;
+            if (biome != LandscapeBiome.Desert) return WoodlandModel(biome, kind, key);
+            // Each variant is baked once; the generator changes only transforms and mesh references.
             var rock = new Recipe(this);
+            if (kind == 0)
+            {
             rock.Add(PrimitiveType.Cube, new Vector3(0, 0.35f, 0), new Vector3(1.3f, 0.7f, 0.95f), new Color(0.66f, 0.38f, 0.22f), new Vector3(0, 22, 9));
             rock.Add(PrimitiveType.Cube, new Vector3(0.1f, 0.84f, 0.07f), new Vector3(0.92f, 0.44f, 0.72f), new Color(0.84f, 0.56f, 0.32f), new Vector3(0, -8, -5));
             rock.Add(PrimitiveType.Cube, new Vector3(-0.6f, 0.2f, 0.4f), new Vector3(0.58f, 0.4f, 0.64f), new Color(0.71f, 0.43f, 0.24f), new Vector3(5, 35, -9));
-            Mesh rockMesh = rock.Bake("Layered sandstone");
+                var mesh = rock.Bake(key); models.Add(key, mesh); return mesh;
+            }
             var cactus = new Recipe(this);
+            if (kind == 1)
+            {
             Color green = new Color(0.19f, 0.42f, 0.28f);
             cactus.Add(PrimitiveType.Cylinder, new Vector3(0, 0.85f, 0), new Vector3(0.34f, 0.85f, 0.34f), green);
             cactus.Add(PrimitiveType.Sphere, new Vector3(0, 1.68f, 0), new Vector3(0.34f, 0.34f, 0.34f), green);
@@ -175,31 +184,75 @@ namespace SquadRush
             }
             for (int rib = -1; rib <= 1; rib++)
                 cactus.Add(PrimitiveType.Cube, new Vector3(rib * 0.09f, 0.85f, -0.16f), new Vector3(0.018f, 1.4f, 0.025f), new Color(0.42f, 0.61f, 0.33f));
-            Mesh cactusMesh = cactus.Bake("Saguaro cactus");
+                var mesh = cactus.Bake(key); models.Add(key, mesh); return mesh;
+            }
             var marker = new Recipe(this);
+            if (kind == 2)
+            {
             marker.Add(PrimitiveType.Cube, new Vector3(0, 0.23f, 0), new Vector3(0.30f, 0.46f, 1.65f), new Color(0.18f, 0.24f, 0.28f));
             for (int stripe = 0; stripe < 4; stripe++)
                 marker.Add(PrimitiveType.Cube, new Vector3(0, 0.48f, -0.62f + stripe * 0.41f), new Vector3(0.32f, 0.04f, 0.19f), new Color(1, 0.70f, 0.20f));
-            Mesh markerMesh = marker.Bake("Safety curb");
+                var mesh = marker.Bake(key); models.Add(key, mesh); return mesh;
+            }
             var light = new Recipe(this);
+            if (kind == 3)
+            {
             light.Add(PrimitiveType.Cylinder, new Vector3(0, 1.4f, 0), new Vector3(0.075f, 1.4f, 0.075f), Steel * 0.65f);
             light.Add(PrimitiveType.Cube, new Vector3(-0.3f, 2.75f, 0), new Vector3(0.65f, 0.07f, 0.12f), Steel);
             light.Add(PrimitiveType.Cube, new Vector3(-0.53f, 2.66f, 0), new Vector3(0.32f, 0.11f, 0.28f), Gear);
             light.Add(PrimitiveType.Cube, new Vector3(-0.53f, 2.59f, 0), new Vector3(0.24f, 0.025f, 0.21f), new Color(1, 0.89f, 0.56f));
-            Mesh lightMesh = light.Bake("Road lamp");
-            for (int side = -1; side <= 1; side += 2) for (int i = 0; i < 6; i++)
+                var mesh = light.Bake(key); models.Add(key, mesh); return mesh;
+            }
+            var ruins = new Recipe(this);
+            for (int i = 0; i < 3; i++)
             {
-                float z = -6 + i * 9.9f;
-                var prop = ObjectMesh(i % 2 == 0 ? "Sandstone" : "Cactus", parent, i % 2 == 0 ? rockMesh : cactusMesh, toon);
-                prop.localPosition = new Vector3(side * (6.3f + i % 3 * 0.5f), 0, z);
-                prop.localRotation = Quaternion.Euler(0, i * 47, 0); prop.localScale = Vector3.one * (0.85f + i % 3 * 0.17f); scrolling.Add(prop);
-                var curb = ObjectMesh("Hazard marking", parent, markerMesh, toon); curb.localPosition = new Vector3(side * 5.14f, 0, z + 2); scrolling.Add(curb);
-                if (i % 2 == 0)
+                ruins.Add(PrimitiveType.Cube, new Vector3(i * 0.45f - 0.45f, 0.28f + i % 2 * 0.15f, 0), new Vector3(0.42f, 0.55f + i % 2 * 0.3f, 0.65f), new Color(0.75f, 0.55f, 0.35f), new Vector3(0, i * 13, i * 3));
+            }
+            Mesh ruinMesh = ruins.Bake(key); models.Add(key, ruinMesh); return ruinMesh;
+        }
+        Mesh WoodlandModel(LandscapeBiome biome, int kind, string key)
+        {
+            bool snow = biome == LandscapeBiome.Snow;
+            var b = new Recipe(this);
+            Color stone = snow ? new Color(0.49f, 0.64f, 0.76f) : new Color(0.42f, 0.49f, 0.40f);
+            Color foliage = snow ? new Color(0.19f, 0.40f, 0.38f) : new Color(0.17f, 0.40f, 0.19f);
+            if (kind == 0 || kind == 1)
+            {
+                b.Add(PrimitiveType.Cylinder, new Vector3(0, 0.9f, 0), new Vector3(0.22f, 0.9f, 0.22f), new Color(0.37f, 0.24f, 0.14f));
+                if (kind == 0)
                 {
-                    var lamp = ObjectMesh("Road lamp", parent, lightMesh, toon); lamp.localPosition = new Vector3(side * 5.68f, 0, z + 4);
-                    lamp.localRotation = Quaternion.Euler(0, side < 0 ? 180 : 0, 0); scrolling.Add(lamp);
+                    for (int layer = 0; layer < 3; layer++)
+                    {
+                        float size = 1.5f - layer * 0.35f;
+                        // Flattened overlapping foliage gives a distinct conifer silhouette at mobile scale.
+                        b.Add(PrimitiveType.Sphere, new Vector3(0, 1.1f + layer * 0.5f, 0), new Vector3(size, 1.05f, size), foliage * (1 + layer * 0.1f));
+                        if (snow) b.Add(PrimitiveType.Sphere, new Vector3(0, 1.42f + layer * 0.5f, 0), new Vector3(size * 0.83f, 0.42f, size * 0.83f), new Color(0.9f, 0.96f, 1));
+                    }
+                }
+                else
+                {
+                    for (int lobe = 0; lobe < 3; lobe++)
+                        b.Add(PrimitiveType.Sphere, new Vector3((lobe - 1) * 0.45f, 1.65f + lobe % 2 * 0.35f, 0), new Vector3(1.1f, 1.3f, 1.15f), snow ? new Color(0.84f, 0.93f, 0.97f) : foliage * (1 + lobe * 0.12f));
                 }
             }
+            else if (kind == 2)
+            {
+                b.Add(PrimitiveType.Cube, new Vector3(0, 0.5f, 0), new Vector3(1.25f, 0.95f, 1), stone, new Vector3(7, 22, 9));
+                b.Add(PrimitiveType.Cube, new Vector3(-0.6f, 0.23f, 0.3f), new Vector3(0.65f, 0.46f, 0.64f), stone * 0.85f, new Vector3(-4, 38, -8));
+                if (snow) b.Add(PrimitiveType.Sphere, new Vector3(0, 0.96f, 0), new Vector3(1.3f, 0.25f, 1.1f), Color.white);
+            }
+            else if (kind == 3)
+            {
+                b.Add(PrimitiveType.Cylinder, new Vector3(0, 0.25f, 0), new Vector3(0.45f, 0.9f, 0.45f), new Color(0.42f, 0.29f, 0.18f), new Vector3(0, 0, 90));
+                b.Add(PrimitiveType.Cylinder, new Vector3(-0.91f, 0.25f, 0), new Vector3(0.34f, 0.012f, 0.34f), new Color(0.74f, 0.59f, 0.35f), new Vector3(0, 0, 90));
+                if (snow) b.Add(PrimitiveType.Cube, new Vector3(0, 0.46f, 0), new Vector3(1.65f, 0.08f, 0.3f), Color.white);
+            }
+            else
+            {
+                for (int i = 0; i < 3; i++)
+                    b.Add(PrimitiveType.Sphere, new Vector3((i - 1) * 0.35f, 0.22f, i % 2 * 0.18f), new Vector3(0.7f, 0.6f, 0.7f), snow ? new Color(0.82f, 0.92f, 1) : new Color(0.33f, 0.52f, 0.20f));
+            }
+            Mesh mesh = b.Bake(key); models.Add(key, mesh); return mesh;
         }
         public Transform Projectile(Transform parent)
         {

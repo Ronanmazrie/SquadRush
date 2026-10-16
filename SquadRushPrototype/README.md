@@ -31,25 +31,27 @@ Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Pers
 - 加算・倍率ゲートは仲間を増やし、赤い減算ゲートは仲間を減らします。部隊の中心が左右どちらを通ったかで判定します。
 - 数字付きの箱は弾で壊すと仲間が4人増えます。壊せず接触すると3人減ります。
 - 赤い敵に接触すると仲間が1人減り、0人になると敗北。
-- 60秒後にボスが出現。倒せばクリア。人数の上限は60人です。
+- ステージ終盤のボスを倒すとクリア。「次のステージへ」で進み、進行を端末内に保存します。人数の上限は60人です。
 - 「Ⅱ」で一時停止。アプリがバックグラウンドに入っても一時停止します。
-- クリア・敗北画面から何度でも再挑戦できます。
+- 敗北時は同じステージを再挑戦できます。砂漠・森林・雪原の配置は挑戦ごとに変わり、流れ去った背景も再抽選します。
 
 ## スマホ用ビルド
 
 Editorのメニューに `Squad Rush` が追加されます。
 
 - `Generate Prototype`：シーンとフォントを生成。
-- `Verify Gameplay Scenarios`：ゲート、人数上限、射撃、箱、接触、敗北・再挑戦、一時停止、ボス撃破の11ケースを確認。
+- `Verify Gameplay Scenarios`：射撃・ゲート・敗北・ボス撃破に加え、次のステージ、保存再開、ランダム生成と背景再利用など21ケースを確認。
 - `Build Android APK`：`Builds/Android/SquadRush.apk` を生成。Unity Hub / CLIでAndroid Build Support、SDK / NDK、OpenJDKを追加する必要があります。
 - `Export iOS Xcode Project`：`Builds/iOS` にXcodeプロジェクトを出力。iOS Build Supportの追加が必要です。
 
-iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、またはUnityのクラウドビルド環境が必要です。スマホ用ビルドモジュールの追加、Android / iPhoneの実機確認、ストア公開はまだ行っていません。
+iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、または対応するクラウドビルド環境が必要です。Android APKとブラウザ版はGitHubで配布し、Android / iPhoneの実機確認とストア公開は未実施です。
 
 ## ファイル
 
 - `Sources/SquadRushGame.cs`：自動射撃、部隊、敵、箱、ゲート、ボス、オブジェクト再利用。
 - `Sources/SquadRushHud.cs`：日本語メニュー・HUD・セーフエリア対応。
+- `Sources/SquadRushStage.cs`：ステージ設定とローカル進行保存。
+- `Sources/SquadRushScenery.cs`：ランダムな背景の配置・再抽選・オブジェクト再利用。
 - `Editor/PrototypeBuilder.cs`：シーン・静的日本語フォント・ビルド・ゲーム処理の検証。
 - `Editor/RuntimeVerifier.cs`：再生モードでボタン操作、キーボード、タッチ入力、進行ゲージ、敗北・再挑戦を検証し、画面を撮影。
 - `Fonts/`：Noto Sans CJK JP、SIL Open Font License。日本語に使用する文字だけを静的フォントアトラスへ焼きます。
@@ -58,6 +60,6 @@ iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、
 
 ## 調整しやすい値
 
-`SquadRushGame.cs` の `MaxSquad`、`StageSeconds`、`shotTimer`、`SpawnWave`、`SpawnGate`、`SpawnBoss` で人数上限・長さ・射撃間隔・敵数・ゲート報酬・ボスHPを調整できます。現在の値は最初の試作用なので、遊びながらバランスを調整できます。
+`SquadRushStage.cs` の `Duration`、`StartingAllies`、`BossHealth`、`EnemyHealth`、`WaveInterval` でステージごとのバランスを調整できます。`SquadRushGame.cs` では人数上限、射撃間隔、ゲート報酬などを調整します。
 
 公式情報：[Unity 6のサポート](https://unity.com/releases/unity-6/support)、[iOS環境の準備](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/iphone/getting-started/ios-environment-setup)、[フォントの配布元](https://github.com/notofonts/noto-cjk)。

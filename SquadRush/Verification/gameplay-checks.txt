@@ -9,3 +9,13 @@ PASS Auto-fire hits an approaching enemy
 PASS Destroying a crate grants four allies
 PASS Contact removes an ally and the enemy
 PASS Defeating the boss clears the stage
+PASS Clear saves the next stage before pressing Next
+PASS Next starts a clean forest stage
+PASS Defeat retries the same stage with a fresh landscape
+PASS Saved progress resumes from stage two
+PASS A known seed reproduces the landscape for verification
+PASS Different seeds produce different scenery
+PASS Passing landscape slots reroll without growing object count
+PASS Pause also freezes procedural scenery
+PASS Later stages increase boss strength and wave frequency
+PASS Stage three has a snow landscape and its own duration

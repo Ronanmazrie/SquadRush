@@ -15,6 +15,7 @@
     .button{display:block;padding:14px 20px;border-radius:12px;text-align:center;font-weight:700;text-decoration:none;background:#0aaff0;color:#08182a}
     .secondary{background:#243a56;color:#f6f9ff}a{color:#70dfff}.note{font-size:14px;color:#93a7c3}
     section{border-top:1px solid #30445e;margin-top:32px;padding-top:4px}li{margin:6px 0}footer{margin-top:32px;font-size:14px;color:#93a7c3}
+    .landscapes{display:grid;grid-template-columns:repeat(2,minmax(0,250px));gap:20px;margin:24px 0}.landscapes figure{margin:0}.landscapes img{width:100%;height:auto;border-radius:14px}.landscapes figcaption{font-size:14px;color:#b9d2e9;text-align:center}
     @media(max-width:650px){main{padding:28px 20px 48px}.hero{grid-template-columns:1fr;gap:24px}.preview{max-width:250px;justify-self:center}}
   </style>
 </head>
@@ -22,20 +23,24 @@
   <main>
     <div class="hero">
       <div>
-        <div class="tag">SQUAD RUSH · 試作 0.3.0</div>
+        <div class="tag">SQUAD RUSH · 試作 0.4.0</div>
         <h1>仲間を増やして、<br>敵の大群を突破しよう。</h1>
-        <p>左右に動いて、増加ゲートを選ぼう。<br>味方が増えるほど、弾も増える。最後はボスに挑戦！</p>
+        <p>左右に動いて仲間を増やし、ボスを倒して次のステージへ。<br>挑戦するたびに景色や敵の並びが変わります。</p>
         <div class="buttons">
           <a class="button" href="./play/">ブラウザで遊ぶ</a>
-          <a class="button secondary" href="https://github.com/Ronanmazrie/SquadRush/releases/download/v0.3.0/SquadRush-Android.apk">Android版をダウンロード</a>
+          <a class="button secondary" href="https://github.com/Ronanmazrie/SquadRush/releases/download/v0.4.0/SquadRush-Android.apk">Android版をダウンロード</a>
         </div>
         <p class="note">広告・課金なし。ブラウザ版はAndroid・iPhone・PCで試せます。AndroidアプリはAndroid 8.0以降のARM64端末向けです。</p>
       </div>
       <img class="preview" src="assets/gameplay.png" width="540" height="960" alt="青い仲間の部隊で敵を撃ち、プラス5とマイナス4のゲートを選ぶゲーム画面">
     </div>
     <section>
-      <h2>グラフィックを更新しました</h2>
-      <p>兵士の輪郭、ヘルメットの反射や装備をさらに精細に。体の形に沿った影、ゲートのガラス反射、サボテン・岩・街灯が並ぶ砂漠の道路で、立体感を強めました。</p>
+      <h2>ランダムな景色と、次のステージへ</h2>
+      <p>砂漠、森林、雪原へ。木や岩の配置は挑戦ごとに変わり、走っている間も新しい景色が現れます。クリアすると次へ進み、進行はこの端末・ブラウザに自動保存します。</p>
+      <div class="landscapes">
+        <figure><img src="assets/forest.png" width="540" height="960" alt="ステージ2のランダム生成された森林"><figcaption>STAGE 02 · 森林</figcaption></figure>
+        <figure><img src="assets/snow.png" width="540" height="960" alt="ステージ3のランダム生成された雪原"><figcaption>STAGE 03 · 雪原</figcaption></figure>
+      </div>
     </section>
     <section>
       <h2>遊び方</h2>
@@ -43,7 +48,8 @@
         <li>「スタート」を押す。</li>
         <li>指を左右にドラッグして移動。PCは左右キーでも操作できます。</li>
         <li>射撃は自動。加算・倍率ゲートや箱で仲間を増やそう。</li>
-        <li>仲間が0人になると敗北。60秒後に出るボスを倒せばクリア！</li>
+        <li>終盤のボスを倒すとクリア。「次のステージへ」を押して進もう。</li>
+        <li>仲間が0人になったら同じステージを再挑戦。次回も続きから遊べます。</li>
       </ol>
     </section>
     <section>
@@ -54,7 +60,7 @@
     </section>
     <footer>
       <a href="https://github.com/Ronanmazrie/SquadRush">GitHubのプロジェクト</a> ·
-      <a href="https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.3.0">リリース情報</a>
+      <a href="https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.4.0">リリース情報</a>
     </footer>
   </main>
 </body>

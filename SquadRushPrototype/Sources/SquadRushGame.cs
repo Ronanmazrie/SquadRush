@@ -12,7 +12,10 @@ namespace SquadRush
     public sealed class SquadRushGame : MonoBehaviour
     {
         public const int MaxSquad = 60;
-        public const float StageSeconds = 60f;
+        public int StageNumber { get; private set; }
+        public SquadRushStage Stage => new SquadRushStage(StageNumber);
+        public float StageDuration => Stage.Duration;
+        public SquadRushScenery Scenery { get; private set; }
         public RunState State { get; private set; } = RunState.Ready;
         public int SquadCount { get; private set; }
         public int Kills { get; private set; }
@@ -50,6 +53,7 @@ namespace SquadRush
         SquadRushArt art;
         Material outlinedText;
         Texture2D asphalt;
+        SquadRushProgress progress = new SquadRushProgress();
         System.Random random;
         Target boss;
         float shotTimer, waveTimer, gateTimer, crateTimer, bossWaveTimer, targetX;
@@ -63,6 +67,7 @@ namespace SquadRush
         {
             if (initialized) return;
             initialized = true;
+            StageNumber = progress.ResumeStage;
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             world = new GameObject("World").transform;
@@ -73,7 +78,8 @@ namespace SquadRush
             squadRoot.SetParent(world);
             CreateEnvironment();
             art = gameObject.AddComponent<SquadRushArt>(); art.Initialize(View);
-            art.DesertScenery(world, roadMarks);
+            Scenery = gameObject.AddComponent<SquadRushScenery>(); Scenery.Initialize(art, world);
+            GenerateLandscape(NewSeed());
             for (int i = 0; i < MaxSquad; i++)
             {
                 Transform soldier = CreateSoldier("Ally", squadRoot, false);
@@ -84,20 +90,40 @@ namespace SquadRush
             for (int i = 0; i < 96; i++) enemyPool.Push(CreateEnemy());
             Hud = gameObject.AddComponent<SquadRushHud>();
             Hud.Build(this);
-            SetSquad(3);
-            Hud.ShowMenu("SQUAD\nRUSH", "指で左右に移動\n仲間を増やして、敵の大群を突破しよう", "スタート");
+            SetSquad(Stage.StartingAllies); Hud.UpdateStats();
+            ShowOpening();
         }
 
         public void Begin()
+        { StartRun(NewSeed()); }
+        static int NewSeed() => Guid.NewGuid().GetHashCode();
+        void StartRun(int seed)
         {
             ClearRun();
-            random = new System.Random(20261012);
+            random = new System.Random(seed ^ 0x51F15E);
+            GenerateLandscape(seed);
             Elapsed = 0; Kills = 0; SquadX = targetX = 0;
             squadRoot.position = new Vector3(0, 0, 1.5f);
             shotTimer = 0; waveTimer = 1.5f; gateTimer = 0.5f; crateTimer = 4;
             bossWaveTimer = 3; dragging = false; boss = null;
-            State = RunState.Playing; SetSquad(3); Hud.HideMenu(); Hud.UpdateStats();
+            State = RunState.Playing; SetSquad(Stage.StartingAllies); Hud.HideMenu(); Hud.UpdateStats();
         }
+        void ShowOpening() => Hud.ShowMenu("SQUAD\nRUSH", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n指で左右に移動して、仲間を増やそう", StageNumber == 1 ? "スタート" : "つづきから遊ぶ");
+        void GenerateLandscape(int seed)
+        {
+            Scenery.Generate(Stage.Biome, seed);
+            materials["Sand"].color = Stage.Ground;
+            materials["Curb"].color = Stage.Biome == LandscapeBiome.Snow ? new Color(0.71f, 0.82f, 0.9f) : new Color(0.61f, 0.67f, 0.71f);
+            RenderSettings.fogColor = Stage.Fog; View.backgroundColor = Stage.Fog;
+        }
+#if UNITY_EDITOR
+        public void ConfigureVerification(string storageKey)
+        {
+            ClearRun(); progress = new SquadRushProgress(storageKey); StageNumber = progress.ResumeStage;
+            State = RunState.Ready; GenerateLandscape(12345); SetSquad(Stage.StartingAllies); Hud.UpdateStats(); ShowOpening();
+        }
+        public void StartVerificationStage(int number, int seed) { StageNumber = Mathf.Max(1, number); StartRun(seed); }
+#endif
 
         void Update()
         {
@@ -127,12 +153,12 @@ namespace SquadRush
             ScrollRoad(dt);
             shotTimer -= dt;
             if (shotTimer <= 0) { FireVolley(); shotTimer += 0.34f; }
-            if (Elapsed < StageSeconds)
+            if (Elapsed < StageDuration)
             {
                 waveTimer -= dt; gateTimer -= dt; crateTimer -= dt;
-                if (waveTimer <= 0) { SpawnWave(); waveTimer = Mathf.Lerp(2.5f, 1.2f, Elapsed / StageSeconds); }
+                if (waveTimer <= 0) { SpawnWave(); waveTimer = Stage.WaveInterval(Elapsed / StageDuration); }
                 if (gateTimer <= 0) { SpawnGate(); gateTimer = 9f; }
-                if (crateTimer <= 0) { SpawnTarget(TargetKind.Crate, Next(-3.2f, 3.2f), 30, 10 + (int)(Elapsed / 4)); crateTimer = 10; }
+                if (crateTimer <= 0) { SpawnTarget(TargetKind.Crate, Next(-3.2f, 3.2f), 30, 8 + Stage.Difficulty + (int)(Elapsed / 5)); crateTimer = 10; }
             }
             else if (boss == null) SpawnBoss();
             else
@@ -242,9 +268,9 @@ namespace SquadRush
 
         void SpawnWave(int count = -1, float z = 32)
         {
-            if (count < 0) count = 3 + (int)(Elapsed / 7);
+            if (count < 0) count = 3 + Stage.Difficulty / 2 + (int)(Elapsed / 10);
             for (int i = 0; i < count; i++)
-                SpawnTarget(TargetKind.Enemy, Next(-4f, 4f), z + Next(0, 3), 1 + (int)(Elapsed / 25));
+                SpawnTarget(TargetKind.Enemy, Next(-4f, 4f), z + Next(0, 3), Stage.EnemyHealth + (int)(Elapsed / 30));
         }
         float Next(float min, float max) { return min + (float)random.NextDouble() * (max - min); }
         public void SpawnTarget(TargetKind kind, float x, float z, int hp)
@@ -273,14 +299,14 @@ namespace SquadRush
                 }
             }
             t.Kind = kind; t.Hp = t.MaxHp = hp;
-            t.Speed = kind == TargetKind.Enemy ? 3.7f + Elapsed / 90 : 3.5f;
+            t.Speed = kind == TargetKind.Enemy ? 3.2f + Stage.Difficulty * 0.055f + Elapsed / 120 : 3.5f;
             t.Root.transform.position = new Vector3(x, 0, z);
             if (t.Label != null) t.Label.text = hp.ToString();
             targets.Add(t);
         }
         void SpawnBoss()
         {
-            SpawnTarget(TargetKind.Boss, 0, 32, 420);
+            SpawnTarget(TargetKind.Boss, 0, 32, Stage.BossHealth);
             Hud.Flash("ボス出現！ 集中攻撃！");
         }
         void MoveTargets(float dt)
@@ -292,7 +318,7 @@ namespace SquadRush
                 if (t.Kind == TargetKind.Boss)
                 {
                     Vector3 p = body.position; p.z = Mathf.Max(16, p.z - dt * 3.5f);
-                    p.x = Mathf.Sin((Elapsed - StageSeconds) * 0.6f) * 2.3f; body.position = p;
+                    p.x = Mathf.Sin((Elapsed - StageDuration) * 0.6f) * 2.3f; body.position = p;
                 }
                 else
                 {
@@ -371,12 +397,18 @@ namespace SquadRush
             else if (State == RunState.Paused) { State = RunState.Playing; Hud.HideMenu(); }
         }
         void OnApplicationPause(bool paused) { if (paused && State == RunState.Playing) TogglePause(); }
-        public void MenuAction() { if (State == RunState.Paused) TogglePause(); else Begin(); }
+        public void MenuAction()
+        {
+            if (State == RunState.Paused) TogglePause();
+            else if (State == RunState.Won) { StageNumber++; Begin(); }
+            else if (State == RunState.Ready || State == RunState.Lost) Begin();
+        }
         void Finish(bool won)
         {
             State = won ? RunState.Won : RunState.Lost; dragging = false;
+            if (won) progress.Complete(StageNumber);
             Hud.UpdateStats();
-            Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人\n青いゲートと箱で仲間を増やそう", "もう一度遊ぶ");
+            Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人", won ? "次のステージへ" : "もう一度遊ぶ");
         }
         void ClearRun()
         {
@@ -468,6 +500,7 @@ namespace SquadRush
         }
         void ScrollRoad(float dt)
         {
+            Scenery.Scroll(dt);
             foreach (Transform marking in roadMarks)
             { marking.position += Vector3.back * (dt * 3.5f); if (marking.position.z < -8) marking.position += Vector3.forward * 59.4f; }
         }

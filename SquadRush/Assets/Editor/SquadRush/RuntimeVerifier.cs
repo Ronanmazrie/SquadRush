@@ -48,8 +48,10 @@ namespace SquadRush.Editor
         {
             for (int i = 0; i < 5; i++) yield return null;
             Touchscreen touch = null;
+            string storageKey = "SquadRush.RuntimeVerification." + Guid.NewGuid();
             try
             {
+                game.ConfigureVerification(storageKey);
                 var checks = new System.Collections.Generic.List<string>();
                 Require(game.State == RunState.Ready && game.SquadCount == 3, "Scene starts with a three-ally squad and menu", checks);
                 var play = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Play");
@@ -71,11 +73,11 @@ namespace SquadRush.Editor
                 var pause = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Pause");
                 pause.onClick.Invoke(); Require(game.State == RunState.Paused, "Pause button freezes the run", checks);
                 play.onClick.Invoke(); Require(game.State == RunState.Playing, "Continue button resumes the run", checks);
-                game.Begin(); game.ChangeSquad(15); game.SetAim(1.5f);
+                game.StartVerificationStage(1, 5104); game.ChangeSquad(15); game.SetAim(1.5f);
                 for (int i = 0; i < 325; i++) game.Tick(0.02f, false);
                 Require(game.State == RunState.Playing && game.ActiveTargets > 0 && game.ActiveBullets > 0, "Enemies, squad and automatic bullets run in Play mode", checks);
                 var progress = game.Hud.GetComponentsInChildren<RectTransform>().Single(r => r.name == "ProgressFill");
-                Require(Mathf.Abs(progress.anchorMax.x - game.Elapsed / SquadRushGame.StageSeconds) < 0.01f, "Visible progress bar follows stage time", checks);
+                Require(Mathf.Abs(progress.anchorMax.x - game.Elapsed / game.StageDuration) < 0.01f, "Visible progress bar follows the current stage duration", checks);
                 game.SpawnTarget(TargetKind.Crate, -2.5f, 16, 22);
                 game.Hud.Flash("");
                 yield return null; // Flush Unity's deferred Destroy queue before inspecting rendered objects.
@@ -93,6 +95,22 @@ namespace SquadRush.Editor
                 Require(game.SquadCount == 60 && game.ActiveTargets == 72 && game.ActiveBullets == 60, "Crowded scene runs with 60 allies, 72 enemies and automatic fire", checks);
                 yield return null;
                 Capture(game, "crowd.png");
+                game.StartVerificationStage(1, 5104); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
+                for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
+                Require(game.State == RunState.Won && new SquadRushProgress(storageKey).ResumeStage == 2, "A real boss defeat saves stage two", checks);
+                yield return null;
+                Capture(game, "clear.png");
+                play.onClick.Invoke();
+                Require(game.StageNumber == 2 && game.State == RunState.Playing && game.ActiveTargets == 0, "The clear screen Next button advances to stage two", checks);
+                game.ChangeSquad(15); game.SetAim(-1.5f);
+                for (int i = 0; i < 300; i++) game.Tick(0.02f, false);
+                game.Hud.Flash(""); yield return null; Capture(game, "forest.png");
+                game.StartVerificationStage(3, 8128); game.ChangeSquad(15); game.SetAim(1.5f);
+                for (int i = 0; i < 300; i++) game.Tick(0.02f, false);
+                game.Hud.Flash(""); yield return null; Capture(game, "snow.png");
+                game.ConfigureVerification(storageKey);
+                Require(game.StageNumber == 2 && game.State == RunState.Ready, "Reloading the saved progress offers stage two in the menu", checks);
+                Require(game.Hud.GetComponentsInChildren<TMP_Text>(true).All(t => t.font == null || t.text.All(c => c < 32 || t.font.HasCharacter(c))), "Menu, stage names and Next button have baked Japanese glyphs", checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
@@ -100,6 +118,7 @@ namespace SquadRush.Editor
             finally
             {
                 if (touch != null) InputSystem.RemoveDevice(touch);
+                PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.Save();
                 SessionState.SetBool(Pending, false);
             }
         }

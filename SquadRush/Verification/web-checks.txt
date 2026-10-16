@@ -1,21 +1,26 @@
-Squad Rush 0.3.0 — WebGL distribution smoke check
+Squad Rush 0.4.0 — WebGL distribution and stage progression check
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,574,290 bytes)
+Build result: Succeeded (11,595,842 bytes; published files 11,595,882 bytes after enabling HTML auto-sync)
 Host: local HTTP server with no Content-Encoding header (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser
 Viewport: 390 x 844
 
 PASS: Unity loads and removes the loading overlay.
 PASS: Japanese menu and HUD render correctly in portrait layout.
-PASS: Outlined troop models, real mesh shadows, glass gate reflections, desert props and cyan tracers render without missing/pink shaders.
+PASS: Outlined models, shadows, glass gates, procedural desert/forest/snow props and cyan tracers render without missing/pink shaders.
 PASS: Start begins play and the squad shoots automatically.
 PASS: Pointer drag moves the squad from center to the right.
 PASS: Pause and Continue stop and resume the run.
-PASS: Enemies spawn, defeats are counted, and zero allies shows the retry screen.
-PASS: Retry resets to three allies and a new run.
-PASS: No warning/error console messages after preserving primitive native components.
+PASS: Stage one cleared through normal pointer play (52 defeats, 38 allies at clear).
+PASS: Reloading from the clear screen offers stage two in the forest, before pressing Next.
+PASS: Stage two cleared through normal pointer play (78 defeats, 55 allies at clear).
+PASS: Clicking Next starts stage three in the snow; reload offers stage three with Continue.
+PASS: New attempts/previews show different prop arrangements, and scrolling rerolls passing slots.
+PASS: No console errors. One manual-sync deprecation warning was seen before setting autoSyncPersistentDataPath=true; no new warning occurred on stage-two saving afterward.
+
+The Web template enables automatic persistent-data synchronization. This setting is mirrored in the source kit and generated distribution HTML. Tests run on localhost; the public game's progress is a separate origin. Defeat/retry and isolated progress-key cleanup are additionally covered by the Unity scenarios.
 
 This is a desktop browser check at a mobile viewport size.
 Physical Android/iPhone touch input, device performance, and Safari remain untested.

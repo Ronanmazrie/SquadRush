@@ -2,6 +2,8 @@
 
 Date: 2026-10-16. Unity 6000.3.26f1, Built-in pipeline.
 
+This records the 0.3.0 graphics work. For 0.4.0 progression and the updated shared Preview captures, see `stage-checks.md`.
+
 Reference ads were viewed in the browser:
 - https://www.youtube.com/shorts/RPpcQ-B43zw
 - https://www.youtube.com/shorts/Q2_2he4NHvA

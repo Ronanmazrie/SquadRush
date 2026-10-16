@@ -82,6 +82,7 @@ namespace SquadRush.Editor
 
         public static void PrepareVisuals()
         {
+            EnsureStageGlyphs();
             // Runtime-created materials need serialized representatives so build stripping retains instancing.
             CreateSeed("SquadToon", "SquadRush/Toon");
             CreateSeed("SquadGlow", "SquadRush/Glow");
@@ -101,6 +102,28 @@ namespace SquadRush.Editor
             material.SetColor("_OutlineColor", new Color(0.025f, 0.04f, 0.07f));
             material.SetFloat("_OutlineWidth", 0.22f); material.EnableKeyword("OUTLINE_ON");
             EditorUtility.SetDirty(material); AssetDatabase.SaveAssets();
+        }
+        static void EnsureStageGlyphs()
+        {
+            var font = Resources.Load<TMP_FontAsset>("SquadFont");
+            if (font == null) throw new InvalidOperationException("Generate the prototype font first.");
+            string characters = "";
+            foreach (string file in Directory.GetFiles(Path.Combine(Application.dataPath, "Scripts"), "*.cs", SearchOption.AllDirectories)) characters += File.ReadAllText(file);
+            characters = new string(characters.Where(c => c >= 32 && !char.IsSurrogate(c) && !font.HasCharacter(c)).Distinct().ToArray());
+            if (characters.Length == 0) return;
+            font.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+            // TMP drops the runtime source reference for a saved static atlas; restore it only while baking.
+            var serializedFont = new SerializedObject(font);
+            serializedFont.FindProperty("m_SourceFontFile").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NotoSansCJKjp-Regular.otf");
+            serializedFont.ApplyModifiedPropertiesWithoutUndo();
+            try
+            {
+                if (!font.TryAddCharacters(characters, out string missing) && !string.IsNullOrEmpty(missing))
+                    throw new InvalidOperationException("Font atlas is missing stage text: " + missing);
+            }
+            finally { font.atlasPopulationMode = AtlasPopulationMode.Static; }
+            EditorUtility.SetDirty(font);
+            foreach (var texture in font.atlasTextures) { if (!AssetDatabase.Contains(texture)) AssetDatabase.AddObjectToAsset(texture, font); EditorUtility.SetDirty(texture); }
         }
         static void CreateSeed(string name, string shaderName)
         {
@@ -145,13 +168,16 @@ namespace SquadRush.Editor
         [MenuItem("Squad Rush/Verify Gameplay Scenarios")]
         public static void Verify()
         {
+            PrepareVisuals();
             if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play mode before verifying.");
             if (Resources.Load<TMP_FontAsset>("SquadFont") == null) throw new InvalidOperationException("Generate the prototype first.");
             var checks = new System.Collections.Generic.List<string>();
+            string storageKey = "SquadRush.Verification." + Guid.NewGuid();
             var root = new GameObject("VerificationOnly");
             try
             {
                 var game = root.AddComponent<SquadRushGame>(); game.Initialize();
+                game.ConfigureVerification(storageKey);
                 Expect(game.State == RunState.Ready && game.SquadCount == 3, "Initial menu", checks);
                 game.Begin(); game.ApplyGate(5, false); game.ApplyGate(2, true); game.ApplyGate(-4, false);
                 Expect(game.SquadCount == 12, "Addition, multiplication and subtraction gates", checks);
@@ -172,12 +198,33 @@ namespace SquadRush.Editor
                 game.Begin(); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 6);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Expect(game.State == RunState.Won, "Defeating the boss clears the stage", checks);
+                Expect(new SquadRushProgress(storageKey).ResumeStage == 2 && game.StageNumber == 1, "Clear saves the next stage before pressing Next", checks);
+                game.MenuAction();
+                Expect(game.StageNumber == 2 && game.Stage.Biome == LandscapeBiome.Forest && game.Elapsed == 0 && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Next starts a clean forest stage", checks);
+                int layout = game.Scenery.LayoutFingerprint();
+                game.ChangeSquad(-100); game.MenuAction();
+                Expect(game.StageNumber == 2 && game.Scenery.LayoutFingerprint() != layout, "Defeat retries the same stage with a fresh landscape", checks);
+                game.ConfigureVerification(storageKey);
+                Expect(game.StageNumber == 2 && game.State == RunState.Ready, "Saved progress resumes from stage two", checks);
+                game.StartVerificationStage(2, 73); layout = game.Scenery.LayoutFingerprint();
+                game.StartVerificationStage(2, 73);
+                Expect(game.Scenery.LayoutFingerprint() == layout, "A known seed reproduces the landscape for verification", checks);
+                game.StartVerificationStage(2, 74);
+                Expect(game.Scenery.LayoutFingerprint() != layout, "Different seeds produce different scenery", checks);
+                int capacity = game.Scenery.Capacity;
+                game.Scenery.Scroll(25);
+                Expect(game.Scenery.Capacity == capacity && game.Scenery.RecycledCount >= capacity, "Passing landscape slots reroll without growing object count", checks);
+                game.TogglePause(); layout = game.Scenery.LayoutFingerprint(); game.Tick(1, false);
+                Expect(layout == game.Scenery.LayoutFingerprint(), "Pause also freezes procedural scenery", checks);
+                Expect(new SquadRushStage(10).BossHealth > new SquadRushStage(1).BossHealth && new SquadRushStage(10).WaveInterval(1) < new SquadRushStage(1).WaveInterval(1), "Later stages increase boss strength and wave frequency", checks);
+                game.StartVerificationStage(3, 93);
+                Expect(game.Stage.Biome == LandscapeBiome.Snow && game.StageDuration == 46, "Stage three has a snow landscape and its own duration", checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output);
                 File.WriteAllLines(Path.Combine(output, "gameplay-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " gameplay scenarios passed.");
             }
-            finally { UnityEngine.Object.DestroyImmediate(root); }
+            finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.Save(); }
         }
         static void Expect(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException("Verification failed: " + name); checks.Add("PASS " + name); }
