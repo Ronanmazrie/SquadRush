@@ -26,7 +26,7 @@ Unity Hubで「Add / ディスクから追加」からこのフォルダーを�
 
 ## 検証とビルド
 
-コンパイル、ゲーム処理60ケース、再生モード36ケースを確認済み。`Verification/` に結果と画面プレビューがあります。人数は1000まで数え、描画は96体まで・弾は1斉射40本までの代表表示で全員分の攻撃力を反映します。Android APKとブラウザ版をGitHubで配布しています。スマホ実機での確認は未完了です。
+コンパイル、ゲーム処理64ケース、再生モード36ケースを確認済み。`Verification/` に結果と画面プレビューがあります。人数は1000まで数え、描画は96体まで・弾は1斉射40本までの代表表示で全員分の攻撃力を反映します。Android APKとブラウザ版をGitHubで配布しています。スマホ実機での確認は未完了です。
 
 Android Build Support（SDK / NDK / OpenJDKを含む）を追加後、`Squad Rush > Build Android APK` でビルドできます。iOS Build Supportを追加後、`Squad Rush > Export iOS Xcode Project` で出力できます。iPhone実機用の最終ビルドにはMacのXcodeと署名設定、または対応するクラウドビルド環境が必要です。
 

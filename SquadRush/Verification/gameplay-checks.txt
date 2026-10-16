@@ -22,10 +22,14 @@ PASS Zero allies ends the run
 PASS Retry clears the run
 PASS Pause freezes simulation
 PASS Resume
-PASS Auto-fire hits an approaching enemy
+PASS Opening wave enemies spawn with three health
+PASS Normal enemy health increases gradually with stage difficulty
+PASS Normal enemy survives the first two basic shots
+PASS Third basic shot defeats the approaching enemy
 PASS Destroying a crate grants four allies
 PASS Power crate doubles base bullet damage without adding allies
 PASS Weapon power applies to the whole squad volley
+PASS Power upgrade defeats a normal enemy in two shots
 PASS Rapid-fire crate reduces the real firing interval
 PASS Retry starts with base weapons
 PASS Maximum power upgrade converts excess crates to allies

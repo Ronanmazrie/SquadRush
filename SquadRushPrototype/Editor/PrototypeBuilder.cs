@@ -218,9 +218,21 @@ namespace SquadRush.Editor
                 game.TogglePause(); float time = game.Elapsed; game.Tick(1, false);
                 Expect(game.State == RunState.Paused && game.Elapsed == time, "Pause freezes simulation", checks);
                 game.MenuAction(); Expect(game.State == RunState.Playing, "Resume", checks);
-                game.Begin(); game.SpawnTarget(TargetKind.Enemy, 0, 3.5f, 1);
-                for (int i = 0; i < 35; i++) game.Tick(0.02f, false);
-                Expect(game.Kills == 1 && game.SquadCount == 3, "Auto-fire hits an approaching enemy", checks);
+                game.Begin(); for (int i = 0; i < 76; i++) game.Tick(0.02f, false);
+                var waveTargets = (System.Collections.IEnumerable)typeof(SquadRushGame).GetField("targets", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(game);
+                int waveEnemies = 0; bool healthyWave = true;
+                foreach (object target in waveTargets)
+                {
+                    if ((TargetKind)target.GetType().GetField("Kind").GetValue(target) != TargetKind.Enemy) continue;
+                    healthyWave &= (int)target.GetType().GetField("Hp").GetValue(target) == 3; waveEnemies++;
+                }
+                Expect(waveEnemies == 3 && healthyWave, "Opening wave enemies spawn with three health", checks);
+                Expect(waveEnemies == 3 && new SquadRushStage(5).EnemyHealth == 4 && new SquadRushStage(21).EnemyHealth == 6, "Normal enemy health increases gradually with stage difficulty", checks);
+                game.Begin(); game.ChangeSquad(-2); game.SpawnTarget(TargetKind.Enemy, 0, 8, game.Stage.EnemyHealth);
+                for (int i = 0; i < 25; i++) game.Tick(0.02f, false);
+                Expect(game.Kills == 0 && game.ActiveTargets == 1 && game.SquadCount == 1, "Normal enemy survives the first two basic shots", checks);
+                for (int i = 0; i < 20; i++) game.Tick(0.02f, false);
+                Expect(game.Kills == 1 && game.SquadCount == 1, "Third basic shot defeats the approaching enemy", checks);
                 game.Begin(); game.SpawnTarget(TargetKind.Crate, 0, 5, 1);
                 for (int i = 0; i < 60; i++) game.Tick(0.02f, false);
                 Expect(game.SquadCount == 7, "Destroying a crate grants four allies", checks);
@@ -228,6 +240,9 @@ namespace SquadRush.Editor
                 Expect(game.PowerLevel == 1 && game.WeaponDamage == 2 && game.SquadCount == 3, "Power crate doubles base bullet damage without adding allies", checks);
                 game.Tick(0.34f, false);
                 Expect(game.LastVolleyDamage == 6, "Weapon power applies to the whole squad volley", checks);
+                game.ChangeSquad(-2); game.SpawnTarget(TargetKind.Enemy, 0, 8, game.Stage.EnemyHealth);
+                for (int i = 0; i < 35; i++) game.Tick(0.02f, false);
+                Expect(game.Kills == 1 && game.SquadCount == 1, "Power upgrade defeats a normal enemy in two shots", checks);
                 ShootSupply(game, SupplyReward.RapidFire);
                 Expect(game.RapidFireLevel == 1 && game.FireInterval < 0.34f && game.FireRateMultiplier > 1, "Rapid-fire crate reduces the real firing interval", checks);
                 game.Begin();

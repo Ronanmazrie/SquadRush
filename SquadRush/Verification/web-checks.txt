@@ -1,27 +1,19 @@
-Squad Rush 0.7.0 — WebGL navigation and loadout verification
+Squad Rush 0.7.1 — WebGL combat smoke check
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,726,653 bytes)
-Host: local HTTP server without Content-Encoding (GitHub Pages equivalent)
-Browser: Codex in-app Chromium browser
-Viewport: 390 x 844
+Build result: Succeeded (11,727,324 bytes)
+Host: localhost HTTP server without Content-Encoding (GitHub Pages equivalent)
+Browser: Codex in-app Chromium browser, viewport 390 x 844
 
-PASS: Home displays the soldier, real stage/owned-item counts, chapter selector and large Sortie button.
-PASS: Permanent bottom tabs switch Gacha, Home/Sortie and Equipment with visible selection highlights.
-PASS: Gacha remains Coming Soon without draws, currency or rewards.
-PASS: Equipment displays the soldier, three equipped slots, actual summary stats and six inventory cards.
-PASS: Unowned inventory opens its detail and source stage; Equip is disabled.
-PASS: The detail overlay blocks clicks on underlying navigation; closing does not change equipment.
-PASS: Tapping the equipped weapon slot opens its current item detail.
-PASS: Remove changes weapon power from 2 to 1 and the portrait gun from upgraded to basic.
-PASS: Equipping the owned Scout rifle restores power 2 and its upgraded portrait gun.
-PASS: Chapter banner opens stage selection with unlocked stages and their rewards.
-PASS: The large Home Sortie starts the current forest stage with 3 allies and equipped weapon power 2.
-PASS: Pointer control, automatic shooting, pause and Return Home work after direct sortie.
-PASS: Reload retains stage two, 1/6 owned equipment and the equipped rifle/portrait.
+PASS: Updated build loads Home with prior stage two, 1/6 owned equipment and equipped Scout rifle.
+PASS: Home Sortie starts forest combat with 3 allies and weapon power 2.
+PASS: Automatic shooting defeats normal enemies; pause freezes combat.
+PASS: Pointer drag moves the squad to the left; positive gate increases allies to 8 and a power box raises weapon power to 3.
+PASS: Combat continues with 3 kills after movement, gate and supply collection.
+PASS: Pause resumes and returns Home normally.
 PASS: No browser console errors or warnings occurred.
 
-60 gameplay and 36 Play-mode scenarios additionally cover slot bonuses/replacement, reward saving, legacy progress migration, 1000 allies, terrain motion, locked-item inspection, detail Equip/Remove, persistent tabs, direct Home sortie, visible vector icon geometry and text overflow. Tests use isolated progress keys. Browser checks retained the prior version's localhost save; public save data was not cleared.
+64 gameplay and 36 Play-mode checks pass, including actual opening-wave HP, multi-hit kills, upgraded damage, stage progress, equipment and the existing UI flows. The browser session retained the prior version's localhost save and did not clear public save data.
 
-Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested.
+Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested. Enemy HP and shot counts are verified by the gameplay checks rather than inferred from screenshots.

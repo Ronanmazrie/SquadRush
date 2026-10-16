@@ -4,7 +4,7 @@
 
 ## 現在の状態
 
-Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理60ケース、再生モード36ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
+Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理64ケース、再生モード36ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
 
 Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Personalライセンスの有効化は完了しています。選択したEditorはUnity 6.3 LTS `6000.3.26f1` です。
 
@@ -40,7 +40,7 @@ Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Pers
 Editorのメニューに `Squad Rush` が追加されます。
 
 - `Generate Prototype`：シーンとフォントを生成。
-- `Verify Gameplay Scenarios`：1000人の人数・攻撃力、BOXの武器強化、射撃・ゲート・敗北・ボス撃破、次のステージ、保存再開、ランダム生成と背景再利用など60ケースを確認。
+- `Verify Gameplay Scenarios`：1000人の人数・攻撃力、BOXの武器強化、射撃・ゲート・敗北・ボス撃破、次のステージ、保存再開、ランダム生成と背景再利用など64ケースを確認。
 - `Build Android APK`：`Builds/Android/SquadRush.apk` を生成。Unity Hub / CLIでAndroid Build Support、SDK / NDK、OpenJDKを追加する必要があります。
 - `Export iOS Xcode Project`：`Builds/iOS` にXcodeプロジェクトを出力。iOS Build Supportの追加が必要です。
 
