@@ -7,13 +7,13 @@
 AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
-- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.6.0)
+- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.7.0)
 
 AndroidアプリはAndroid 8.0以降のARM64端末向けです。iPhoneではSafariからブラウザ版を開きます。Android用APKはiPhoneにインストールできません。iPhone用ネイティブアプリは未配布です。
 
 ## 遊び方
 
-0.6.0ではホームに「ステージ」「ガチャ」「装備」を追加しました。ステージ選択では解放済みのステージへ出撃でき、クリアすると装備を入手します。「装備」で武器・防具・サポートを1つずつ装備・解除でき、威力・初期人数・連射速度に効果があります。所持品と装備状態は端末内に保存されます。既存のプレイヤーにはクリア済みステージ分の装備を付与します。ガチャは準備中の画面のみで、抽選・消費・課金は実装していません。
+0.7.0では、ホームと装備画面の配置を整理しました。画面下の常設タブでガチャ・出撃・装備を切り替え、ホーム中央の出撃ボタンからすぐ遊べます。ステージは上部のステージ名から選択できます。ステージ選択では解放済みのステージへ出撃でき、クリアすると装備を入手します。「装備」では中央の兵士の周囲に3つの装備枠を置き、その下のアイコン一覧から詳細を開いて装備・解除でき、威力・初期人数・連射速度に効果があります。所持品と装備状態は端末内に保存されます。既存のプレイヤーにはクリア済みステージ分の装備を付与します。ガチャは準備中の画面のみで、抽選・消費・課金は実装していません。
 
 路面・土・縁石の模様も背景や白線と同じ速度でスクロールします。ホーム・一時停止ではスクロールを止め、出撃時に位相を初期化します。
 
@@ -40,7 +40,7 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 - `SquadRush/Assets/Resources/*.shader`：兵士の色・陰影と半透明エフェクト。
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
 - `SquadRushEquipment.cs` / `SquadRushFrontEnd.cs`：装備の入手・保存・効果と、ホーム・ステージ・装備・ガチャ準備中の画面。
-- `SquadRush/Verification/`：ゲーム処理60ケースと再生モード31ケースの検証記録、画面プレビュー。
+- `SquadRush/Verification/`：ゲーム処理60ケースと再生モード36ケースの検証記録、画面プレビュー。
 - `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
 - `SquadRushPrototype/`：プロジェクト再生成用のソースキット。
 - `docs/`：GitHub Pagesの配布ページとブラウザ版。

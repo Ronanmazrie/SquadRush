@@ -1,26 +1,27 @@
-Squad Rush 0.6.0 — WebGL distribution, Home and equipment check
+Squad Rush 0.7.0 — WebGL navigation and loadout verification
 Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,707,514 bytes)
+Build result: Succeeded (11,726,653 bytes)
 Host: local HTTP server without Content-Encoding (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser
 Viewport: 390 x 844
 
-PASS: Unity loads into the new Home with Stage, Equipment and Gacha entries.
-PASS: Gacha opens a Coming Soon page and navigates to Equipment/Home without draws, currency or rewards.
-PASS: New equipment inventory is empty; locked item controls show their source stages and do not equip.
-PASS: Home opens Stage selection; locked navigation is disabled and Sortie begins combat.
-PASS: Road/soil/curb grain scrolls with props and markings; pause freezes the field.
-PASS: Normal pointer play collects supply boxes and passes positive gates.
-PASS: Normal play clears stage one with 53 defeats and 35 allies; results show the Scout rifle reward.
-PASS: Return Home shows stage two unlocked and 1/6 owned equipment.
-PASS: Equipment page allows equipping the earned rifle, shows +1 power and Equipped/Remove.
-PASS: Reload retains stage two, the earned rifle and its equipped state.
-PASS: Stage selection replays stage one and labels its reward Already Owned.
-PASS: Replayed stage starts with power 2, proving equipped rifle bonus survives reload and sortie.
-PASS: No browser console errors or warnings occurred, including saving progression/equipment.
+PASS: Home displays the soldier, real stage/owned-item counts, chapter selector and large Sortie button.
+PASS: Permanent bottom tabs switch Gacha, Home/Sortie and Equipment with visible selection highlights.
+PASS: Gacha remains Coming Soon without draws, currency or rewards.
+PASS: Equipment displays the soldier, three equipped slots, actual summary stats and six inventory cards.
+PASS: Unowned inventory opens its detail and source stage; Equip is disabled.
+PASS: The detail overlay blocks clicks on underlying navigation; closing does not change equipment.
+PASS: Tapping the equipped weapon slot opens its current item detail.
+PASS: Remove changes weapon power from 2 to 1 and the portrait gun from upgraded to basic.
+PASS: Equipping the owned Scout rifle restores power 2 and its upgraded portrait gun.
+PASS: Chapter banner opens stage selection with unlocked stages and their rewards.
+PASS: The large Home Sortie starts the current forest stage with 3 allies and equipped weapon power 2.
+PASS: Pointer control, automatic shooting, pause and Return Home work after direct sortie.
+PASS: Reload retains stage two, 1/6 owned equipment and the equipped rifle/portrait.
+PASS: No browser console errors or warnings occurred.
 
-60 gameplay and 31 Play-mode scenarios additionally cover all three slot effects, slot replacement, unequip, retry, actual boss reward saves, legacy progress migration, terrain orientation/speed/wrap/reset and the earlier 1000-ally/scenery cases. Verification uses isolated local progress/inventory keys. Browser checks use a fresh localhost port; no public save data is cleared.
+60 gameplay and 36 Play-mode scenarios additionally cover slot bonuses/replacement, reward saving, legacy progress migration, 1000 allies, terrain motion, locked-item inspection, detail Equip/Remove, persistent tabs, direct Home sortie, visible vector icon geometry and text overflow. Tests use isolated progress keys. Browser checks retained the prior version's localhost save; public save data was not cleared.
 
-This is a desktop browser check at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested.
+Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested.

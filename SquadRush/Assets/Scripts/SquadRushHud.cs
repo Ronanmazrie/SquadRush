@@ -137,7 +137,7 @@ namespace SquadRush
             var obj = new GameObject(name, typeof(RectTransform), typeof(UnityEngine.UI.Image));
             obj.transform.SetParent(parent, false);
             var image = obj.GetComponent<UnityEngine.UI.Image>(); image.color = color; image.raycastTarget = false;
-            if (name == "Card" || name == "Play" || name == "Pause" || name == "ControlHint" || name == "PhasePlate")
+            if (name == "Card" || name == "Play" || name == "Pause" || name == "ControlHint" || name == "PhasePlate" || name.StartsWith("Portrait "))
             { image.sprite = RoundedSprite(); image.type = UnityEngine.UI.Image.Type.Sliced; }
             var rect = obj.GetComponent<RectTransform>(); SetAnchors(rect, min, max); return rect;
         }

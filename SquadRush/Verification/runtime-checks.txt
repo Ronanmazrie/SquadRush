@@ -1,7 +1,10 @@
 PASS Scene starts with a three-ally squad and menu
+PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog
+PASS Home exposes a direct sortie and persistent navigation
 PASS Gacha navigation shows a placeholder without granting items
 PASS Equipment screen prevents equipping unearned items
+PASS Closing an item inspection returns to inventory without changing gear
 PASS Home opens stage selection with locked progression
 PASS Stage sortie button starts combat and hides Home
 PASS Play-mode ground textures advance with terrain distance
@@ -23,9 +26,11 @@ PASS The clear screen Next button advances to stage two
 PASS Reloading the saved progress offers stage two in the menu
 PASS Equipment button equips the earned rifle and updates its state
 PASS Equipment page labels fit their visible controls
+PASS The equipped weapon slot opens its own removable item detail
 PASS An earlier unlocked stage starts with permanent equipped bonuses
 PASS Pause screen returns cleanly to Home
 PASS Reload restores both the equipped rifle and equipment UI
 PASS Equipment button also unequips the rifle
 PASS Stage page fits already-owned reward and navigation labels
+PASS Home's central sortie starts the current unlocked stage directly
 PASS Menu, stage names and Next button have baked Japanese glyphs

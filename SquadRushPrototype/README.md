@@ -4,7 +4,7 @@
 
 ## 現在の状態
 
-Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理60ケース、再生モード31ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
+Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理60ケース、再生モード36ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
 
 Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Personalライセンスの有効化は完了しています。選択したEditorはUnity 6.3 LTS `6000.3.26f1` です。
 
@@ -25,7 +25,7 @@ Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Pers
 
 ## 遊び方
 
-- ホームの「ステージ」で解放済みステージを選び、「出撃」で開始。ガチャは準備中の画面のみです。
+- ホーム上部のステージ名で解放済みステージを選び、「出撃」で開始。ガチャは準備中の画面のみです。
 - スマホでは指を左右にドラッグ。PCではマウスのドラッグ、左右矢印、A / Dキー。
 - 前方への射撃は自動。味方の人数に応じて部隊全体の攻撃力が増えます。描画は最大96体、代表弾は1斉射40本までですが、人数は1000まで攻撃力へ反映します。
 - 加算・倍率ゲートは仲間を増やし、赤い減算ゲートは仲間を減らします。部隊の中心が左右どちらを通ったかで判定します。
@@ -65,3 +65,6 @@ iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、
 公式情報：[Unity 6のサポート](https://unity.com/releases/unity-6/support)、[iOS環境の準備](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/iphone/getting-started/ios-environment-setup)、[フォントの配布元](https://github.com/notofonts/noto-cjk)。
 
 ステージクリアで装備を入手し、ホームの「装備」で武器・防具・サポートを各1つ装備できます。所持品と装備状態を端末内へ保存し、以前のクリア報酬も付与します。地面の模様は白線・背景と同じ速度で流れます。
+
+
+0.7.0では、下部の常設タブ、中央の兵士と大きな出撃ボタン、装備枠とアイコン一覧・詳細を追加しています。アイコンは Sources/SquadRushUiIcon.cs、兵士のUI表示は Sources/SquadRushPortrait.cs、画面構成は Sources/SquadRushFrontEnd.cs です。
