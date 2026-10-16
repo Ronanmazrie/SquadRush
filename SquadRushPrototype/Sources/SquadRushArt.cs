@@ -34,7 +34,11 @@ namespace SquadRush
                 var b = new Recipe(this);
                 b.Add(PrimitiveType.Sphere, new Vector3(0, 0.70f, 0), new Vector3(boss ? 0.68f : 0.37f, 0.55f, 0.30f), uniform);
                 b.Add(PrimitiveType.Cube, new Vector3(0, 0.73f, 0.135f), new Vector3(0.29f, 0.28f, 0.085f), Gear);
-                b.Add(PrimitiveType.Cube, new Vector3(0, 0.67f, -0.19f), new Vector3(0.29f, 0.34f, 0.13f), boss ? Gear : new Color(0.73f, 0.60f, 0.33f));
+                b.Add(PrimitiveType.Cube, new Vector3(0, 0.67f, -0.19f), new Vector3(0.30f, 0.35f, 0.16f), Gear);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 0.72f, -0.285f), new Vector3(0.25f, 0.17f, 0.045f), uniform * 0.7f);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 0.58f, -0.285f), new Vector3(0.23f, 0.07f, 0.04f), new Color(0.83f, 0.66f, 0.33f));
+                for (int stripe = -1; stripe <= 1; stripe += 2)
+                    b.Add(PrimitiveType.Cube, new Vector3(stripe * 0.085f, 0.72f, -0.313f), new Vector3(0.035f, 0.12f, 0.018f), Steel);
                 for (int s = -1; s <= 1; s += 2)
                 {
                     b.Add(PrimitiveType.Cube, new Vector3(s * 0.10f, 0.78f, 0.19f), new Vector3(0.09f, 0.105f, 0.045f), Steel);
@@ -42,20 +46,31 @@ namespace SquadRush
                     b.Add(PrimitiveType.Sphere, new Vector3(s * (boss ? 0.39f : 0.215f), 0.64f, 0.13f), new Vector3(0.13f, 0.26f, 0.14f), Skin, new Vector3(-32, 0, s * 8));
                     b.Add(PrimitiveType.Sphere, new Vector3(s * 0.18f, 0.57f, 0.26f), new Vector3(0.14f, 0.13f, 0.13f), Gear);
                     b.Add(PrimitiveType.Cube, new Vector3(s * 0.135f, 0.50f, 0.10f), new Vector3(0.095f, 0.10f, 0.08f), Gear);
+                    b.Add(PrimitiveType.Cube, new Vector3(s * 0.24f, 0.83f, -0.025f), new Vector3(0.035f, 0.055f, 0.12f), new Color(1, 0.78f, 0.20f));
                 }
                 b.Add(PrimitiveType.Sphere, new Vector3(0, 1.03f, 0.015f), new Vector3(0.34f, 0.32f, 0.32f), boss ? new Color(0.71f, 0.77f, 0.66f) : Skin);
                 b.Add(PrimitiveType.Sphere, new Vector3(0, 1.15f, -0.018f), new Vector3(0.45f, 0.25f, 0.43f), uniform);
                 b.Add(PrimitiveType.Cylinder, new Vector3(0, 1.095f, 0.015f), new Vector3(0.46f, 0.024f, 0.44f), uniform);
+                b.Add(PrimitiveType.Sphere, new Vector3(0, 1.23f, -0.035f), new Vector3(0.27f, 0.085f, 0.31f), uniform * 1.25f);
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.16f, -0.221f), new Vector3(0.20f, 0.038f, 0.015f), new Color(0.78f, 0.94f, 1));
+                b.Add(PrimitiveType.Cube, new Vector3(0.17f, 0.91f, -0.19f), new Vector3(0.026f, 0.30f, 0.026f), Gear);
                 b.Add(PrimitiveType.Cube, new Vector3(0, 1.055f, 0.169f), new Vector3(0.235f, 0.09f, 0.055f), Gear);
                 b.Add(PrimitiveType.Cube, new Vector3(0, 1.065f, 0.200f), new Vector3(0.17f, 0.036f, 0.018f), boss ? new Color(1, 0.56f, 0.05f) : new Color(0.23f, 0.81f, 0.95f));
                 b.Add(PrimitiveType.Cube, new Vector3(0, 0.96f, 0.188f), new Vector3(0.07f, 0.025f, 0.016f), Gear);
                 b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.61f, 0.34f), new Vector3(0.11f, 0.13f, 0.46f), Gear);
                 b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.68f, 0.28f), new Vector3(0.06f, 0.05f, 0.18f), Steel);
                 b.Add(PrimitiveType.Cylinder, new Vector3(0.15f, 0.61f, 0.59f), new Vector3(0.075f, 0.045f, 0.075f), Steel, new Vector3(90, 0, 0));
+                for (int rail = 0; rail < 3; rail++)
+                    b.Add(PrimitiveType.Cube, new Vector3(0.15f, 0.69f, 0.39f + rail * 0.065f), new Vector3(0.14f, 0.035f, 0.025f), Steel);
                 if (boss)
                 {
                     b.Add(PrimitiveType.Cube, new Vector3(0, 0.74f, 0.20f), new Vector3(0.52f, 0.19f, 0.13f), new Color(0.91f, 0.23f, 0.12f));
                     for (int n = -1; n <= 1; n++) b.Add(PrimitiveType.Cube, new Vector3(n * 0.11f, 0.77f, 0.277f), new Vector3(0.05f, 0.12f, 0.03f), new Color(1, 0.67f, 0.08f));
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        b.Add(PrimitiveType.Cube, new Vector3(side * 0.42f, 0.87f, 0), new Vector3(0.28f, 0.16f, 0.34f), Gear, new Vector3(0, 0, side * 12));
+                        b.Add(PrimitiveType.Cube, new Vector3(side * 0.42f, 0.96f, 0.02f), new Vector3(0.18f, 0.035f, 0.26f), new Color(1, 0.60f, 0.05f));
+                    }
                 }
                 body = b.Bake(key); models.Add(key, body);
             }
@@ -65,6 +80,7 @@ namespace SquadRush
                 var b = new Recipe(this);
                 b.Add(PrimitiveType.Sphere, new Vector3(0, -0.13f, 0), new Vector3(0.14f, 0.34f, 0.15f), uniform);
                 b.Add(PrimitiveType.Cube, new Vector3(0, -0.30f, 0.045f), new Vector3(0.15f, 0.14f, 0.23f), Gear);
+                b.Add(PrimitiveType.Cube, new Vector3(0, -0.12f, 0.085f), new Vector3(0.11f, 0.11f, 0.035f), Steel * 0.8f);
                 leg = b.Bake(legsKey); models.Add(legsKey, leg);
             }
             rig.Body = ObjectMesh("Armored body", root, body, toon);
@@ -72,7 +88,7 @@ namespace SquadRush
             rig.RightLeg = ObjectMesh("Right boot", root, leg, toon); rig.RightLeg.localPosition = new Vector3(0.095f, 0.38f, 0);
             rig.ColoredRenderers = new[] { rig.Body.GetComponent<MeshRenderer>(), rig.LeftLeg.GetComponent<MeshRenderer>(), rig.RightLeg.GetComponent<MeshRenderer>() };
             var shadow = ObjectMesh("Contact shadow", root, Disc("shadow", new Color(0.025f, 0.035f, 0.065f, 0.35f)), glow);
-            shadow.localPosition = new Vector3(0.12f, 0.035f, -0.1f); shadow.localRotation = Quaternion.Euler(90, 0, 0); shadow.localScale = new Vector3(boss ? 1.2f : 0.62f, 0.43f, 1);
+            shadow.localPosition = new Vector3(0.05f, 0.035f, 0); shadow.localRotation = Quaternion.Euler(90, 0, 0); shadow.localScale = new Vector3(boss ? 1.2f : 0.62f, 0.43f, 1);
             rig.Muzzle = ObjectMesh("Muzzle flash", root, Star("muzzle", new Color(1, 0.68f, 0.12f, 0.7f)), glow);
             rig.Muzzle.localPosition = new Vector3(0.15f, 0.64f, 0.70f); rig.Muzzle.rotation = view.transform.rotation; rig.Muzzle.localScale = Vector3.one * 0.22f;
             rig.ResetPose(); return root;
@@ -96,6 +112,8 @@ namespace SquadRush
                     b.Add(PrimitiveType.Cube, new Vector3(s * 0.82f, 0.76f, 0), new Vector3(0.08f, 1.50f, 1.34f), wood * 0.7f);
                     for (int y = 0; y < 3; y++) b.Add(PrimitiveType.Sphere, new Vector3(s * 0.55f, 0.17f + y * 0.57f, -0.767f), Vector3.one * 0.08f, Steel);
                 }
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.6f, 0), new Vector3(0.28f, 0.07f, 0.7f), new Color(0.08f, 0.65f, 1));
+                b.Add(PrimitiveType.Cube, new Vector3(0, 1.66f, 0), new Vector3(0.7f, 0.07f, 0.28f), new Color(0.08f, 0.65f, 1));
                 mesh = b.Bake("Supply crate"); models.Add("supply crate", mesh);
             }
             ObjectMesh("Wooden planks and metal straps", parent, mesh, toon);
@@ -112,6 +130,8 @@ namespace SquadRush
                     b.Add(PrimitiveType.Cube, new Vector3(s * 2.20f, 0.82f, 0), new Vector3(0.17f, 1.68f, 0.27f), color * 0.85f);
                     b.Add(PrimitiveType.Cube, new Vector3(s * 2.20f, 0.12f, 0), new Vector3(0.40f, 0.22f, 0.55f), Gear);
                     b.Add(PrimitiveType.Cube, new Vector3(s * 2.20f, 1.63f, 0), new Vector3(0.25f, 0.09f, 0.34f), Color.white);
+                    for (int lamp = 0; lamp < 3; lamp++)
+                        b.Add(PrimitiveType.Cube, new Vector3(s * 2.2f, 0.57f + lamp * 0.3f, -0.15f), new Vector3(0.08f, 0.13f, 0.04f), Color.white);
                 }
                 b.Add(PrimitiveType.Cube, new Vector3(0, 0.16f, 0), new Vector3(4.55f, 0.12f, 0.28f), color);
                 b.Add(PrimitiveType.Cube, new Vector3(0, 1.60f, 0), new Vector3(4.55f, 0.075f, 0.20f), color * 1.2f);
@@ -125,8 +145,61 @@ namespace SquadRush
                 models.Add(panelKey, panel);
             }
             var sheet = ObjectMesh("Energy panel", parent, panel, glow); sheet.localPosition = new Vector3(x, 0.88f, -0.03f);
+            string gleamKey = key + " reflection";
+            if (!models.TryGetValue(gleamKey, out Mesh gleam))
+            {
+                gleam = Quad(gleamKey, 0.32f, 1.26f, new Color(1, 1, 1, 0.02f), new Color(1, 1, 1, 0.32f)); models.Add(gleamKey, gleam);
+            }
+            var reflection = ObjectMesh("Glass reflection", parent, gleam, glow); reflection.localPosition = new Vector3(x - 1.2f, 0.9f, -0.06f); reflection.localRotation = Quaternion.Euler(0, 0, -22);
             var halo = ObjectMesh("Gate floor glow", parent, Disc("gate halo " + gain, new Color(color.r, color.g, color.b, 0.21f)), glow);
             halo.localPosition = new Vector3(x, 0.04f, 0); halo.localRotation = Quaternion.Euler(90, 0, 0); halo.localScale = new Vector3(4.5f, 1.25f, 1);
+        }
+        public void DesertScenery(Transform parent, List<Transform> scrolling)
+        {
+            // Repeated props share baked meshes and follow the road's existing wrap distance.
+            var rock = new Recipe(this);
+            rock.Add(PrimitiveType.Cube, new Vector3(0, 0.35f, 0), new Vector3(1.3f, 0.7f, 0.95f), new Color(0.66f, 0.38f, 0.22f), new Vector3(0, 22, 9));
+            rock.Add(PrimitiveType.Cube, new Vector3(0.1f, 0.84f, 0.07f), new Vector3(0.92f, 0.44f, 0.72f), new Color(0.84f, 0.56f, 0.32f), new Vector3(0, -8, -5));
+            rock.Add(PrimitiveType.Cube, new Vector3(-0.6f, 0.2f, 0.4f), new Vector3(0.58f, 0.4f, 0.64f), new Color(0.71f, 0.43f, 0.24f), new Vector3(5, 35, -9));
+            Mesh rockMesh = rock.Bake("Layered sandstone");
+            var cactus = new Recipe(this);
+            Color green = new Color(0.19f, 0.42f, 0.28f);
+            cactus.Add(PrimitiveType.Cylinder, new Vector3(0, 0.85f, 0), new Vector3(0.34f, 0.85f, 0.34f), green);
+            cactus.Add(PrimitiveType.Sphere, new Vector3(0, 1.68f, 0), new Vector3(0.34f, 0.34f, 0.34f), green);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float height = side < 0 ? 0.9f : 1.2f;
+                cactus.Add(PrimitiveType.Cube, new Vector3(side * 0.26f, height - 0.24f, 0), new Vector3(0.53f, 0.22f, 0.24f), green);
+                cactus.Add(PrimitiveType.Cylinder, new Vector3(side * 0.47f, height, 0), new Vector3(0.24f, 0.32f, 0.24f), green);
+                cactus.Add(PrimitiveType.Sphere, new Vector3(side * 0.47f, height + 0.3f, 0), Vector3.one * 0.24f, green);
+            }
+            for (int rib = -1; rib <= 1; rib++)
+                cactus.Add(PrimitiveType.Cube, new Vector3(rib * 0.09f, 0.85f, -0.16f), new Vector3(0.018f, 1.4f, 0.025f), new Color(0.42f, 0.61f, 0.33f));
+            Mesh cactusMesh = cactus.Bake("Saguaro cactus");
+            var marker = new Recipe(this);
+            marker.Add(PrimitiveType.Cube, new Vector3(0, 0.23f, 0), new Vector3(0.30f, 0.46f, 1.65f), new Color(0.18f, 0.24f, 0.28f));
+            for (int stripe = 0; stripe < 4; stripe++)
+                marker.Add(PrimitiveType.Cube, new Vector3(0, 0.48f, -0.62f + stripe * 0.41f), new Vector3(0.32f, 0.04f, 0.19f), new Color(1, 0.70f, 0.20f));
+            Mesh markerMesh = marker.Bake("Safety curb");
+            var light = new Recipe(this);
+            light.Add(PrimitiveType.Cylinder, new Vector3(0, 1.4f, 0), new Vector3(0.075f, 1.4f, 0.075f), Steel * 0.65f);
+            light.Add(PrimitiveType.Cube, new Vector3(-0.3f, 2.75f, 0), new Vector3(0.65f, 0.07f, 0.12f), Steel);
+            light.Add(PrimitiveType.Cube, new Vector3(-0.53f, 2.66f, 0), new Vector3(0.32f, 0.11f, 0.28f), Gear);
+            light.Add(PrimitiveType.Cube, new Vector3(-0.53f, 2.59f, 0), new Vector3(0.24f, 0.025f, 0.21f), new Color(1, 0.89f, 0.56f));
+            Mesh lightMesh = light.Bake("Road lamp");
+            for (int side = -1; side <= 1; side += 2) for (int i = 0; i < 6; i++)
+            {
+                float z = -6 + i * 9.9f;
+                var prop = ObjectMesh(i % 2 == 0 ? "Sandstone" : "Cactus", parent, i % 2 == 0 ? rockMesh : cactusMesh, toon);
+                prop.localPosition = new Vector3(side * (6.3f + i % 3 * 0.5f), 0, z);
+                prop.localRotation = Quaternion.Euler(0, i * 47, 0); prop.localScale = Vector3.one * (0.85f + i % 3 * 0.17f); scrolling.Add(prop);
+                var curb = ObjectMesh("Hazard marking", parent, markerMesh, toon); curb.localPosition = new Vector3(side * 5.14f, 0, z + 2); scrolling.Add(curb);
+                if (i % 2 == 0)
+                {
+                    var lamp = ObjectMesh("Road lamp", parent, lightMesh, toon); lamp.localPosition = new Vector3(side * 5.68f, 0, z + 4);
+                    lamp.localRotation = Quaternion.Euler(0, side < 0 ? 180 : 0, 0); scrolling.Add(lamp);
+                }
+            }
         }
         public Transform Projectile(Transform parent)
         {
@@ -184,11 +257,28 @@ namespace SquadRush
         {
             var obj = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer)); obj.transform.SetParent(parent, false);
             obj.GetComponent<MeshFilter>().sharedMesh=mesh; var renderer=obj.GetComponent<MeshRenderer>(); renderer.sharedMaterial=material;
-            renderer.shadowCastingMode=ShadowCastingMode.Off; renderer.receiveShadows=false; return obj.transform;
+            renderer.shadowCastingMode=material == toon ? ShadowCastingMode.On : ShadowCastingMode.Off; renderer.receiveShadows=material == toon; return obj.transform;
         }
         Mesh Primitive(PrimitiveType kind)
         {
             if (primitives.TryGetValue(kind,out Mesh mesh)) return mesh;
+            if (kind == PrimitiveType.Sphere)
+            {
+                // Smooth normals retain the toy-like highlights with fewer vertices than built-in spheres.
+                const int rings = 12, slices = 16;
+                var vertices = new List<Vector3>(); var normals = new List<Vector3>(); var colors = new List<Color>(); var triangles = new List<int>();
+                for (int ring = 0; ring <= rings; ring++) for (int slice = 0; slice <= slices; slice++)
+                {
+                    float latitude = ring * Mathf.PI / rings, longitude = slice * Mathf.PI * 2 / slices;
+                    Vector3 normal = new Vector3(Mathf.Sin(latitude) * Mathf.Cos(longitude), Mathf.Cos(latitude), Mathf.Sin(latitude) * Mathf.Sin(longitude));
+                    vertices.Add(normal * 0.5f); normals.Add(normal); colors.Add(Color.white);
+                    if (ring == rings || slice == slices) continue;
+                    int a = ring * (slices + 1) + slice, b = a + slices + 1;
+                    triangles.Add(a); triangles.Add(a + 1); triangles.Add(b);
+                    triangles.Add(a + 1); triangles.Add(b + 1); triangles.Add(b);
+                }
+                mesh = NewMesh("Shared smooth sphere", vertices, colors, triangles); mesh.SetNormals(normals); primitives.Add(kind, mesh); return mesh;
+            }
             var obj=GameObject.CreatePrimitive(kind); mesh=obj.GetComponent<MeshFilter>().sharedMesh; obj.SetActive(false); Release(obj); primitives.Add(kind,mesh); return mesh;
         }
         sealed class Recipe
@@ -202,7 +292,7 @@ namespace SquadRush
             }
             public Mesh Bake(string name)
             {
-                var mesh=new Mesh { name=name,indexFormat=IndexFormat.UInt32 }; mesh.CombineMeshes(parts.ToArray(),true,true); mesh.RecalculateBounds(); art.owned.Add(mesh);
+                var mesh=new Mesh { name=name }; mesh.CombineMeshes(parts.ToArray(),true,true); mesh.RecalculateBounds(); art.owned.Add(mesh);
                 foreach(var part in temporary) Release(part); return mesh;
             }
         }

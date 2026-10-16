@@ -53,6 +53,7 @@ namespace SquadRush.Editor
             CreateFont();
             CreateSeed("StandardSeed", "Standard");
             CreateSeed("UnlitSeed", "Unlit/Color");
+            PrepareVisuals();
             PlayerSettings.productName = "Squad Rush";
             PlayerSettings.companyName = "Prototype Studio";
             PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
@@ -79,6 +80,28 @@ namespace SquadRush.Editor
             Debug.Log("[SquadRush] Prototype generated. Open SquadRush scene and press Play.");
         }
 
+        public static void PrepareVisuals()
+        {
+            // Runtime-created materials need serialized representatives so build stripping retains instancing.
+            CreateSeed("SquadToon", "SquadRush/Toon");
+            CreateSeed("SquadGlow", "SquadRush/Glow");
+            var graphics = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset")[0]);
+            graphics.FindProperty("m_FogStripping").intValue = 1; // Custom: fog is enabled by runtime scene construction.
+            graphics.FindProperty("m_FogKeepLinear").boolValue = true;
+            graphics.FindProperty("m_FogKeepExp").boolValue = false;
+            graphics.FindProperty("m_FogKeepExp2").boolValue = false;
+            graphics.ApplyModifiedPropertiesWithoutUndo();
+            const string path = "Assets/Resources/SquadValue.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(Resources.Load<TMP_FontAsset>("SquadFont").material) { name = "SquadValue" };
+                AssetDatabase.CreateAsset(material, path);
+            }
+            material.SetColor("_OutlineColor", new Color(0.025f, 0.04f, 0.07f));
+            material.SetFloat("_OutlineWidth", 0.22f); material.EnableKeyword("OUTLINE_ON");
+            EditorUtility.SetDirty(material); AssetDatabase.SaveAssets();
+        }
         static void CreateSeed(string name, string shaderName)
         {
             string path = "Assets/Resources/" + name + ".mat";

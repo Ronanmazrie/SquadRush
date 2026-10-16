@@ -8,3 +8,4 @@ PASS Enemies, squad and automatic bullets run in Play mode
 PASS Visible progress bar follows stage time
 PASS Defeat menu appears in Play mode
 PASS Retry button resets the run
+PASS Crowded scene runs with 60 allies, 72 enemies and automatic fire

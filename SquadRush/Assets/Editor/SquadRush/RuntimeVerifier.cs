@@ -19,6 +19,7 @@ namespace SquadRush.Editor
         public static void Run()
         {
             if (!Application.isBatchMode) throw new InvalidOperationException("Runtime verification runs in batch mode.");
+            PrototypeBuilder.PrepareVisuals();
             EditorSceneManager.OpenScene("Assets/Scenes/SquadRush.unity");
             SessionState.SetBool(Pending, true);
             EditorApplication.EnterPlaymode();
@@ -29,13 +30,24 @@ namespace SquadRush.Editor
             var game = UnityEngine.Object.FindFirstObjectByType<SquadRushGame>();
             if (game == null) { Debug.LogError("Runtime game was not created."); EditorApplication.Exit(1); return; }
             game.enabled = false;
-            game.StartCoroutine(CheckRuntime(game));
+            game.StartCoroutine(Guard(CheckRuntime(game)));
+        }
+        static IEnumerator Guard(IEnumerator steps)
+        {
+            while (true)
+            {
+                bool more = false, failed = false;
+                object next = null;
+                try { more = steps.MoveNext(); if (more) next = steps.Current; }
+                catch (Exception error) { failed = true; Debug.LogException(error); }
+                if (failed || !more) { EditorApplication.Exit(failed ? 1 : 0); yield break; }
+                yield return next;
+            }
         }
         static IEnumerator CheckRuntime(SquadRushGame game)
         {
             for (int i = 0; i < 5; i++) yield return null;
             Touchscreen touch = null;
-            int code = 0;
             try
             {
                 var checks = new System.Collections.Generic.List<string>();
@@ -65,23 +77,31 @@ namespace SquadRush.Editor
                 var progress = game.Hud.GetComponentsInChildren<RectTransform>().Single(r => r.name == "ProgressFill");
                 Require(Mathf.Abs(progress.anchorMax.x - game.Elapsed / SquadRushGame.StageSeconds) < 0.01f, "Visible progress bar follows stage time", checks);
                 game.SpawnTarget(TargetKind.Crate, -2.5f, 16, 22);
+                game.Hud.Flash("");
+                yield return null; // Flush Unity's deferred Destroy queue before inspecting rendered objects.
                 Capture(game, "gameplay.png");
                 game.SpawnTarget(TargetKind.Boss, 0, 15, 1000);
                 game.Tick(0.02f, false);
+                yield return null;
                 Capture(game, "boss.png");
                 game.ChangeSquad(-100); Require(game.State == RunState.Lost, "Defeat menu appears in Play mode", checks);
                 play.onClick.Invoke(); Require(game.State == RunState.Playing && game.SquadCount == 3 && game.ActiveTargets == 0, "Retry button resets the run", checks);
+                game.ChangeSquad(57);
+                for (int row = 0; row < 9; row++) for (int column = 0; column < 8; column++)
+                    game.SpawnTarget(TargetKind.Enemy, -3.5f + column, 13 + row * 2.2f, 999);
+                game.Tick(0.02f, false);
+                Require(game.SquadCount == 60 && game.ActiveTargets == 72 && game.ActiveBullets == 60, "Crowded scene runs with 60 allies, 72 enemies and automatic fire", checks);
+                yield return null;
+                Capture(game, "crowd.png");
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
             }
-            catch (Exception error) { code = 1; Debug.LogException(error); }
             finally
             {
                 if (touch != null) InputSystem.RemoveDevice(touch);
                 SessionState.SetBool(Pending, false);
             }
-            EditorApplication.Exit(code);
         }
         static void Require(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException(name); checks.Add("PASS " + name); }
@@ -90,7 +110,7 @@ namespace SquadRush.Editor
             var view = game.View;
             var canvas = game.Hud.GetComponentInChildren<Canvas>();
             var safe = (RectTransform)canvas.transform.Find("SafeArea");
-            var texture = new RenderTexture(540, 960, 24);
+            var texture = new RenderTexture(540, 960, 24) { antiAliasing = 2 };
             var previous = RenderTexture.active;
             var image = new Texture2D(540, 960, TextureFormat.RGB24, false);
             try

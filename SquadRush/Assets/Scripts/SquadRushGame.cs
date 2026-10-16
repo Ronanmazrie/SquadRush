@@ -73,6 +73,7 @@ namespace SquadRush
             squadRoot.SetParent(world);
             CreateEnvironment();
             art = gameObject.AddComponent<SquadRushArt>(); art.Initialize(View);
+            art.DesertScenery(world, roadMarks);
             for (int i = 0; i < MaxSquad; i++)
             {
                 Transform soldier = CreateSoldier("Ally", squadRoot, false);
@@ -178,6 +179,8 @@ namespace SquadRush
         void SetSquad(int count)
         {
             SquadCount = Mathf.Clamp(count, 0, MaxSquad);
+            // Keep the back rows clear of the bottom control hint as the formation grows.
+            View.transform.LookAt(new Vector3(0, 0, Mathf.Lerp(13, 10, Mathf.InverseLerp(30, 60, SquadCount))));
             int columns = Mathf.Min(6, Mathf.Max(1, SquadCount));
             for (int i = 0; i < soldiers.Count; i++)
             {
@@ -425,14 +428,25 @@ namespace SquadRush
             View.nearClipPlane = 0.1f; View.farClipPlane = 150; View.allowHDR = false;
             View.clearFlags = CameraClearFlags.SolidColor; View.backgroundColor = new Color(0.83f, 0.72f, 0.54f);
             var light = new GameObject("Sun").AddComponent<Light>(); light.transform.SetParent(transform);
-            light.type = LightType.Directional; light.intensity = 1.25f; light.color = new Color(1, 0.94f, 0.84f); light.transform.rotation = Quaternion.Euler(50, -35, 0);
-            light.shadows = LightShadows.Soft;
-            RenderSettings.ambientLight = new Color(0.68f, 0.73f, 0.8f);
-            Material road = Mat("Road", new Color(0.47f, 0.46f, 0.44f));
-            asphalt = new Texture2D(128, 128, TextureFormat.RGB24, false) { name = "Asphalt grain", wrapMode = TextureWrapMode.Repeat };
-            var pixels = new Color[128 * 128];
-            for (int i = 0; i < pixels.Length; i++) { float grain = 0.89f + ((i * 73 + i / 128 * 137) % 31) / 310f; pixels[i] = new Color(grain, grain, grain); }
-            asphalt.SetPixels(pixels); asphalt.Apply(false, true); road.mainTexture = asphalt; road.mainTextureScale = new Vector2(6, 38); road.SetFloat("_Glossiness", 0.04f);
+            light.type = LightType.Directional; light.intensity = 1.12f; light.color = new Color(1, 0.94f, 0.84f); light.transform.rotation = Quaternion.Euler(48, -42, 0);
+            light.shadows = LightShadows.Soft; light.shadowStrength = 0.72f; light.shadowBias = 0.035f; light.shadowNormalBias = 0.16f;
+            QualitySettings.shadows = ShadowQuality.All; QualitySettings.shadowResolution = ShadowResolution.High;
+            QualitySettings.shadowDistance = 55; QualitySettings.shadowCascades = 0; QualitySettings.antiAliasing = 2;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(0.53f, 0.61f, 0.70f);
+            RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.78f, 0.71f, 0.60f); RenderSettings.fogStartDistance = 42; RenderSettings.fogEndDistance = 95;
+            Material road = Mat("Road", new Color(0.35f, 0.39f, 0.43f));
+            asphalt = new Texture2D(256, 256, TextureFormat.RGB24, true) { name = "Asphalt grain", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Trilinear };
+            var pixels = new Color[256 * 256];
+            for (int y = 0; y < 256; y++) for (int x = 0; x < 256; x++)
+            {
+                uint hash = (uint)(x * 374761393 + y * 668265263); hash = (hash ^ (hash >> 13)) * 1274126177u;
+                float grain = 0.94f + (hash & 255) / 4250f;
+                grain -= Mathf.Pow(Mathf.Abs(Mathf.Sin(x * 0.035f)), 18) * 0.045f;
+                pixels[y * 256 + x] = new Color(grain, grain, grain);
+            }
+            asphalt.SetPixels(pixels); asphalt.Apply(true, true); road.mainTexture = asphalt; road.mainTextureScale = new Vector2(3, 20); road.SetFloat("_Glossiness", 0.02f);
             Part(PrimitiveType.Cube, world, new Vector3(0, -0.28f, 14), new Vector3(11, 0.5f, 70), road);
             Material white = Mat("Marking", new Color(0.91f, 0.9f, 0.83f));
             for (int i = 0; i < 18; i++)
@@ -448,7 +462,6 @@ namespace SquadRush
                     float z = -8 + i * 3.3f;
                     roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.40f, z), new Vector3(0.18f, 0.63f, 0.18f), Mat("Rail", new Color(0.37f, 0.47f, 0.53f))));
                     roadMarks.Add(Part(PrimitiveType.Cube, world, new Vector3(side * 5.4f, 0.67f, z), new Vector3(0.21f, 0.12f, 0.12f), Mat("Reflector", new Color(1, 0.67f, 0.18f))));
-                    if (i % 3 == 0) roadMarks.Add(Part(PrimitiveType.Sphere, world, new Vector3(side * (7 + i % 3), 0, z), new Vector3(1.4f, 0.6f, 1.1f), Mat("Rock", new Color(0.60f, 0.48f, 0.31f))));
                 }
             }
             ResizeView();
@@ -484,7 +497,7 @@ namespace SquadRush
             label.font = Resources.Load<TMP_FontAsset>("SquadFont"); label.fontSize = size; label.color = color;
             if (outlinedText == null)
             {
-                outlinedText = new Material(label.font.material); outlinedText.SetColor("_OutlineColor", new Color(0.025f, 0.04f, 0.07f));
+                outlinedText = new Material(Resources.Load<Material>("SquadValue") ?? label.font.material); outlinedText.SetColor("_OutlineColor", new Color(0.025f, 0.04f, 0.07f));
                 outlinedText.SetFloat("_OutlineWidth", 0.22f); outlinedText.EnableKeyword("OUTLINE_ON");
             }
             label.fontSharedMaterial = outlinedText; label.extraPadding = true;

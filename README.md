@@ -7,13 +7,13 @@
 AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
-- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.2.0)
+- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.3.0)
 
 AndroidアプリはAndroid 8.0以降のARM64端末向けです。iPhoneではSafariからブラウザ版を開きます。Android用APKはiPhoneにインストールできません。iPhone用ネイティブアプリは未配布です。
 
 ## 遊び方
 
-0.2.0では広告の表現を参考にグラフィックを改善しました。装備付きの兵士と歩行アニメーション、装甲ボス、木製の数字付き箱、半透明ゲート、光る弾と着弾、遠近感のある道路を実装しています。メッシュと素材は部隊内で共有し、弾と着弾は再利用します。
+0.3.0では兵士と装甲ボスの輪郭、ヘルメットの反射線・肩章・バックパック・銃の細部を強化しました。実際の形に沿って落ちる影、ゲートの反射、箱の補給マーク、サボテン・砂岩・街灯・安全標識、滑らかな路面と遠景の霞を追加しています。大人数ではカメラの角度を調整し、後列が下の案内に重なるのを抑えます。メッシュと素材は共有し、球体モデルの頂点数を抑えています。
 
 「スタート」を押し、指を左右にドラッグして部隊を移動します。射撃は自動です。加算・倍率ゲートを通り、箱を撃破して仲間を増やしてください。赤い敵との接触や減算ゲートで人数が減り、0人になると敗北します。60秒後に出現するボスを倒すとクリアです。PCではマウス、左右矢印、A / Dでも遊べます。
 
@@ -28,7 +28,7 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 - `SquadRush/Assets/Scripts/`：ゲーム処理、日本語HUD、共有モデル生成と兵士アニメーション。
 - `SquadRush/Assets/Resources/*.shader`：兵士の色・陰影と半透明エフェクト。
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
-- `SquadRush/Verification/`：ゲーム処理11ケースと再生モード10ケースの検証記録、画面プレビュー。
+- `SquadRush/Verification/`：ゲーム処理11ケースと再生モード11ケースの検証記録、画面プレビュー。
 - `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
 - `SquadRushPrototype/`：プロジェクト再生成用のソースキット。
 - `docs/`：GitHub Pagesの配布ページとブラウザ版。

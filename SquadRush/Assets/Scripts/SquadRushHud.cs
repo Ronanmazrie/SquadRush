@@ -46,6 +46,8 @@ namespace SquadRush
             track.pivot = new Vector2(0.5f, 1); track.sizeDelta = new Vector2(-40, 6); track.anchoredPosition = new Vector2(0, -112);
             progress = Panel("ProgressFill", track, blue, Vector2.zero, Vector2.one).GetComponent<UnityEngine.UI.Image>();
             progress.rectTransform.anchorMax = new Vector2(0, 1);
+            var phasePlate = Panel("PhasePlate", safeRoot, new Color(0.04f, 0.09f, 0.15f, 0.72f), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
+            phasePlate.sizeDelta = new Vector2(220, 34); phasePlate.anchoredPosition = new Vector2(0, -142);
             phase = Text("Phase", safeRoot, "仲間を増やそう", 21, Color.white, new Vector2(270, -160), new Vector2(460, 35));
             TopAnchor(phase.rectTransform, 0.5f, -142);
             toast = Text("Toast", safeRoot, "", 25, Color.white, new Vector2(270, -215), new Vector2(480, 45));
@@ -118,7 +120,7 @@ namespace SquadRush
             var obj = new GameObject(name, typeof(RectTransform), typeof(UnityEngine.UI.Image));
             obj.transform.SetParent(parent, false);
             var image = obj.GetComponent<UnityEngine.UI.Image>(); image.color = color; image.raycastTarget = false;
-            if (name == "Card" || name == "Play" || name == "Pause" || name == "ControlHint")
+            if (name == "Card" || name == "Play" || name == "Pause" || name == "ControlHint" || name == "PhasePlate")
             { image.sprite = RoundedSprite(); image.type = UnityEngine.UI.Image.Type.Sliced; }
             var rect = obj.GetComponent<RectTransform>(); SetAnchors(rect, min, max); return rect;
         }

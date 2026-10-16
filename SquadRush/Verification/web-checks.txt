@@ -1,15 +1,15 @@
-Squad Rush 0.2.0 — WebGL distribution smoke check
-Date: 2026-10-12 (Asia/Tokyo)
+Squad Rush 0.3.0 — WebGL distribution smoke check
+Date: 2026-10-16 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,539,793 bytes)
+Build result: Succeeded (11,574,290 bytes)
 Host: local HTTP server with no Content-Encoding header (GitHub Pages equivalent)
 Browser: Codex in-app Chromium browser
 Viewport: 390 x 844
 
 PASS: Unity loads and removes the loading overlay.
 PASS: Japanese menu and HUD render correctly in portrait layout.
-PASS: Shared troop models, toon shading, translucent gates, contact shadows and cyan tracers render without missing/pink shaders.
+PASS: Outlined troop models, real mesh shadows, glass gate reflections, desert props and cyan tracers render without missing/pink shaders.
 PASS: Start begins play and the squad shoots automatically.
 PASS: Pointer drag moves the squad from center to the right.
 PASS: Pause and Continue stop and resume the run.
