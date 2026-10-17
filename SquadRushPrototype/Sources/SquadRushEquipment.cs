@@ -16,7 +16,13 @@ namespace SquadRush
         public string SlotName => Slot == EquipmentSlot.Weapon ? "武器" : Slot == EquipmentSlot.Armor ? "防具" : "サポート";
     }
 
-    // Acquisition is shared by stage rewards and future reward sources; no gacha is implemented.
+    public readonly struct EquipmentDrop
+    {
+        public readonly int Id,Rarity;
+        public EquipmentDrop(int id,int rarity){Id=id;Rarity=rarity;}
+        public string Label=>SquadRushEquipment.RarityName(Rarity)+" / "+SquadRushEquipment.Item(Id).Name;
+    }
+    // Stage drops, gacha rewards and fusion share the same inventory.
     public sealed class SquadRushEquipment
     {
         static readonly EquipmentItem[] catalog =
@@ -45,6 +51,15 @@ namespace SquadRush
         public static string Effect(int id, int rarity) { var item=Item(id); return (item.Slot==EquipmentSlot.Weapon?"弾の威力 +":item.Slot==EquipmentSlot.Armor?"初期の仲間 +":"連射速度 +")+Value(id,rarity)+(item.Slot==EquipmentSlot.Support?"%":""); }
         public static EquipmentItem Item(int id) => catalog[id];
         public static EquipmentItem StageReward(int stage) => catalog[(Mathf.Max(1, stage) - 1) % catalog.Length];
+        public static int DropMinRarity(int stage)=>Mathf.Clamp((Mathf.Max(1,stage)-4)/3,0,4);
+        public static int DropMaxRarity(int stage)=>Mathf.Clamp((Mathf.Max(1,stage)-1)/3,0,4);
+        public static int DropItemCount(int stage)=>stage<4?3:Count;
+        public static string DropRange(int stage)=>RarityName(DropMinRarity(stage))+(DropMinRarity(stage)==DropMaxRarity(stage)?"":"～"+RarityName(DropMaxRarity(stage)));
+        public static EquipmentDrop RollStageDrop(int stage,System.Random random)
+        {
+            if(random==null)throw new ArgumentNullException(nameof(random));
+            return new EquipmentDrop(random.Next(DropItemCount(stage)),random.Next(DropMinRarity(stage),DropMaxRarity(stage)+1));
+        }
         public static string StorageKey(string progressKey) => progressKey + ".Equipment.v1";
         public SquadRushEquipment(string progressKey = SquadRushProgress.DefaultKey, int completedStages = 0, bool saveMigration = true)
         {

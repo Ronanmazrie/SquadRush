@@ -1,22 +1,23 @@
-Squad Rush 0.13.0 — Release campaign and permanent gacha browser verification
+Squad Rush 0.14.0 — Six-tab navigation, event gacha, mail and random loot
 Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL / gzip / decompression fallback
-Build result: Succeeded (16,903,857 bytes)
+Build result: Succeeded (16,967,647 bytes)
 Browser: ChatGPT in-app Chromium, 390 x 844 viewport
-Local host: HTTP without Content-Encoding, matching GitHub Pages deployment
+Local hosts: HTTP without Content-Encoding, matching GitHub Pages deployment
 
-PASS: Previous localhost profile remains Stage 01, 50 gems, 0 tickets and 400 coins before claiming.
-PASS: Home campaign banner opens Events, with Permanent / Events tabs and the one-time ten-ticket gift.
-PASS: Claiming adds exactly 10 tickets, leaves 50 gems and 400 coins untouched, disables the claim button and removes the notification.
-PASS: Campaign action opens permanent gacha with ticket mode selected and the ten-pull available; pity still reads 88 draws to guarantee.
-PASS: Ten-pull displays exactly ten rewards (five weapons and five 200-coin results), consumes the ten tickets and leaves gems at 50; coins become 1400 and equipment count becomes five.
-PASS: Reload preserves 50 gems, 0 tickets, 1400 coins, five equipment copies and the campaign received state.
-PASS: Home banner changes to received; reopened Events keeps claim disabled and does not grant another ten tickets.
-PASS: Browser error / warning logs are empty.
-PASS: Unity captures at 390 x 844 verify Home, permanent recruitment, Events before / after claim, Characters, Login, Missions, Equipment and ten-result layouts without text overflow.
+PASS: Existing localhost:8767 save retains Stage 01, five equipment copies, 50 gems, 0 tickets and 1400 coins.
+PASS: Six bottom tabs remain visible. Stage screen uses inline previous/next arrows; old account and campaign shortcuts are absent.
+PASS: Direct Mail navigation shows the old release gift as already received, with no extra ten-ticket grant.
+PASS: Permanent gacha has 78 draws to guarantee from the prior save, while the new event starts at 90. Neither page displays character probability or a rates link.
+PASS: A fresh disposable localhost:8768 profile receives exactly ten tickets from Mail, with no gem balance or automatic draw.
+PASS: Event ten-pull consumes the ten tickets, displays ten actual results (seven weapons and three 200-coin results), leaves gems at zero and saves 600 coins / seven equipment copies.
+PASS: Result screen retains all six tabs; tapping Gacha leaves the receipt directly without a separate close action.
+PASS: Permanent pity remains 90 draws to guarantee, while event pity becomes 80.
+PASS: Reload preserves equipment, 600 coins, permanent pity 90 and event pity 80. Browser error / warning logs are empty.
+PASS: Unity captures at 390 x 844 verify Stage, Equipment, Characters, both gacha pages, Missions, Login, Mail, receipts and Stage 12 clear without text overflow.
 
-130 gameplay and 98 Play-mode scenarios pass (228 total), including existing v1 profiles, exact campaign grant, duplicate claim rejection, date rollover, ticket cap boundaries, actual ten-pull rewards, shared pity and previous character / equipment / combat / save checks.
-Tests use GUID profiles in Editor and a disposable localhost save in browser. Public player saves are not cleared or used for campaign claims or gacha spending.
+148 gameplay and 100 Play-mode scenarios pass (248 total). Coverage includes independent banner pity, featured event character, exact spending, legacy claim receipt, invalid banners, stage-specific random drop bounds and eligible types, six direct navigation destinations, no duplicate shortcuts, constant navigation visibility, pause exit, actual Stage 12 random reward, and prior equipment / skills / combat / saves.
+Tests use GUID profiles in Editor and disposable localhost profiles in browser. Public player saves are not cleared or used for claims or gacha spending.
 
 Desktop browser at mobile viewport size. Physical Android/iPhone controls, performance and Safari remain untested. Native iOS distribution is not available.

@@ -37,6 +37,8 @@ namespace SquadRush
         public int ActiveTargets => targets.Count;
         public int ActiveBullets => shots.Count;
         public SquadRushEquipment Equipment { get; private set; }
+        public EquipmentDrop LastStageDrop {get;private set;}
+        readonly System.Random lootRandom=new System.Random();
         public int UnlockedStage => progress.ResumeStage;
         public float GroundTravel { get; private set; }
         const float GroundSpeed = 3.5f, GroundLength = 70;
@@ -139,14 +141,14 @@ namespace SquadRush
             GenerateLandscape(NewSeed()); UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies);
             Hud.HideMenu(); Hud.UpdateStats(); Hud.ShowHome();
         }
-        public void OpenStages() { if (State == RunState.Ready) Hud.ShowStages(); }
+        public void OpenStages() { if (State == RunState.Ready) Hud.ShowHome(); }
         public void OpenEquipment() { if (State == RunState.Ready) Hud.ShowEquipment(); }
         public void OpenGacha() { if (State == RunState.Ready) Hud.ShowGacha(); }
         public void SelectStage(int number)
         {
             if (State != RunState.Ready) return;
             StageNumber = Mathf.Clamp(number, 1, UnlockedStage); GenerateLandscape(NewSeed());
-            SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowStages();
+            SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowHome();
         }
         public void PlaySelectedStage()
         { if (State == RunState.Ready && StageNumber <= UnlockedStage) Begin(); }
@@ -487,7 +489,7 @@ namespace SquadRush
         public void TogglePause()
         {
             if (State == RunState.Playing)
-            { State = RunState.Paused; dragging = false; Hud.ShowMenu("一時停止", "ひと息ついたら、続きを遊ぼう", "つづける"); }
+            { State = RunState.Paused; dragging = false; Hud.ShowMenu("一時停止", "下のタブを選ぶと\n戦闘を終了して移動します。", "つづける"); }
             else if (State == RunState.Paused) { State = RunState.Playing; Hud.HideMenu(); }
         }
         void OnApplicationPause(bool paused) { if (paused && State == RunState.Playing) TogglePause(); }
@@ -503,9 +505,9 @@ namespace SquadRush
             string reward = "";
             if (won)
             {
-                EquipmentItem item = SquadRushEquipment.StageReward(StageNumber);
-                bool received = Equipment.Acquire(item.Id); progress.Complete(StageNumber);
-                reward = "\n" + (received ? "装備入手：" : "所持数上限：") + item.Name + (received?" ×1":"");
+                LastStageDrop=SquadRushEquipment.RollStageDrop(StageNumber,lootRandom);
+                bool received=Equipment.Acquire(LastStageDrop.Id,LastStageDrop.Rarity);progress.Complete(StageNumber);
+                reward="\n"+(received?"装備入手：":"所持数上限：")+LastStageDrop.Label+(received?" ×1":"");
             }
             int gems=Account.RecordBattle(StageNumber,Kills,won);if(gems>0)reward+="\nジェム +"+gems+" / コイン +50";
             Hud.UpdateStats();

@@ -7,7 +7,7 @@ namespace SquadRush
     {
         Rifle, Vest, Magazine, Supply, Battle, Helmet,
         Gem, Ticket, Coin, Character, Gift, Missions, Heal, Blast, Lightning,
-        Allies, Target, Merge, Lock, Check, Trophy
+        Allies, Target, Merge, Lock, Check, Trophy, Mail, Map
     }
 
     // Original, resolution-independent illustrations. No textures or additional UI materials.
@@ -53,6 +53,13 @@ namespace SquadRush
                     P(vh,cyan,.38f,.44f,.50f,.31f,.62f,.44f);Box(vh,.46f,.18f,.54f,.30f,amber);break;
                 case SquadIcon.Gift:
                     Gift(vh);break;
+                case SquadIcon.Mail:
+                    Box(vh,.08f,.20f,.92f,.80f,dark);Box(vh,.15f,.27f,.85f,.73f,steel);
+                    P(vh,blue,.15f,.27f,.50f,.53f,.85f,.27f);P(vh,dark,.13f,.75f,.50f,.42f,.87f,.75f);P(vh,light,.22f,.73f,.50f,.49f,.78f,.73f);break;
+                case SquadIcon.Map:
+                    P(vh,dark,.05f,.17f,.05f,.79f,.34f,.92f,.65f,.79f,.94f,.91f,.94f,.25f,.65f,.13f,.34f,.26f);
+                    P(vh,green,.12f,.25f,.12f,.74f,.32f,.83f,.32f,.33f);P(vh,steel,.38f,.33f,.38f,.83f,.62f,.73f,.62f,.24f);P(vh,green,.68f,.23f,.68f,.73f,.87f,.81f,.87f,.31f);
+                    P(vh,light,.17f,.34f,.20f,.40f,.49f,.55f,.52f,.48f);P(vh,dark,.52f,.66f,.63f,.37f,.76f,.66f);Ellipse(vh,.64f,.67f,.16f,.17f,dark);Ellipse(vh,.64f,.68f,.105f,.11f,Hex(0xF8796F));Ellipse(vh,.64f,.70f,.04f,.04f,light);break;
                 case SquadIcon.Missions:
                     Box(vh,.19f,.10f,.82f,.88f,dark);Box(vh,.25f,.17f,.76f,.81f,steel);
                     Box(vh,.33f,.76f,.67f,.94f,dark);Box(vh,.39f,.80f,.61f,.89f,amber);

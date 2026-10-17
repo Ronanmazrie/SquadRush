@@ -9,7 +9,7 @@ namespace SquadRush
         Sprite[] stageIllustrations;
         static readonly string[] StageArtNames={"desert-outpost","forest-checkpoint","snow-radar","desert-refinery","forest-bridge","snow-fortress"};
         static readonly string[] StageLocationNames={"砂塵の前哨基地","緑陰の検問所","白銀の観測基地","夕焼けの精製所","霧の鉄橋","氷壁の要塞"};
-        static string StageLocation(int stage)=>StageLocationNames[(Mathf.Max(1,stage)-1)%StageLocationNames.Length];
+        static string StageLocation(int stage)=>new SquadRushStage(stage).Location;
         UnityEngine.UI.Image StagePicture(string name,Transform parent,Vector2 min,Vector2 max)
         {
             if(stageIllustrations==null)

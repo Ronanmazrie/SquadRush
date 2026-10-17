@@ -80,6 +80,25 @@ namespace SquadRush.Editor
                 PlayerPrefs.SetString(SquadRushAccount.StorageKey(names[6]),"{\"version\":1,\"tickets\":9999989}");account=new SquadRushAccount(new SquadRushEquipment(names[6]),names[6]);
                 Check(account.ClaimReleaseCampaign()&&account.Tickets==9999999,"Exactly ten available wallet slots allow the complete campaign gift",checks);
 
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(names[6]),"{\"version\":1,\"tickets\":20,\"gems\":500,\"pity\":50,\"eventPity\":89,\"characters\":1}");
+                gear=new SquadRushEquipment(names[6]);account=new SquadRushAccount(gear,names[6]);
+                result=account.Draw(1,true,()=>.999999,DrawBanner.AkaneEvent);
+                Check(result[0].kind==DrawKind.Character&&result[0].id==1&&result[0].isNew&&account.Pity==50&&account.EventPity==0&&account.Tickets==19,"Event pity grants featured Akane and leaves permanent pity untouched",checks);
+                account.Draw(1,true,()=>.999999);Check(account.Pity==51&&account.EventPity==0,"Permanent pulls cannot advance the event pity",checks);
+                before=account.Coins;result=account.Draw(1,true,()=>0,DrawBanner.AkaneEvent);
+                Check(result[0].id==1&&!result[0].isNew&&account.Coins==before+1000&&!account.OwnsCharacter(2),"Event characters remain Akane and duplicates grant coins even while Mio is unowned",checks);
+                account=new SquadRushAccount(new SquadRushEquipment(names[6]),names[6]);
+                Check(account.Pity==51&&account.EventPity==0&&account.LastBanner==DrawBanner.AkaneEvent&&account.Tickets==17,"Both banner counters and event receipt survive reload",checks);
+                Check(account.Draw(1,true,()=>0,(DrawBanner)99).Length==0&&account.Tickets==17,"Unknown banners are rejected without spending",checks);
+                var locations=new HashSet<string>();var drops=new System.Random(20261017);
+                for(int stage=1;stage<=SquadRushStage.AuthoredCount;stage++)
+                {
+                    locations.Add(new SquadRushStage(stage).Location);bool valid=true;var seen=new HashSet<int>();var rarities=new HashSet<int>();
+                    for(int i=0;i<120;i++){var drop=SquadRushEquipment.RollStageDrop(stage,drops);valid&=drop.Id>=0&&drop.Id<SquadRushEquipment.DropItemCount(stage)&&drop.Rarity>=SquadRushEquipment.DropMinRarity(stage)&&drop.Rarity<=SquadRushEquipment.DropMaxRarity(stage);seen.Add(drop.Id);rarities.Add(drop.Rarity);}
+                    Check(valid&&seen.Count==SquadRushEquipment.DropItemCount(stage)&&rarities.Count==SquadRushEquipment.DropMaxRarity(stage)-SquadRushEquipment.DropMinRarity(stage)+1,"Stage "+stage+" random drops cover eligible item types and its rarity band",checks);
+                }
+                Check(locations.Count==12&&new SquadRushStage(12).BossHealth>new SquadRushStage(6).BossHealth&&SquadRushEquipment.DropMinRarity(12)==2&&SquadRushEquipment.DropMaxRarity(12)==3,"Twelve named stages scale combat and reach rare-to-epic drops",checks);
+
                 game.ShowHome();int allies=game.SquadCount;game.Begin();allies=game.SquadCount;
                 Check(game.ActivateCharacterSkill()&&game.SquadCount==Mathf.Min(1000,allies+3)&&!game.ActivateCharacterSkill(),"Ren's actual skill supplies three allies and enforces cooldown",checks);
                 game.TogglePause();float cooldown=game.SkillCooldownRemaining;game.Tick(5,false);Check(game.SkillCooldownRemaining==cooldown,"Pausing freezes character skill cooldown",checks);game.TogglePause();

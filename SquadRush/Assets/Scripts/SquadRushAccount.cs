@@ -5,6 +5,7 @@ using UnityEngine;
 namespace SquadRush
 {
     public enum DrawKind { Weapon, Coins, Character }
+    public enum DrawBanner { Permanent, AkaneEvent }
     [Serializable] public sealed class SquadRushDrawResult
     {
         public DrawKind kind;
@@ -38,6 +39,8 @@ namespace SquadRush
             public int[] pendingWeapons;
             public SquadRushDrawResult[] lastResults;
             public bool releaseCampaignClaimed;
+            public int eventPity;
+            public DrawBanner lastBanner;
         }
         readonly string key;
         readonly SquadRushEquipment equipment;
@@ -53,6 +56,7 @@ namespace SquadRush
             if(data==null||data.version!=1)data=new SaveData();
             data.gems=Mathf.Clamp(data.gems,0,WalletLimit);data.tickets=Mathf.Clamp(data.tickets,0,WalletLimit);data.coins=Mathf.Clamp(data.coins,0,WalletLimit);
             data.characters=(data.characters&7)|1;data.pity=Mathf.Clamp(data.pity,0,89);
+            data.eventPity=Mathf.Clamp(data.eventPity,0,89);
             if(!OwnsCharacter(data.selectedCharacter))data.selectedCharacter=0;
             if(!existed)data.bestClear=Mathf.Max(0,completedStages);
             if(saveMigration)RecoverDraw();ObserveDay();if(!existed&&saveMigration)Save();
@@ -67,6 +71,9 @@ namespace SquadRush
         public int Tickets=>data.tickets;
         public int Coins=>data.coins;
         public int Pity=>data.pity;
+        public int EventPity=>data.eventPity;
+        public DrawBanner LastBanner=>data.lastBanner;
+        public int BannerPity(DrawBanner banner)=>banner==DrawBanner.AkaneEvent?data.eventPity:data.pity;
         public int TotalPulls=>data.totalPulls;
         public int SelectedCharacter=>data.selectedCharacter;
         public int LoginDay=>(data.loginDays%7)+1;
@@ -90,8 +97,9 @@ namespace SquadRush
         }
         public bool CanDraw(int count,bool tickets)=> (count==1||count==10)&&(tickets?Tickets>=count:Gems>=count*GemCost);
         public SquadRushDrawResult[] LastResults=>data.lastResults??Array.Empty<SquadRushDrawResult>();
-        public SquadRushDrawResult[] Draw(int count,bool tickets,Func<double> sample=null)
+        public SquadRushDrawResult[] Draw(int count,bool tickets,Func<double> sample=null,DrawBanner banner=DrawBanner.Permanent)
         {
+            if(banner!=DrawBanner.Permanent&&banner!=DrawBanner.AkaneEvent)return Array.Empty<SquadRushDrawResult>();
             RecoverDraw();ObserveDay();if(!CanDraw(count,tickets))return Array.Empty<SquadRushDrawResult>();
             // Sample before mutating balances; injected samples are used only by deterministic Editor checks.
             var rolls=new double[count*3];for(int i=0;i<rolls.Length;i++){rolls[i]=(sample??random.NextDouble)();if(double.IsNaN(rolls[i])||rolls[i]<0||rolls[i]>=1)throw new ArgumentOutOfRangeException(nameof(sample));}
@@ -99,25 +107,25 @@ namespace SquadRush
             var results=new SquadRushDrawResult[count];var weapons=new List<int>();
             for(int i=0;i<count;i++)
             {
-                var result=new SquadRushDrawResult();int pull=data.pity+1;
+                var result=new SquadRushDrawResult();int pull=BannerPity(banner)+1;
                 if(rolls[i*3]<CharacterChance(pull))
                 {
                     var candidates=new List<int>();for(int id=1;id<3;id++)if(!OwnsCharacter(id))candidates.Add(id);
                     if(candidates.Count==0){candidates.Add(1);candidates.Add(2);}
-                    result.kind=DrawKind.Character;result.id=candidates[Math.Min(candidates.Count-1,(int)(rolls[i*3+2]*candidates.Count))];result.amount=1;
+                    result.kind=DrawKind.Character;result.id=banner==DrawBanner.AkaneEvent?1:candidates[Math.Min(candidates.Count-1,(int)(rolls[i*3+2]*candidates.Count))];result.amount=1;
                     result.isNew=!OwnsCharacter(result.id);data.characters|=1<<result.id;
                     if(!result.isNew)data.coins=Add(data.coins,DuplicateCoins);
-                    data.pity=0;
+                    if(banner==DrawBanner.AkaneEvent)data.eventPity=0;else data.pity=0;
                 }
                 else
                 {
-                    data.pity++;
+                    if(banner==DrawBanner.AkaneEvent)data.eventPity++;else data.pity++;
                     if(rolls[i*3+1]<.5){result.kind=DrawKind.Weapon;result.id=rolls[i*3+2]<.5?0:3;result.amount=1;weapons.Add(result.id);}
                     else{result.kind=DrawKind.Coins;result.amount=WeaponCoinValue;data.coins=Add(data.coins,result.amount);}
                 }
                 results[i]=result;
             }
-            data.totalPulls=Add(data.totalPulls,count);data.dailyPulls=Add(data.dailyPulls,count);data.lastResults=results;
+            data.totalPulls=Add(data.totalPulls,count);data.dailyPulls=Add(data.dailyPulls,count);data.lastResults=results;data.lastBanner=banner;
             data.pendingTransaction=Guid.NewGuid().ToString("N");data.pendingWeapons=weapons.ToArray();
             Save();RecoverDraw();return results;
         }

@@ -65,7 +65,7 @@ namespace SquadRush
             }
             var footer = Panel("ControlHint", battleRoot, new Color(0.05f, 0.1f, 0.17f, 0.9f), new Vector2(0.05f, 0.025f), new Vector2(0.95f, 0.085f));
             var hint = Text("Hint", footer, "←   指を左右にドラッグ   →", 20, Color.white, Vector2.zero, Vector2.zero);
-            Stretch(hint.rectTransform);
+            Stretch(hint.rectTransform);footer.gameObject.SetActive(false);
 
             RectTransform scrim = Panel("Menu", safeRoot, new Color(0.03f, 0.07f, 0.13f, 0.67f), Vector2.zero, Vector2.one);
             scrim.GetComponent<UnityEngine.UI.Image>().raycastTarget = true; menu = scrim.gameObject;
@@ -80,9 +80,7 @@ namespace SquadRush
             action.GetComponent<RectTransform>().anchorMin = action.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.20f);
             action.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             actionText = action.GetComponentInChildren<TextMeshProUGUI>();
-            var homeButton = Button("ReturnHome", card, "ホームへ", Vector2.zero, new Vector2(300, 38), new Color(0.13f, 0.21f, 0.31f), game.ShowHome);
-            homeButton.GetComponent<RectTransform>().anchorMin = homeButton.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.065f);
-            homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
+            SetAnchors(description.rectTransform,new Vector2(.08f,.29f),new Vector2(.92f,.62f));
             BuildFrontEnd();BuildSkillHud();
             if (Object.FindFirstObjectByType<EventSystem>() == null)
             {
@@ -104,6 +102,7 @@ namespace SquadRush
         }
         public void UpdateStats()
         {
+            RefreshNavigation();
             RefreshSkillHud();
             if (lastStage != game.StageNumber) { lastStage = game.StageNumber; stageLabel.text = "STAGE " + game.StageNumber.ToString("D2") + " · " + game.Stage.Name; }
             if (game.SquadCount != lastCount) { lastCount = game.SquadCount; count.text = "仲間 " + lastCount; }
@@ -122,12 +121,13 @@ namespace SquadRush
         {
             HideFrontEnd();
             title.text = heading.StartsWith("SQUAD") ? "SQUAD\n<color=#53CFFF>RUSH</color>" : heading; title.fontSize = heading.StartsWith("SQUAD") ? 53 : 34;
-            description.text = body; actionText.text = action; menu.SetActive(true);
+            description.fontSize=18;description.text = body; actionText.text = action; menu.SetActive(true);RefreshNavigation(true);
         }
         public void HideMenu() { menu.SetActive(false); toastTime = 0; toast.text = ""; }
         public void Flash(string message) { toast.text = message; toast.alpha = 1; toastTime = 1.7f; }
         void Update()
         {
+            RefreshNavigation();
             if (toastTime <= 0) return;
             toastTime -= Time.unscaledDeltaTime;
             toast.alpha = Mathf.Clamp01(toastTime * 2);

@@ -5,29 +5,29 @@ PASS Generated character surfaces have valid vertices and smooth normals
 PASS Natural body and boots fit the existing ground and portrait framing
 PASS Reusing a soldier resets stride, body pose and muzzle flash
 PASS Scene starts with a three-ally squad and menu
-PASS All 21 icons are distinct, bounded, finite and do not intercept touches
-PASS Home campaign opens the event section without automatically granting or drawing
-PASS Permanent tab isolates the existing recruitment controls from event rewards
-PASS Event tab hides permanent draw controls
-PASS Visible navigation icons have renderers and generated geometry
-PASS Home replaces the old opening dialog
-PASS Home exposes a direct sortie and persistent navigation
-PASS Gacha navigation displays recruitment without granting items
+PASS All 23 icons are distinct, bounded, finite and do not intercept touches
+PASS Bottom tab opens Home in one tap and remains visible
+PASS Bottom tab opens Equipment in one tap and remains visible
+PASS Bottom tab opens Characters in one tap and remains visible
+PASS Bottom tab opens Gacha in one tap and remains visible
+PASS Bottom tab opens Missions in one tap and remains visible
+PASS Bottom tab opens Mail in one tap and remains visible
+PASS Duplicate shortcuts and probability controls are removed
+PASS Mail stores the unclaimed gift without automatically granting it
 PASS New profile cannot draw without earned tickets or gems
-PASS Published gacha rates and pity table fit their controls
-PASS Locked character inspection shows the real skill but prevents selection
-PASS Home opens a claimable login bonus
-PASS Login button grants exact currency and disables a second claim
+PASS Permanent gacha displays no character probability
+PASS Event tab contains actual event draw controls rather than gifts
+PASS Event gacha displays no character probability
+PASS Locked character inspection shows the skill but prevents selection
+PASS Login subtab under Missions grants its exact reward once
 PASS Incomplete daily missions cannot be claimed through the UI
-PASS Equipment uses a 2D anime hero rather than the 3D portrait
-PASS All six equipment items have distinct illustration sprites
-PASS Equipment screen prevents equipping unearned items
-PASS Unowned inspection shows the matching art, positive comparison and source stage
-PASS Illustrated item detail labels fit their controls
-PASS Closing an item inspection returns to inventory without changing gear
-PASS Home opens stage selection with locked progression
-PASS Stage sortie button starts combat and hides Home
-PASS Play-mode ground textures advance with terrain distance
+PASS Equipment uses a 2D anime hero
+PASS Six equipment illustrations remain distinct
+PASS Locked equipment shows the earliest random-drop stage
+PASS Item inspection fits
+PASS Stage screen prevents selecting locked stages
+PASS Battle keeps all six bottom tabs visible and prevents navigation during a run
+PASS Play-mode ground moves with terrain distance
 PASS Keyboard input moves the squad
 PASS Touch drag moves the squad
 PASS Pause button freezes the run
@@ -41,7 +41,7 @@ PASS 1000-ally HUD is fully visible without clipping
 PASS Weapon crates upgrade damage, firing rate and visible rifles
 PASS Weapon HUD shows acquired upgrades without clipping
 PASS A real boss defeat saves stage two
-PASS Boss clear permanently saves the rifle reward
+PASS Boss clear permanently saves the actual random drop
 PASS The clear screen Next button advances to stage two
 PASS Reloading the saved progress offers stage two in the menu
 PASS Equipment button equips the earned rifle and updates its state
@@ -91,8 +91,10 @@ PASS Exhausted ticket mode does not fall back to spending gems
 PASS Gem mode remains available after tickets run out
 PASS Completed draw mission becomes claimable
 PASS Mission UI grants 50 gems exactly once
-PASS Event claim grants ten tickets once and preserves gems, pity and pull count
-PASS Campaign action selects ticket mode in permanent gacha without triggering a draw
-PASS Free campaign tickets pay for exactly ten real permanent-gacha results without gems
-PASS Reloaded UI keeps the release gift received and prevents a second claim
-PASS Home campaign shows its received state after claiming
+PASS Mail claim grants ten tickets once without drawing or spending gems
+PASS Event ten-pull awards featured Akane at its own pity and preserves permanent pity and gems
+PASS Bottom tabs stay usable over draw results
+PASS Bottom navigation leaves draw results directly without an extra close step
+PASS Reload preserves both banner counters and the already-received legacy gift
+PASS Stage twelve boss grants one actual rare or epic drop
+PASS Higher-rarity clear reward fits beside persistent navigation

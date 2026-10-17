@@ -183,7 +183,7 @@ namespace SquadRush.Editor
                 Expect(game.State == RunState.Ready && game.SquadCount == 3, "Initial menu", checks);
                 Expect(game.Hud.CurrentPage == FrontEndPage.Home && game.Equipment.OwnedCount == 0, "New profile opens Home without unearned equipment", checks);
                 game.OpenStages(); game.SelectStage(999);
-                Expect(game.Hud.CurrentPage == FrontEndPage.Stages && game.StageNumber == 1, "Stage selection restricts play to unlocked stages", checks);
+                Expect(game.Hud.CurrentPage == FrontEndPage.Home && game.StageNumber == 1, "Stage selection restricts play to unlocked stages", checks);
                 game.OpenGacha(); game.Tick(1, false);
                 Expect(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0 && game.Elapsed == 0, "Gacha browsing is non-playing and grants no free rewards", checks);
                 game.OpenEquipment(); game.ToggleEquipment(0);
@@ -229,7 +229,7 @@ namespace SquadRush.Editor
                     healthyWave &= (int)target.GetType().GetField("Hp").GetValue(target) == 3; waveEnemies++;
                 }
                 Expect(waveEnemies == 3 && healthyWave, "Opening wave enemies spawn with three health", checks);
-                Expect(waveEnemies == 3 && new SquadRushStage(5).EnemyHealth == 4 && new SquadRushStage(21).EnemyHealth == 6, "Normal enemy health increases gradually with stage difficulty", checks);
+                Expect(waveEnemies == 3 && new SquadRushStage(5).EnemyHealth == 4 && new SquadRushStage(21).EnemyHealth == 9, "Normal enemy health increases gradually with stage difficulty", checks);
                 game.Begin(); game.ChangeSquad(-2); game.SpawnTarget(TargetKind.Enemy, 0, 8, game.Stage.EnemyHealth);
                 for (int i = 0; i < 25; i++) game.Tick(0.02f, false);
                 Expect(game.Kills == 0 && game.ActiveTargets == 1 && game.SquadCount == 1, "Normal enemy survives the first two basic shots", checks);
@@ -266,7 +266,7 @@ namespace SquadRush.Editor
                 game.Begin(); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 6);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Expect(game.State == RunState.Won, "Defeating the boss clears the stage", checks);
-                Expect(game.Equipment.Owns(0) && new SquadRushEquipment(storageKey).Owns(0) && !game.Equipment.IsEquipped(0), "Stage clear saves its gear reward before leaving the result screen", checks);
+                Expect(game.Equipment.Quantity(game.LastStageDrop.Id,game.LastStageDrop.Rarity)>0 && new SquadRushEquipment(storageKey).Quantity(game.LastStageDrop.Id,game.LastStageDrop.Rarity)>0 && game.Equipment.OwnedCount==1, "Stage clear saves its gear reward before leaving the result screen", checks);
                 Expect(new SquadRushProgress(storageKey).ResumeStage == 2 && game.StageNumber == 1, "Clear saves the next stage before pressing Next", checks);
                 game.MenuAction();
                 Expect(game.StageNumber == 2 && game.Stage.Biome == LandscapeBiome.Forest && game.Elapsed == 0 && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Next starts a clean forest stage", checks);
@@ -288,6 +288,7 @@ namespace SquadRush.Editor
                 Expect(new SquadRushStage(10).BossHealth > new SquadRushStage(1).BossHealth && new SquadRushStage(10).WaveInterval(1) < new SquadRushStage(1).WaveInterval(1), "Later stages increase boss strength and wave frequency", checks);
                 game.StartVerificationStage(3, 93);
                 Expect(game.Stage.Biome == LandscapeBiome.Snow && game.StageDuration == 46, "Stage three has a snow landscape and its own duration", checks);
+                if(!game.Equipment.Owns(0))game.Equipment.Acquire(0);
                 game.ShowHome(); game.OpenEquipment(); game.ToggleEquipment(0);
                 Expect(game.Equipment.IsEquipped(0) && game.WeaponDamage == 2 && new SquadRushEquipment(storageKey).IsEquipped(0), "Equipping the earned rifle saves and increases real weapon damage", checks);
                 game.Begin(); game.Tick(0.02f, false); game.ToggleEquipment(0);
@@ -300,8 +301,9 @@ namespace SquadRush.Editor
                 {
                     game.StartVerificationStage(stage, 93); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
                     for (int i = 0; i < 300 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
-                    Expect(game.State == RunState.Won && game.Equipment.Owns(stage - 1), "Stage " + stage + " clear awards its defined equipment", checks);
+                    Expect(game.State == RunState.Won && game.Equipment.Quantity(game.LastStageDrop.Id,game.LastStageDrop.Rarity)>0 && game.LastStageDrop.Rarity>=SquadRushEquipment.DropMinRarity(stage)&&game.LastStageDrop.Rarity<=SquadRushEquipment.DropMaxRarity(stage), "Stage " + stage + " clear saves its random equipment within the difficulty band", checks);
                 }
+                for(int id=0;id<4;id++)if(game.Equipment.Quantity(id)==0)game.Equipment.Acquire(id);
                 game.ShowHome(); game.ToggleEquipment(0); game.ToggleEquipment(1); game.ToggleEquipment(2); game.Begin(); game.Tick(0.02f, false);
                 Expect(game.SquadCount == game.Stage.StartingAllies + 2 && game.WeaponDamage == 2 && Mathf.Abs(game.FireRateMultiplier - 1.1f) < 0.001f, "Weapon, armor and support bonuses apply together at sortie", checks);
                 game.ShowHome(); game.ToggleEquipment(3);

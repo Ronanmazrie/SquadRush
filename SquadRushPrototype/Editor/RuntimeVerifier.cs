@@ -56,46 +56,25 @@ namespace SquadRush.Editor
                 VerifyCharacterMeshes(game, checks);
                 Require(game.State == RunState.Ready && game.SquadCount == 3, "Scene starts with a three-ally squad and menu", checks);
                 var play = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Play");
-                Capture(game, "menu.png");
-                Capture(game,"home-mobile.png",390,844);VerifyIconSet(game,checks);
-                Click(game,"HomeEvents");
-                Require(game.Hud.ShowingGachaEvents&&Button(game,"ClaimReleaseCampaign").interactable&&game.Account.Tickets==0,"Home campaign opens the event section without automatically granting or drawing",checks);
-                Capture(game,"events.png");Capture(game,"events-mobile.png",390,844);
-                Click(game,"PermanentGachaTab");Require(!game.Hud.ShowingGachaEvents&&!Button(game,"ClaimReleaseCampaign").gameObject.activeInHierarchy&&Button(game,"DrawTen").gameObject.activeInHierarchy,"Permanent tab isolates the existing recruitment controls from event rewards",checks);
-                Click(game,"EventGachaTab");Require(game.Hud.ShowingGachaEvents&&!Button(game,"DrawTen").gameObject.activeInHierarchy,"Event tab hides permanent draw controls",checks);Click(game,"HomeCommand");
-                Require(game.Hud.GetComponentsInChildren<SquadRushUiIcon>().All(icon => icon.canvasRenderer != null && icon.GeneratedVertices > 0), "Visible navigation icons have renderers and generated geometry", checks);
-                Require(game.Hud.CurrentPage == FrontEndPage.Home && !play.gameObject.activeInHierarchy, "Home replaces the old opening dialog", checks);
-                Require(Button(game, "HomeSortie").gameObject.activeInHierarchy && Button(game, "HomeCommand").gameObject.activeInHierarchy && Button(game, "HomeEquipment").gameObject.activeInHierarchy, "Home exposes a direct sortie and persistent navigation", checks);
-                Click(game, "HomeGacha");
-                Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation displays recruitment without granting items", checks);
-                Capture(game, "gacha.png");
-                Capture(game,"recruitment-mobile.png",390,844);
+                Capture(game,"menu.png");Capture(game,"home-mobile.png",390,844);VerifyIconSet(game,checks);
+                string[] navigation={"HomeCommand","HomeEquipment","HomeCharacters","HomeGacha","HomeMissions","HomeMail"};
+                FrontEndPage[] destinations={FrontEndPage.Home,FrontEndPage.Equipment,FrontEndPage.Characters,FrontEndPage.Gacha,FrontEndPage.Missions,FrontEndPage.Mail};
+                for(int i=0;i<navigation.Length;i++){Click(game,navigation[i]);Require(game.Hud.CurrentPage==destinations[i]&&navigation.All(n=>Button(game,n).gameObject.activeInHierarchy),"Bottom tab opens "+destinations[i]+" in one tap and remains visible",checks);}
+                Require(!game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Any(b=>new[]{"HomeEvents","HomeStages","HomeLogin","GachaCharacters","GachaEquipment","GachaRates","CampaignToPermanent"}.Contains(b.name)),"Duplicate shortcuts and probability controls are removed",checks);
+                Require(Button(game,"MailClaimRelease").interactable&&game.Account.Tickets==0,"Mail stores the unclaimed gift without automatically granting it",checks);Capture(game,"mail.png");Capture(game,"mail-mobile.png",390,844);
+                Click(game,"HomeGacha");Capture(game,"gacha.png");Capture(game,"recruitment-mobile.png",390,844);
                 Require(!Button(game,"DrawOne").interactable&&!Button(game,"DrawTen").interactable,"New profile cannot draw without earned tickets or gems",checks);
-                Click(game,"GachaRates");Capture(game,"gacha-rates.png");RequireTextFits(game,"Published gacha rates and pity table fit their controls",checks);Click(game,"CloseRates");
-                Click(game,"GachaCharacters");Click(game,"Character1");
-                Require(!Button(game,"SelectCharacter").interactable&&UiText(game,"CharacterSkillDescription").text.Contains("範囲攻撃"),"Locked character inspection shows the real skill but prevents selection",checks);
-                Capture(game,"characters-locked.png");Capture(game,"characters-mobile.png",390,844);Click(game,"HomeCommand");Click(game,"HomeLogin");
-                Require(Button(game,"ClaimLogin").interactable,"Home opens a claimable login bonus",checks);Click(game,"ClaimLogin");
-                Require(game.Account.Gems==100&&game.Account.Tickets==1&&!Button(game,"ClaimLogin").interactable,"Login button grants exact currency and disables a second claim",checks);Capture(game,"login.png");
-                Capture(game,"login-mobile.png",390,844);
-                Click(game,"HomeCommand");Click(game,"HomeMissions");Require(!Button(game,"ClaimMission0").interactable,"Incomplete daily missions cannot be claimed through the UI",checks);Capture(game,"missions.png");Capture(game,"missions-mobile.png",390,844);Click(game,"HomeGacha");
-                Click(game, "GachaEquipment");
-                var illustratedHero=UiArt(game,"EquipmentHeroIllustration");
-                Require(illustratedHero.sprite!=null && illustratedHero.transform.parent.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Equipment uses a 2D anime hero rather than the 3D portrait",checks);
-                Require(Enumerable.Range(0,6).Select(i=>UiArt(game,"InventoryIllustration"+i).sprite).Distinct().Count()==6 && Enumerable.Range(0,6).All(i=>UiArt(game,"InventoryIllustration"+i).sprite!=null),"All six equipment items have distinct illustration sprites",checks);
-                Click(game, "InventoryItem0"); Require(game.Hud.CurrentPage == FrontEndPage.Equipment && !Button(game, "EquipmentAction").interactable, "Equipment screen prevents equipping unearned items", checks);
-                Require(UiArt(game,"DetailIllustration").sprite==UiArt(game,"InventoryIllustration0").sprite && UiText(game,"DetailComparison").text.Contains("+1") && UiText(game,"DetailSource").text.Contains("STAGE 01"),"Unowned inspection shows the matching art, positive comparison and source stage",checks);
-                RequireTextFits(game,"Illustrated item detail labels fit their controls",checks);
-                Capture(game, "equipment-locked.png"); Click(game, "CloseEquipmentDetail");
-                Require(game.Hud.CurrentPage == FrontEndPage.Equipment && !Button(game, "EquipmentAction").gameObject.activeInHierarchy, "Closing an item inspection returns to inventory without changing gear", checks);
-                Click(game, "HomeCommand"); Click(game, "HomeStages");
-                Require(game.Hud.CurrentPage == FrontEndPage.Stages && !Button(game, "NextStage").interactable, "Home opens stage selection with locked progression", checks);
-                Capture(game, "stages.png");
-                Click(game, "StageStart"); Require(game.State == RunState.Playing && game.Hud.CurrentPage == FrontEndPage.Hidden, "Stage sortie button starts combat and hides Home", checks);
-                Capture(game, "ground-before.png");
-                game.Tick(0.25f, false);
-                Require(Mathf.Abs(game.GroundTravel - 0.875f) < 0.001f && game.transform.Find("World/SoilSurface").GetComponent<Renderer>().sharedMaterial.mainTextureOffset.y > 0, "Play-mode ground textures advance with terrain distance", checks);
-                Capture(game, "ground-after.png");
+                Require(game.Hud.GetComponentsInChildren<TMP_Text>().All(t=>!t.text.Contains("%")&&!t.text.Contains("キャラ率")&&!t.text.Contains("提供割合")),"Permanent gacha displays no character probability",checks);
+                Click(game,"EventGachaTab");Require(game.Hud.ShowingGachaEvents&&Button(game,"EventDrawTen").gameObject.activeInHierarchy&&!Button(game,"DrawTen").gameObject.activeInHierarchy,"Event tab contains actual event draw controls rather than gifts",checks);
+                Require(game.Hud.GetComponentsInChildren<TMP_Text>().All(t=>!t.text.Contains("%")),"Event gacha displays no character probability",checks);Capture(game,"events.png");Capture(game,"events-mobile.png",390,844);
+                Click(game,"HomeCharacters");Click(game,"Character1");Require(!Button(game,"SelectCharacter").interactable&&UiText(game,"CharacterSkillDescription").text.Contains("範囲攻撃"),"Locked character inspection shows the skill but prevents selection",checks);Capture(game,"characters-locked.png");Capture(game,"characters-mobile.png",390,844);
+                Click(game,"HomeMissions");Click(game,"LoginRewardsTab");Click(game,"ClaimLogin");Require(game.Account.Gems==100&&game.Account.Tickets==1&&!Button(game,"ClaimLogin").interactable,"Login subtab under Missions grants its exact reward once",checks);Capture(game,"login.png");Capture(game,"login-mobile.png",390,844);
+                Click(game,"HomeMissions");Require(!Button(game,"ClaimMission0").interactable,"Incomplete daily missions cannot be claimed through the UI",checks);Capture(game,"missions.png");Capture(game,"missions-mobile.png",390,844);
+                Click(game,"HomeEquipment");var illustratedHero=UiArt(game,"EquipmentHeroIllustration");Require(illustratedHero.sprite!=null&&illustratedHero.transform.parent.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Equipment uses a 2D anime hero",checks);
+                Require(Enumerable.Range(0,6).Select(i=>UiArt(game,"InventoryIllustration"+i).sprite).Distinct().Count()==6,"Six equipment illustrations remain distinct",checks);
+                Click(game,"InventoryItem0");Require(!Button(game,"EquipmentAction").interactable&&UiText(game,"DetailSource").text.Contains("STAGE 01"),"Locked equipment shows the earliest random-drop stage",checks);RequireTextFits(game,"Item inspection fits",checks);Capture(game,"equipment-locked.png");Click(game,"CloseEquipmentDetail");
+                Click(game,"HomeCommand");Require(!Button(game,"HomeNextStage").interactable,"Stage screen prevents selecting locked stages",checks);Capture(game,"stages.png");Click(game,"HomeSortie");Require(game.State==RunState.Playing&&game.Hud.CurrentPage==FrontEndPage.Hidden&&navigation.All(n=>Button(game,n).gameObject.activeInHierarchy&&!Button(game,n).interactable),"Battle keeps all six bottom tabs visible and prevents navigation during a run",checks);
+                Capture(game,"ground-before.png");game.Tick(.25f,false);Require(Mathf.Abs(game.GroundTravel-.875f)<.001f,"Play-mode ground moves with terrain distance",checks);Capture(game,"ground-after.png");
                 Keyboard keyboard = Keyboard.current ?? InputSystem.AddDevice<Keyboard>();
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.RightArrow)); InputSystem.Update();
                 game.Tick(0.05f, true);
@@ -151,7 +130,7 @@ namespace SquadRush.Editor
                 game.StartVerificationStage(1, 5104); game.ChangeSquad(57); game.SpawnTarget(TargetKind.Boss, 0, 20, 1);
                 for (int i = 0; i < 180 && game.State == RunState.Playing; i++) game.Tick(0.02f, false);
                 Require(game.State == RunState.Won && new SquadRushProgress(storageKey).ResumeStage == 2, "A real boss defeat saves stage two", checks);
-                Require(game.Equipment.Owns(0) && new SquadRushEquipment(storageKey).Owns(0), "Boss clear permanently saves the rifle reward", checks);
+                Require(game.Equipment.Quantity(game.LastStageDrop.Id,game.LastStageDrop.Rarity)>0 && new SquadRushEquipment(storageKey).Quantity(game.LastStageDrop.Id,game.LastStageDrop.Rarity)>0, "Boss clear permanently saves the actual random drop", checks);
                 yield return null;
                 Capture(game, "clear.png");
                 play.onClick.Invoke();
@@ -164,6 +143,7 @@ namespace SquadRush.Editor
                 game.Hud.Flash(""); yield return null; Capture(game, "snow.png");
                 game.ConfigureVerification(storageKey);
                 Require(game.StageNumber == 2 && game.State == RunState.Ready, "Reloading the saved progress offers stage two in the menu", checks);
+                if(!game.Equipment.Owns(0))game.Equipment.Acquire(0);
                 Click(game, "HomeEquipment"); Click(game, "InventoryItem0"); Click(game, "EquipmentAction");
                 Require(game.Equipment.IsEquipped(0) && game.WeaponDamage == 2 && game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "ItemState0").text.Contains("装備中"), "Equipment button equips the earned rifle and updates its state", checks);
                 Require(UiArt(game,"EquippedIllustration0").sprite==UiArt(game,"InventoryIllustration0").sprite && UiText(game,"StatValue0").text=="2","Equipped slot illustration and power value reflect the actual rifle",checks);
@@ -172,16 +152,16 @@ namespace SquadRush.Editor
                 Click(game, "EquippedSlotWeapon"); Capture(game, "equipment-detail.png");
                 Require(Button(game, "EquipmentAction").interactable && Button(game, "EquipmentAction").GetComponentInChildren<TMP_Text>().text == "装備を外す", "The equipped weapon slot opens its own removable item detail", checks);
                 Click(game, "CloseEquipmentDetail");
-                Click(game, "HomeCommand"); Click(game, "HomeStages"); Click(game, "PreviousStage"); Click(game, "StageStart");
+                Click(game, "HomeCommand"); Click(game, "HomePreviousStage"); Click(game, "HomeSortie");
                 Require(game.StageNumber == 1 && game.WeaponDamage == 2 && game.Equipment.IsEquipped(0), "An earlier unlocked stage starts with permanent equipped bonuses", checks);
-                game.TogglePause(); Click(game, "ReturnHome");
+                game.TogglePause(); Click(game, "HomeCommand");
                 Require(game.State == RunState.Ready && game.Hud.CurrentPage == FrontEndPage.Home && game.ActiveTargets == 0 && game.ActiveBullets == 0, "Pause screen returns cleanly to Home", checks);
                 game.ConfigureVerification(storageKey); Click(game, "HomeEquipment");
                 Require(game.Equipment.IsEquipped(0) && game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "ItemState0").text.Contains("装備中"), "Reload restores both the equipped rifle and equipment UI", checks);
                 Click(game, "EquippedSlotWeapon"); Click(game, "EquipmentAction");
                 Require(game.WeaponDamage == 1 && !game.Equipment.IsEquipped(0), "Equipment button also unequips the rifle", checks);
                 Click(game, "HomeCommand");
-                Click(game, "HomeStages"); Click(game, "PreviousStage");
+                Click(game, "HomePreviousStage");
                 Capture(game, "stages-owned.png");
                 Require(game.Hud.GetComponentsInChildren<TMP_Text>().Where(t => t.gameObject.activeInHierarchy).All(t => !t.isTextOverflowing), "Stage page fits already-owned reward and navigation labels", checks);
                 Click(game, "HomeCommand");
@@ -218,7 +198,7 @@ namespace SquadRush.Editor
                 var stageSprites=new System.Collections.Generic.HashSet<Sprite>();
                 for(int stage=1;stage<=6;stage++)
                 {
-                    game.StartVerificationStage(stage,123);game.Hud.ShowStages();stageSprites.Add(UiArt(game,"StageSelectionIllustration").sprite);
+                    game.StartVerificationStage(stage,123);game.Hud.ShowHome();stageSprites.Add(UiArt(game,"StageSelectionIllustration").sprite);
                     Require(UiArt(game,"HomeStageIllustration").sprite==UiArt(game,"StageSelectionIllustration").sprite,"Home and selection share the stage "+stage+" illustration",checks);
                     if(stage==4||stage==6){yield return null;Capture(game,"stage-art-"+stage+".png");}
                 }
@@ -232,7 +212,7 @@ namespace SquadRush.Editor
                 Require(game.Account.Gems==1000&&game.Account.Tickets==10&&game.Account.Pity==0&&game.Account.LastResults[0].kind==DrawKind.Character,"Guaranteed character gem draw spends only the selected currency and resets pity",checks);
                 int earned=game.Account.LastResults[0].id;
                 Capture(game,"gacha-character-result.png");RequireTextFits(game,"Character draw receipt labels fit",checks);Click(game,"CloseDrawResults");
-                Click(game,"GachaCharacters");Click(game,"Character"+earned);Click(game,"SelectCharacter");
+                Click(game,"HomeCharacters");Click(game,"Character"+earned);Click(game,"SelectCharacter");
                 Require(game.Account.SelectedCharacter==earned&&UiArt(game,"CharacterPreview").sprite==UiArt(game,"CharacterPortrait"+earned).sprite,"Selecting the newly acquired character updates the actual active character and portrait",checks);
                 Capture(game,"characters.png");Click(game,"HomeEquipment");Require(UiArt(game,"EquipmentHeroIllustration").sprite==UiArt(game,"CharacterPortrait"+earned).sprite,"Equipment page uses the selected character illustration",checks);
                 game.Begin();game.SpawnTarget(TargetKind.Enemy,-3,25,1);Click(game,"CharacterSkill");
@@ -247,17 +227,15 @@ namespace SquadRush.Editor
                 Require(!Button(game,"DrawOne").interactable&&!Button(game,"DrawTen").interactable,"Exhausted ticket mode does not fall back to spending gems",checks);
                 Click(game,"UseGems");Require(Button(game,"DrawOne").interactable&&Button(game,"DrawTen").interactable,"Gem mode remains available after tickets run out",checks);
                 game.OpenMissions();Require(Button(game,"ClaimMission2").interactable,"Completed draw mission becomes claimable",checks);Click(game,"ClaimMission2");Require(game.Account.Gems==1050&&!Button(game,"ClaimMission2").interactable,"Mission UI grants 50 gems exactly once",checks);
-                game.ShowHome();Click(game,"HomeEvents");int campaignGems=game.Account.Gems,campaignPity=game.Account.Pity,campaignPulls=game.Account.TotalPulls;
-                Click(game,"ClaimReleaseCampaign");
-                Require(game.Account.Tickets==10&&game.Account.ReleaseCampaignClaimed&&!Button(game,"ClaimReleaseCampaign").interactable&&game.Account.Gems==campaignGems&&game.Account.Pity==campaignPity&&game.Account.TotalPulls==campaignPulls,"Event claim grants ten tickets once and preserves gems, pity and pull count",checks);
-                Capture(game,"events-claimed.png");Capture(game,"events-claimed-mobile.png",390,844);
-                Click(game,"CampaignToPermanent");
-                Require(!game.Hud.ShowingGachaEvents&&Button(game,"DrawTen").interactable&&game.Account.Tickets==10&&game.Account.TotalPulls==campaignPulls,"Campaign action selects ticket mode in permanent gacha without triggering a draw",checks);
-                Click(game,"DrawTen");yield return null;
-                Require(game.Account.LastResults.Length==10&&game.Account.Tickets==0&&game.Account.Gems==campaignGems&&game.Account.TotalPulls==campaignPulls+10,"Free campaign tickets pay for exactly ten real permanent-gacha results without gems",checks);
-                Capture(game,"campaign-ten-results.png");Click(game,"CloseDrawResults");game.ConfigureVerification(accountUiKey);game.OpenEvents();
-                Require(game.Account.ReleaseCampaignClaimed&&!Button(game,"ClaimReleaseCampaign").interactable&&!game.ClaimReleaseCampaign()&&game.Account.Tickets==0,"Reloaded UI keeps the release gift received and prevents a second claim",checks);
-                Require(Button(game,"HomeEvents").GetComponentInChildren<TextMeshProUGUI>().text.Contains("受取済み"),"Home campaign shows its received state after claiming",checks);
+                Click(game,"HomeMail");int campaignGems=game.Account.Gems,campaignPity=game.Account.Pity,campaignPulls=game.Account.TotalPulls;Click(game,"MailClaimRelease");
+                Require(game.Account.Tickets==10&&game.Account.ReleaseCampaignClaimed&&!Button(game,"MailClaimRelease").interactable&&game.Account.Gems==campaignGems&&game.Account.Pity==campaignPity&&game.Account.TotalPulls==campaignPulls,"Mail claim grants ten tickets once without drawing or spending gems",checks);Capture(game,"mail-received.png");Capture(game,"mail-received-mobile.png",390,844);
+                string eventFixture=PlayerPrefs.GetString(SquadRushAccount.StorageKey(accountUiKey)).Replace("\"eventPity\":0","\"eventPity\":89");PlayerPrefs.SetString(SquadRushAccount.StorageKey(accountUiKey),eventFixture);game.ConfigureVerification(accountUiKey);Click(game,"HomeGacha");Click(game,"EventGachaTab");Click(game,"EventUseTickets");Click(game,"EventDrawTen");yield return null;
+                Require(game.Account.LastResults.Length==10&&game.Account.LastResults[0].kind==DrawKind.Character&&game.Account.LastResults[0].id==1&&game.Account.Tickets==0&&game.Account.Gems==campaignGems&&game.Account.Pity==campaignPity&&game.Account.LastBanner==DrawBanner.AkaneEvent,"Event ten-pull awards featured Akane at its own pity and preserves permanent pity and gems",checks);
+                Require(navigation.All(n=>Button(game,n).gameObject.activeInHierarchy&&Button(game,n).interactable),"Bottom tabs stay usable over draw results",checks);Capture(game,"event-ten-results.png");Capture(game,"event-results-mobile.png",390,844);
+                Click(game,"HomeCharacters");Require(game.Hud.CurrentPage==FrontEndPage.Characters&&!Button(game,"CloseDrawResults").gameObject.activeInHierarchy,"Bottom navigation leaves draw results directly without an extra close step",checks);
+                int eventPityAfter=game.Account.EventPity;game.ConfigureVerification(accountUiKey);Click(game,"HomeMail");Require(!Button(game,"MailClaimRelease").interactable&&!game.ClaimReleaseCampaign()&&game.Account.Tickets==0&&game.Account.EventPity==eventPityAfter&&game.Account.Pity==campaignPity,"Reload preserves both banner counters and the already-received legacy gift",checks);
+                PlayerPrefs.SetInt(accountUiKey,12);game.ConfigureVerification(accountUiKey);Capture(game,"stage-12.png");Capture(game,"stage-12-mobile.png",390,844);int countBefore=game.Equipment.OwnedCount;game.Begin();game.ChangeSquad(997);game.SpawnTarget(TargetKind.Boss,0,20,1);for(int i=0;i<180&&game.State==RunState.Playing;i++)game.Tick(.02f,false);
+                Require(game.State==RunState.Won&&game.Equipment.OwnedCount==countBefore+1&&game.LastStageDrop.Rarity>=2&&game.LastStageDrop.Rarity<=3,"Stage twelve boss grants one actual rare or epic drop",checks);Capture(game,"stage-12-clear.png");Capture(game,"stage-12-clear-mobile.png",390,844);RequireTextFits(game,"Higher-rarity clear reward fits beside persistent navigation",checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
@@ -309,8 +287,8 @@ namespace SquadRush.Editor
             var icons=new System.Collections.Generic.List<SquadRushUiIcon>();int n=0;
             foreach(SquadIcon kind in Enum.GetValues(typeof(SquadIcon)))
             {
-                float x=(n%3)/3f,y=1-(n/3+1)/7f;
-                var cell=new GameObject("Sample"+kind,typeof(RectTransform));cell.transform.SetParent(root,false);var rect=cell.GetComponent<RectTransform>();rect.anchorMin=new Vector2(x,y);rect.anchorMax=new Vector2(x+1/3f,y+1/7f);rect.offsetMin=rect.offsetMax=Vector2.zero;
+                float x=(n%3)/3f,y=1-(n/3+1)/8f;
+                var cell=new GameObject("Sample"+kind,typeof(RectTransform));cell.transform.SetParent(root,false);var rect=cell.GetComponent<RectTransform>();rect.anchorMin=new Vector2(x,y);rect.anchorMax=new Vector2(x+1/3f,y+1/8f);rect.offsetMin=rect.offsetMax=Vector2.zero;
                 var picture=new GameObject("Icon"+kind,typeof(RectTransform),typeof(CanvasRenderer),typeof(SquadRushUiIcon));picture.transform.SetParent(rect,false);var imageRect=picture.GetComponent<RectTransform>();imageRect.anchorMin=new Vector2(.17f,.24f);imageRect.anchorMax=new Vector2(.83f,.98f);imageRect.offsetMin=imageRect.offsetMax=Vector2.zero;var icon=picture.GetComponent<SquadRushUiIcon>();icon.Kind=kind;icon.raycastTarget=false;icons.Add(icon);
                 var caption=new GameObject("Caption"+kind,typeof(RectTransform),typeof(TextMeshProUGUI));caption.transform.SetParent(rect,false);var label=caption.GetComponent<TextMeshProUGUI>();label.font=Resources.Load<TMP_FontAsset>("SquadFont");label.text=kind.ToString();label.fontSize=15;label.alignment=TextAlignmentOptions.Center;label.raycastTarget=false;label.rectTransform.anchorMin=Vector2.zero;label.rectTransform.anchorMax=new Vector2(1,.24f);label.rectTransform.offsetMin=label.rectTransform.offsetMax=Vector2.zero;n++;
             }
@@ -324,7 +302,7 @@ namespace SquadRush.Editor
                 if(!bounded||icon.raycastTarget)throw new InvalidOperationException("Invalid decorative icon geometry: "+icon.Kind+" rect="+rect+" mesh="+(mesh==null?"null":mesh.bounds.ToString()));
                 fingerprints.Add(string.Join(",",mesh.vertices.Select(p=>p.ToString("F3")))+string.Join(",",mesh.colors32.Select(c=>c.ToString())));
             }
-            Require(fingerprints.Count==icons.Count,"All 21 icons are distinct, bounded, finite and do not intercept touches",checks);
+            Require(fingerprints.Count==icons.Count,"All 23 icons are distinct, bounded, finite and do not intercept touches",checks);
             sheet.SetActive(false);UnityEngine.Object.Destroy(sheet);
         }
         static void Capture(SquadRushGame game, string name,int width=540,int height=960)

@@ -1,11 +1,5 @@
 <!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#101d31">
-  <meta name="description" content="敵を撃ち、仲間を増やして突破する縦画面ゲーム。スクワッド・ラッシュの試作をスマホで遊ぼう。">
-  <title>スクワッド・ラッシュ — 遊ぶ・ダウンロード</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101d31"><title>スクワッド・ラッシュ — 遊ぶ・ダウンロード</title>
   <style>
     *{box-sizing:border-box}body{margin:0;background:#101d31;color:#f6f9ff;font-family:system-ui,-apple-system,sans-serif;line-height:1.8}
     main{max-width:900px;margin:auto;padding:48px 24px 64px}.tag{color:#61d4ff;font-size:14px;letter-spacing:.12em}
@@ -18,84 +12,11 @@
     .landscapes{display:grid;grid-template-columns:repeat(2,minmax(0,250px));gap:20px;margin:24px 0}.landscapes figure{margin:0}.landscapes img{width:100%;height:auto;border-radius:14px}.landscapes figcaption{font-size:14px;color:#b9d2e9;text-align:center}
     @media(max-width:650px){main{padding:28px 20px 48px}.hero{grid-template-columns:1fr;gap:24px}.preview{max-width:250px;justify-self:center}}
   </style>
-</head>
-<body>
-  <main>
-    <div class="hero">
-      <div>
-        <div class="tag">SQUAD RUSH · 試作 0.13.0</div>
-        <h1>仲間を増やして、<br>敵の大群を突破しよう。</h1>
-        <p>リリース記念！無料10連分のチケットをプレゼント。<br>イベントで受け取り、恒常ガチャで仲間を迎えよう。</p>
-        <div class="buttons">
-          <a class="button" href="./play/">ブラウザで遊ぶ</a>
-          <a class="button secondary" href="https://github.com/Ronanmazrie/SquadRush/releases/download/v0.13.0/SquadRush-Android.apk">Android版をダウンロード</a>
-        </div>
-        <p class="note">広告・課金なし。ブラウザ版はAndroid・iPhone・PCで試せます。AndroidアプリはAndroid 8.0以降のARM64端末向けです。</p>
-      </div>
-      <img class="preview" src="assets/events.png" width="540" height="960" alt="リリース記念の無料10連チケットを受け取れるイベント画面">
-    </div>
-    <section>
-      <h2>リリース記念・無料10連プレゼント</h2>
-      <p>ホームのキャンペーン、またはガチャの「イベント」からチケット10枚を受け取り、「恒常ガチャで使う」→「10回引く」で無料10連。既存プレイヤーも対象です。受取だけで抽選やジェムの消費は発生しません。</p>
-      <p>端末内のセーブデータごとに1回限定・終了日未定。受取状態は再起動しても引き継ぎます。現在のガチャは「恒常ガチャ」として継続し、キャンペーンのチケットも同じ排出内容・確率・天井で使用できます。</p>
-      <div class="landscapes">
-        <figure><img src="assets/menu.png" width="540" height="960" alt="リリース記念キャンペーンへ入れるホームのバナー"><figcaption>ホームからイベントへ</figcaption></figure>
-        <figure><img src="assets/gacha.png" width="540" height="960" alt="恒常ガチャ・イベントの切り替えとチケットでの抽選"><figcaption>恒常ガチャでチケットを使う</figcaption></figure>
-      </div>
-    </section>
-    <section>
-      <h2>アイコンで、ひと目でわかる</h2>
-      <p>ジェム・チケット・コイン、ログイン報酬、ミッション、スキル、装備の能力値を統一したイラストで表示。受け取れる報酬の目印、受取済みマーク、ミッションの進捗バーも追加しました。</p>
-      <div class="landscapes">
-        <figure><img src="assets/icons.png" width="540" height="960" alt="縁取り・陰影をそろえた21種類のオリジナルアイコン"><figcaption>21種類のアイコン</figcaption></figure>
-        <figure><img src="assets/missions.png" width="540" height="960" alt="種類別アイコン・報酬のジェム・進捗バーを表示するミッション画面"><figcaption>進捗と報酬を確認</figcaption></figure>
-      </div>
-    </section>
-    <section>
-      <h2>キャラを集めて、固有スキルで戦おう</h2>
-      <p>初期キャラは青い兵士のレン（仲間＋3）。ガチャからアカネ（敵全体への範囲攻撃）、ミオ（6秒間の連射強化）が登場します。戦闘画面右下のボタンでスキルを発動し、再使用時間を待ってまた使えます。</p>
-      <p>ガチャ1回はチケット1枚またはジェム100個。キャラ枠合計0.5%、80連目から5.5%・10.5%と上昇し、90連目で確定。キャラが出ると天井をリセットし、10連も順に判定します。通常の排出は基本武器またはコインです。</p>
-      <p>ログインで毎日ジェム100＋チケット1、7回目は増量。ステージクリアで毎回ジェム100、初クリアはさらに100。ミッションでもジェムを獲得できます。更新は日本時間0時。課金はありません。</p>
-      <div class="landscapes">
-        <figure><img src="assets/gacha.png" width="540" height="960" alt="使用通貨、次のキャラ確率と天井を表示するガチャ画面"><figcaption>チケット・ジェムで募集</figcaption></figure>
-        <figure><img src="assets/login.png" width="540" height="960" alt="7回分のログインボーナスと受取ボタン"><figcaption>報酬を受け取ろう</figcaption></figure>
-      </div>
-    </section>
-    <section>
-      <h2>装備を集めて、3個で合成しよう</h2>
-      <p>5列の小さなアイコン一覧で、所持数・レアリティ・合成可能な装備を確認。同じ種類・同じレアリティを3個消費して1段階上へ強化できます。白・緑・青・紫・金の5段階。装備中のアイテムは合成後も装備を引き継ぎ、再クリアでも素材を入手できます。所持品と進行は端末内に保存します。</p>
-      <div class="landscapes">
-        <figure><img src="assets/equipment-fusion-ready.png" width="540" height="960" alt="装備の大きなイラスト、効果、入手先を表示する詳細画面"><figcaption>合成後の効果を確認</figcaption></figure>
-        <figure><img src="assets/equipment-collection.png" width="540" height="960" alt="5列の小さなアイコンで装備の種類、レアリティ、個数を一覧表示する画面"><figcaption>小さなアイコンで一覧</figcaption></figure>
-      </div>
-      <h2>ランダムな景色と、次のステージへ</h2>
-      <p>出撃前はステージのイメージイラストを表示。6種類のロケーションから選び、7以降は同じ絵を繰り返しながら難易度が上がります。戦闘では木や岩の配置が挑戦ごとに変わり、クリアすると次へ進みます。</p>
-      <div class="landscapes">
-        <figure><img src="assets/menu.png" width="540" height="960" alt="砂塵の前哨基地のイラストを表示する出撃ホーム"><figcaption>STAGE 01 · 砂塵の前哨基地</figcaption></figure>
-        <figure><img src="assets/stage-art-6.png" width="540" height="960" alt="氷壁の要塞のイラストを表示するステージ選択"><figcaption>STAGE 06 · 氷壁の要塞</figcaption></figure>
-      </div>
-    </section>
-    <section>
-      <h2>遊び方</h2>
-      <ol>
-        <li>ホーム上部のステージ名でステージを選び、「出撃」を押す。ホーム中央下の「出撃」から現在のステージへ直接出撃することもできます。</li>
-        <li>指を左右にドラッグして移動。PCは左右キーでも操作できます。</li>
-        <li>射撃は自動。加算・倍率ゲートや青いBOXで仲間を最大1000人まで増やそう。</li>
-        <li>金色のBOXは威力、緑色のBOXは連射を強化。各ステージで武器を育てよう。</li>
-        <li>終盤のボスを倒すとクリア。装備を入手し、ホームの「装備」で付け替え・合成しよう。</li>
-        <li>仲間が0人になったら同じステージを再挑戦。次回も続きから遊べます。</li>
-      </ol>
-    </section>
-    <section>
-      <h2>スマホでの起動</h2>
-      <p><strong>Android：</strong>APKをダウンロードし、ダウンロード一覧から開いてインストールします。許可の確認が表示された場合は、このアプリをインストールする提供元を確認してください。</p>
-      <p><strong>iPhone：</strong>Safariで「ブラウザで遊ぶ」を開いてください。配布中のAPKはAndroid専用です。iPhone用のネイティブアプリはまだ配布していません。</p>
-      <p class="note">初回のブラウザ版は読み込みに時間がかかります。実機の性能によって動作が変わるため、これは確認用の試作です。</p>
-    </section>
-    <footer>
-      <a href="https://github.com/Ronanmazrie/SquadRush">GitHubのプロジェクト</a> ·
-      <a href="https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.13.0">リリース情報</a>
-    </footer>
-  </main>
-</body>
-</html>
+</head><body><main>
+<div class="hero"><div><div class="tag">SQUAD RUSH · 試作 0.14.0</div><h1>仲間と装備を育てて、<br>次のステージへ。</h1><p>6つのタブから、目的の画面へ。<br>イベントガチャ「紅蓮作戦」開催。</p><div class="buttons"><a class="button" href="./play/">ブラウザで遊ぶ</a><a class="button secondary" href="https://github.com/Ronanmazrie/SquadRush/releases/download/v0.14.0/SquadRush-Android.apk">Android版をダウンロード</a></div><p class="note">広告・課金なし。Android 8.0以降・ARM64向け。iPhone・PCではブラウザ版で遊べます。</p></div><img class="preview" src="assets/events.png" width="540" height="960" alt="常設の下部6タブとアカネのイベントガチャ"></div>
+<section><h2>下のタブから、すぐに移動</h2><p>ステージ・装備・キャラ・ガチャ・ミッション・メールの6タブを常設。ステージ選択は同じ画面の矢印で操作でき、別画面へのショートカットを重複して置いていません。ガチャ結果・装備詳細・戦闘中もタブを表示。一時停止後はタブで戦闘を終了して移動できます。</p><div class="landscapes"><figure><img src="assets/menu.png" width="540" height="960" alt="矢印でステージを選び、下部タブで各画面へ進む"><figcaption>選んで出撃</figcaption></figure><figure><img src="assets/missions.png" width="540" height="960" alt="ミッションとログイン報酬を管理する画面"><figcaption>ミッション・ログイン</figcaption></figure></div></section>
+<section><h2>恒常ガチャと、イベントガチャ</h2><p>イベント「紅蓮作戦」はアカネを対象にしたガチャ。恒常ではアカネ・ミオが登場します。通常の排出は基本武器またはコインで、所持済みキャラはコイン1000個に変換します。チケット1枚またはジェム100個で1回、10枚または1000個で10回。天井はそれぞれ別に保存します。</p><p>キャラタブで仲間を選択。初期キャラのレンは仲間補給、アカネは範囲攻撃、ミオは連射強化のスキルを使えます。</p><div class="landscapes"><figure><img src="assets/gacha.png" width="540" height="960" alt="恒常ガチャのチケット・ジェムと抽選ボタン"><figcaption>恒常ガチャ</figcaption></figure><figure><img src="assets/event-ten-results.png" width="540" height="960" alt="イベントガチャでキャラ・武器・コインを獲得した結果"><figcaption>イベントの抽選結果</figcaption></figure></div></section>
+<section><h2>無料10連分は、メールで受取</h2><p>リリース記念のチケット10枚は「メール」タブから受け取れます。恒常・イベントのどちらにも使用でき、受取後は下部のガチャタブで抽選へ進めます。1セーブデータにつき1回、受取期限はありません。以前受け取った方の受取状態も引き継ぎます。</p><div class="landscapes"><figure><img src="assets/mail.png" width="540" height="960" alt="無料10連分のチケットをメールで受け取る"><figcaption>配布報酬はメールへ</figcaption></figure><figure><img src="assets/characters.png" width="540" height="960" alt="キャラを選択して固有スキルを確認する画面"><figcaption>キャラも1タップで確認</figcaption></figure></div></section>
+<section><h2>ステージ12へ。強い装備を狙おう</h2><p>ステージ7～12に固有の名称・目標・敵の強さを設定。12は「極北の決戦」です。クリアごとに、武器・防具・サポートから装備1個をランダム獲得。ステージ1～3はノーマル、4～6はノーマル～グッド、7～9はグッド～レア、10～12はレア～エピックが落ちます。</p><p>同じ種類・同じレアリティを3個合成して強化。装備の能力値は部隊の威力・初期人数・連射に反映します。出撃前のイメージ絵は6枚を再利用し、戦闘の景色はランダムな3D背景です。13以降も名称・絵を繰り返しながら難易度を上げて遊べます。</p><div class="landscapes"><figure><img src="assets/stage-12.png" width="540" height="960" alt="極北の決戦とレア～エピックのドロップ範囲"><figcaption>STAGE 12 · 極北の決戦</figcaption></figure><figure><img src="assets/stage-12-clear.png" width="540" height="960" alt="クリアで実際に抽選した装備を獲得する"><figcaption>難易度に応じたランダム装備</figcaption></figure></div></section>
+<section><h2>遊び方・対応端末</h2><p>射撃は自動。指の左右ドラッグで部隊を動かし、ゲートやBOXで仲間・武器を育ててボスを倒そう。PCは左右キー・A / Dでも移動できます。仲間は最大1000人、進行と所持品は端末内に保存します。</p><p>AndroidはAPKをダウンロードしてインストール。iPhoneはSafariでブラウザ版を開いてください。Androidとブラウザの保存は別です。メールを含む報酬管理は端末内のオフライン仕様です。</p><p class="note">ゲーム処理148件・Playモード100件、計248件を検証。スマホ実機・Safari・性能確認は未実施。iOSネイティブ版は未配布です。</p></section>
+<footer><a href="https://github.com/Ronanmazrie/SquadRush">GitHubのプロジェクト</a> · <a href="https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.14.0">リリース情報</a></footer></main></body></html>

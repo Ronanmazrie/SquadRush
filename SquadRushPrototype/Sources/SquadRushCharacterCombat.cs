@@ -40,15 +40,16 @@ namespace SquadRush
         public void OpenLogin(){if(State==RunState.Ready)Hud.ShowLogin();}
         public void OpenMissions(){if(State==RunState.Ready)Hud.ShowMissions();}
         public void OpenEvents(){if(State==RunState.Ready)Hud.ShowEvents();}
+        public void OpenMail(){if(State==RunState.Ready)Hud.ShowMail();}
         public bool ClaimReleaseCampaign()
         {
             if(State!=RunState.Ready)return false;
-            bool claimed=Account.ClaimReleaseCampaign();Hud.ShowEvents();return claimed;
+            bool claimed=Account.ClaimReleaseCampaign();Hud.ShowMail();return claimed;
         }
-        public SquadRushDrawResult[] DrawGacha(int count,bool tickets)
+        public SquadRushDrawResult[] DrawGacha(int count,bool tickets,DrawBanner banner=DrawBanner.Permanent)
         {
             if(State!=RunState.Ready)return System.Array.Empty<SquadRushDrawResult>();
-            var result=Account.Draw(count,tickets);Hud.ShowGacha();if(result.Length>0)Hud.ShowDrawResults(result);return result;
+            var result=Account.Draw(count,tickets,banner:banner);if(banner==DrawBanner.AkaneEvent)Hud.ShowEvents();else Hud.ShowGacha();if(result.Length>0)Hud.ShowDrawResults(result);return result;
         }
         public void ClaimLogin(){if(State==RunState.Ready){Account.ClaimLogin();Hud.ShowLogin();}}
         public void ClaimMission(int id){if(State==RunState.Ready){Account.ClaimMission(id);Hud.ShowMissions();}}

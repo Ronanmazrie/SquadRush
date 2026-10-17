@@ -54,9 +54,9 @@ PASS Equipping the earned rifle saves and increases real weapon damage
 PASS Equipped rifle affects the volley and cannot be swapped mid-battle
 PASS Permanent equipment survives defeat while supply upgrades reset
 PASS Unequip removes the bonus and persists an empty weapon slot
-PASS Stage 2 clear awards its defined equipment
-PASS Stage 3 clear awards its defined equipment
-PASS Stage 4 clear awards its defined equipment
+PASS Stage 2 clear saves its random equipment within the difficulty band
+PASS Stage 3 clear saves its random equipment within the difficulty band
+PASS Stage 4 clear saves its random equipment within the difficulty band
 PASS Weapon, armor and support bonuses apply together at sortie
 PASS Changing a weapon replaces only that slot
 PASS Repeated stage rewards add copies for fusion
@@ -120,6 +120,24 @@ PASS Login rewards and campaign receipts remain independent
 PASS New profiles also receive one free ten-pull without a gem balance
 PASS Ticket cap defers the gift without discarding tickets or marking it received
 PASS Exactly ten available wallet slots allow the complete campaign gift
+PASS Event pity grants featured Akane and leaves permanent pity untouched
+PASS Permanent pulls cannot advance the event pity
+PASS Event characters remain Akane and duplicates grant coins even while Mio is unowned
+PASS Both banner counters and event receipt survive reload
+PASS Unknown banners are rejected without spending
+PASS Stage 1 random drops cover eligible item types and its rarity band
+PASS Stage 2 random drops cover eligible item types and its rarity band
+PASS Stage 3 random drops cover eligible item types and its rarity band
+PASS Stage 4 random drops cover eligible item types and its rarity band
+PASS Stage 5 random drops cover eligible item types and its rarity band
+PASS Stage 6 random drops cover eligible item types and its rarity band
+PASS Stage 7 random drops cover eligible item types and its rarity band
+PASS Stage 8 random drops cover eligible item types and its rarity band
+PASS Stage 9 random drops cover eligible item types and its rarity band
+PASS Stage 10 random drops cover eligible item types and its rarity band
+PASS Stage 11 random drops cover eligible item types and its rarity band
+PASS Stage 12 random drops cover eligible item types and its rarity band
+PASS Twelve named stages scale combat and reach rare-to-epic drops
 PASS Ren's actual skill supplies three allies and enforces cooldown
 PASS Pausing freezes character skill cooldown
 PASS Character switching and gacha spending are blocked during combat
