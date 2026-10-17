@@ -1,7 +1,7 @@
 PASS Initial menu
 PASS New profile opens Home without unearned equipment
 PASS Stage selection restricts play to unlocked stages
-PASS Gacha is a non-playing placeholder with no rewards
+PASS Gacha browsing is non-playing and grants no free rewards
 PASS Unowned gear cannot be equipped
 PASS Road, soil and curb texture features all scroll backward at 3.5 metres per second
 PASS Ground UV orientation matches forward world distance
@@ -74,3 +74,47 @@ PASS Legendary gear is strongest and cannot merge past the maximum rarity
 PASS Fused armor and support increase actual ally and firing bonuses
 PASS Reload preserves rarity quantities and equipped upgraded gear
 PASS Invalid entries and absent lower tiers cannot alter the inventory
+PASS New account starts with Ren and no paid or unearned currency
+PASS Locked characters and insufficient draw balances cannot be used
+PASS Login grants exactly 100 gems and one ticket once per Japanese calendar day
+PASS Reload does not reset the claimed login reward
+PASS Login becomes claimable exactly at midnight in Japan
+PASS Moving the clock backwards never grants another login bonus
+PASS Login day 3 grants its scheduled reward
+PASS Login day 4 grants its scheduled reward
+PASS Login day 5 grants its scheduled reward
+PASS Login day 6 grants its scheduled reward
+PASS Login day 7 grants its scheduled reward
+PASS Seventh login gives 300 gems and three tickets
+PASS Seven-day login reward cycle restarts without requiring consecutive days
+PASS First clear grants 200 gems and a replay grants 100
+PASS Daily missions track stage clears and defeated enemies independently
+PASS Mission gem rewards are claimed only once
+PASS Stage-three permanent mission unlocks and cannot be claimed twice
+PASS Japanese midnight resets daily missions while preserving permanent claims
+PASS Previously cleared stage does not grant another first-clear bonus after reload
+PASS Ticket draw consumes exactly one ticket and saves a normal rifle reward
+PASS Gem draw spends 100 gems without using tickets and grants 200 coins
+PASS A successful draw advances the daily draw mission
+PASS Unsupported draw amounts are rejected without spending
+PASS Ten-pull grants all ten weapons and spends exactly ten tickets
+PASS Insufficient tickets cannot silently spend gems
+PASS Draw receipt, pity, wallet and weapon quantities survive reload
+PASS Pull 79 retains the base 0.5 percent character chance
+PASS Pull 80 raises the character chance to 5.5 percent and a hit resets pity
+PASS Published probability boundaries are exact
+PASS Every soft-pity step from 80 through 90 strictly increases the rate
+PASS A ten-pull crossing 90 guarantees the second result and resets pity for the remaining eight pulls
+PASS Character results prioritize the remaining unowned character
+PASS After both new characters are owned, duplicate characters convert to 1000 coins
+PASS Acquired character selection persists
+PASS Recovering a draw already granted before interruption never duplicates items or charges again
+PASS Pending committed draw rewards finish once after reload
+PASS Existing equipment migrates without free currency or lost progress, and unlocks the permanent stage mission
+PASS Ren's actual skill supplies three allies and enforces cooldown
+PASS Pausing freezes character skill cooldown
+PASS Character switching and gacha spending are blocked during combat
+PASS Starting a new attempt resets skill cooldown and buffs
+PASS Akane's area skill damages and defeats real enemies across both lanes
+PASS Mio's active skill increases real firing speed for six seconds
+PASS Mio's temporary firing bonus expires without accumulating permanently

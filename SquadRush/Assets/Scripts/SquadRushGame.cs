@@ -10,7 +10,7 @@ namespace SquadRush
     public enum TargetKind { Enemy, Crate, Boss }
     public enum SupplyReward { Allies, Power, RapidFire }
 
-    public sealed class SquadRushGame : MonoBehaviour
+    public sealed partial class SquadRushGame : MonoBehaviour
     {
         public const int MaxSquad = 1000;
         public const int MaxVisibleSquad = 96;
@@ -20,7 +20,7 @@ namespace SquadRush
         public int PowerLevel { get; private set; }
         public int RapidFireLevel { get; private set; }
         public int WeaponDamage => 1 + PowerLevel + (Equipment?.WeaponPower ?? 0);
-        public float FireRateMultiplier => 1 + RapidFireLevel * 0.16f + (Equipment?.FireRateBonus ?? 0);
+        public float FireRateMultiplier => 1 + RapidFireLevel * 0.16f + (Equipment?.FireRateBonus ?? 0) + (SkillBuffRemaining>0?0.5f:0);
         public float FireInterval => 0.34f / FireRateMultiplier;
         public int LastVolleyDamage { get; private set; }
         public int StageNumber { get; private set; }
@@ -88,6 +88,7 @@ namespace SquadRush
             initialized = true;
             StageNumber = progress.ResumeStage;
             Equipment = new SquadRushEquipment(SquadRushProgress.DefaultKey, StageNumber - 1, !Application.isBatchMode);
+            Account=new SquadRushAccount(Equipment,SquadRushProgress.DefaultKey,StageNumber-1,!Application.isBatchMode);
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             world = new GameObject("World").transform;
@@ -118,7 +119,7 @@ namespace SquadRush
         static int NewSeed() => Guid.NewGuid().GetHashCode();
         void StartRun(int seed)
         {
-            ClearRun();
+            ClearRun();ResetCharacterSkill();
             ResetGround();
             random = new System.Random(seed ^ 0x51F15E);
             GenerateLandscape(seed);
@@ -132,7 +133,7 @@ namespace SquadRush
         }
         public void ShowHome()
         {
-            ClearRun(); ResetGround(); State = RunState.Ready; dragging = false; boss = null;
+            ClearRun(); ResetCharacterSkill(); ResetGround(); State = RunState.Ready; dragging = false; boss = null;
             StageNumber = progress.ResumeStage; Elapsed = 0; Kills = 0; SquadX = targetX = 0;
             PowerLevel = RapidFireLevel = 0; squadRoot.position = new Vector3(0, 0, 1.5f);
             GenerateLandscape(NewSeed()); UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies);
@@ -170,7 +171,7 @@ namespace SquadRush
         public void ConfigureVerification(string storageKey)
         {
             ClearRun(); progress = new SquadRushProgress(storageKey);
-            Equipment = new SquadRushEquipment(storageKey, progress.ResumeStage - 1); ShowHome();
+            Equipment = new SquadRushEquipment(storageKey, progress.ResumeStage - 1); Account=new SquadRushAccount(Equipment,storageKey,progress.ResumeStage-1); ShowHome();
         }
         public void StartVerificationStage(int number, int seed) { StageNumber = Mathf.Max(1, number); StartRun(seed); }
 #endif
@@ -195,7 +196,7 @@ namespace SquadRush
         public void Tick(float dt, bool readInput)
         {
             if (State != RunState.Playing || dt <= 0) return;
-            Elapsed += dt;
+            Elapsed += dt;TickCharacterSkill(dt);
             if (readInput) ReadInput(dt);
             SquadX = Mathf.MoveTowards(SquadX, targetX, dt * 18);
             squadRoot.position = new Vector3(SquadX, 0, 1.5f);
@@ -275,6 +276,7 @@ namespace SquadRush
                 int rowCount = Mathf.Min(columns, visible - row * columns);
                 soldiers[i].localPosition = new Vector3((i % columns - (rowCount - 1) * 0.5f) * 0.48f * scale, 0, -row * 0.4f * scale);
             }
+            RefreshCommander();
             if (SquadCount == 0 && State == RunState.Playing) Finish(false);
         }
         void AnimateSquad(float dt)
@@ -505,6 +507,7 @@ namespace SquadRush
                 bool received = Equipment.Acquire(item.Id); progress.Complete(StageNumber);
                 reward = "\n" + (received ? "装備入手：" : "所持数上限：") + item.Name + (received?" ×1":"");
             }
+            int gems=Account.RecordBattle(StageNumber,Kills,won);if(gems>0)reward+="\nジェム +"+gems+" / コイン +50";
             Hud.UpdateStats();
             Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人" + reward, won ? "次のステージへ" : "もう一度遊ぶ");
         }

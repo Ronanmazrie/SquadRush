@@ -83,7 +83,7 @@ namespace SquadRush
             var homeButton = Button("ReturnHome", card, "ホームへ", Vector2.zero, new Vector2(300, 38), new Color(0.13f, 0.21f, 0.31f), game.ShowHome);
             homeButton.GetComponent<RectTransform>().anchorMin = homeButton.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.065f);
             homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
-            BuildFrontEnd();
+            BuildFrontEnd();BuildSkillHud();
             if (Object.FindFirstObjectByType<EventSystem>() == null)
             {
                 var events = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
@@ -104,6 +104,7 @@ namespace SquadRush
         }
         public void UpdateStats()
         {
+            RefreshSkillHud();
             if (lastStage != game.StageNumber) { lastStage = game.StageNumber; stageLabel.text = "STAGE " + game.StageNumber.ToString("D2") + " · " + game.Stage.Name; }
             if (game.SquadCount != lastCount) { lastCount = game.SquadCount; count.text = "仲間 " + lastCount; }
             if (game.Kills != lastKills) { lastKills = game.Kills; kills.text = "撃破 " + lastKills; }

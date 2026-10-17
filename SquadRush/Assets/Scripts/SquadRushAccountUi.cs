@@ -1,0 +1,178 @@
+using System;
+using System.Text;
+using TMPro;
+using UnityEngine;
+namespace SquadRush
+{
+    public sealed partial class SquadRushHud
+    {
+        RectTransform characterPage,loginPage,missionPage,drawOverlay,ratesOverlay;
+        TextMeshProUGUI[] walletLabels,characterStates,loginRows,missionStates;
+        UnityEngine.UI.Button[] characterCards,missionClaims;
+        Sprite[] characterPortraits;
+        UnityEngine.UI.Image characterArt,equipmentHeroImage;
+        TextMeshProUGUI characterName,characterDescription,characterAction,loginStatus,loginAction,gachaPity,gachaCost,gachaNotice;
+        UnityEngine.UI.Button characterSelect,loginClaim,drawOne,drawTen,ticketMode,gemMode,lastDrawReceipt;
+        TextMeshProUGUI skillAction;
+        UnityEngine.UI.Button skillButton;
+        int inspectingCharacter;
+        bool useTickets=true;
+        void RefreshWallet()
+        {
+            if(walletLabels==null)return;
+            walletLabels[0].text="ジェム "+game.Account.Gems;walletLabels[1].text="チケット "+game.Account.Tickets;walletLabels[2].text="コイン "+game.Account.Coins;
+            foreach(var label in walletLabels){label.enableAutoSizing=true;label.fontSizeMin=9;label.fontSizeMax=13;}
+        }
+        void HomeAccountButtons()
+        {
+            string[] names={"HomeCharacters","HomeLogin","HomeMissions"},labels={"キャラ","ログイン報酬","ミッション"};
+            UnityEngine.Events.UnityAction[] actions={game.OpenCharacters,game.OpenLogin,game.OpenMissions};
+            for(int i=0;i<3;i++){float x=.05f+i*.305f;var b=PageButton(names[i],homePage,labels[i],new Vector2(x,.278f),new Vector2(x+.29f,.327f),slate,actions[i]);b.GetComponentInChildren<TextMeshProUGUI>().fontSize=17;}
+        }
+        void BuildAccountPages()
+        {
+            characterPortraits=new[]{heroIllustration,RequiredIllustration("akane"),RequiredIllustration("mio")};
+            characterPage=Page("CharactersPage");loginPage=Page("LoginPage");missionPage=Page("MissionsPage");
+            BuildCharactersPage();BuildLoginPage();BuildMissionsPage();
+        }
+        void ShowAccountPage(FrontEndPage page)
+        {
+            characterPage.gameObject.SetActive(page==FrontEndPage.Characters);loginPage.gameObject.SetActive(page==FrontEndPage.Login);missionPage.gameObject.SetActive(page==FrontEndPage.Missions);
+        }
+        void BuildCharactersPage()
+        {
+            PageText("CharactersTitle",characterPage,"キャラクター",28,Color.white,.855f,50);
+            characterCards=new UnityEngine.UI.Button[3];characterStates=new TextMeshProUGUI[3];
+            for(int i=0;i<3;i++)
+            {
+                int id=i;float x=.055f+i*.30f;
+                var card=PageButton("Character"+i,characterPage,"",new Vector2(x,.65f),new Vector2(x+.285f,.825f),slate,()=>InspectCharacter(id));characterCards[i]=card.GetComponent<UnityEngine.UI.Button>();
+                Illustration("CharacterPortrait"+i,card.transform,characterPortraits[i],new Vector2(.08f,.25f),new Vector2(.92f,.97f));
+                characterStates[i]=BoxText("CharacterState"+i,card.transform,"",15,Color.white,new Vector2(.025f,.02f),new Vector2(.975f,.27f));
+            }
+            characterArt=Illustration("CharacterPreview",characterPage,characterPortraits[0],new Vector2(.28f,.36f),new Vector2(.72f,.645f));
+            characterName=PageText("CharacterName",characterPage,"",25,gold,.345f,45);
+            characterDescription=BoxText("CharacterSkillDescription",characterPage,"",19,new Color(.78f,.88f,.94f),new Vector2(.06f,.225f),new Vector2(.94f,.32f));
+            var button=PageButton("SelectCharacter",characterPage,"",new Vector2(.20f,.13f),new Vector2(.80f,.21f),blue,()=>game.SelectCharacter(inspectingCharacter));
+            characterSelect=button.GetComponent<UnityEngine.UI.Button>();characterAction=button.GetComponentInChildren<TextMeshProUGUI>();characterAction.fontSize=22;
+        }
+        public void ShowCharacters(){inspectingCharacter=game.Account.SelectedCharacter;OpenPage(FrontEndPage.Characters);InspectCharacter(inspectingCharacter);}
+        void InspectCharacter(int id)
+        {
+            inspectingCharacter=id;characterArt.sprite=characterPortraits[id];characterName.text=SquadRushCharacters.Name(id)+" / "+SquadRushCharacters.Skill(id);
+            characterDescription.text=SquadRushCharacters.Description(id);
+            for(int i=0;i<3;i++){bool owned=game.Account.OwnsCharacter(i);characterStates[i].text=SquadRushCharacters.Name(i)+" / "+(game.Account.SelectedCharacter==i?"出撃中":owned?"所持":"未入手");characterStates[i].enableAutoSizing=true;characterStates[i].fontSizeMin=11;characterStates[i].fontSizeMax=15;characterCards[i].image.color=i==id?new Color(.38f,.43f,.55f):slate;}
+            bool available=game.Account.OwnsCharacter(id);characterSelect.interactable=available&&game.Account.SelectedCharacter!=id;characterAction.text=game.Account.SelectedCharacter==id?"選択中":available?"このキャラで出撃":"ガチャで入手";
+        }
+        void BuildLoginPage()
+        {
+            PageText("LoginTitle",loginPage,"ログインボーナス",28,Color.white,.855f,50);
+            loginStatus=PageText("LoginStatus",loginPage,"",19,new Color(.70f,.84f,.94f),.79f,52);
+            loginRows=new TextMeshProUGUI[7];
+            for(int i=0;i<7;i++)
+            {
+                float y=.705f-i*.065f;var row=Panel("LoginDay"+i,loginPage,slate,new Vector2(.08f,y),new Vector2(.92f,y+.057f));
+                loginRows[i]=BoxText("LoginReward"+i,row,(i+1)+"日目    ジェム "+(i==6?300:100)+" ＋ チケット "+(i==6?3:1),18,Color.white,new Vector2(.025f,.03f),new Vector2(.975f,.97f));
+            }
+            var button=PageButton("ClaimLogin",loginPage,"",new Vector2(.18f,.16f),new Vector2(.82f,.24f),gold,game.ClaimLogin);loginClaim=button.GetComponent<UnityEngine.UI.Button>();loginAction=button.GetComponentInChildren<TextMeshProUGUI>();loginAction.color=ink;loginAction.fontSize=23;
+            PageText("LoginHint",loginPage,"日本時間0時に更新 / 7回で一巡",14,new Color(.61f,.77f,.86f),.125f,28);
+        }
+        public void ShowLogin()
+        {
+            bool ready=game.Account.CanClaimLogin;int day=ready?game.Account.LoginDay:(game.Account.LoginDay+5)%7+1;
+            loginStatus.text=ready?"今日のログイン報酬を受け取れます":"今日の報酬は受取済みです";
+            for(int i=0;i<7;i++)loginRows[i].color=i+1==day?gold:new Color(.78f,.87f,.94f);
+            loginClaim.interactable=ready;loginAction.text=ready?"本日の報酬を受け取る":"受取済み";OpenPage(FrontEndPage.Login);
+        }
+        void BuildMissionsPage()
+        {
+            PageText("MissionsTitle",missionPage,"ミッション",28,Color.white,.855f,50);
+            PageText("MissionsHint",missionPage,"デイリーは日本時間0時に更新",17,new Color(.67f,.81f,.91f),.80f,35);
+            missionStates=new TextMeshProUGUI[4];missionClaims=new UnityEngine.UI.Button[4];
+            for(int i=0;i<4;i++)
+            {
+                int id=i;float y=.64f-i*.142f;var row=Panel("Mission"+i,missionPage,slate,new Vector2(.055f,y),new Vector2(.945f,y+.126f));
+                BoxText("MissionName"+i,row,SquadRushAccount.MissionName(i),19,Color.white,new Vector2(.025f,.52f),new Vector2(.975f,.94f));
+                missionStates[i]=BoxText("MissionState"+i,row,"",16,new Color(.72f,.84f,.92f),new Vector2(.025f,.04f),new Vector2(.63f,.49f));
+                var claim=PageButton("ClaimMission"+i,row,"",new Vector2(.65f,.06f),new Vector2(.97f,.48f),blue,()=>game.ClaimMission(id));missionClaims[i]=claim.GetComponent<UnityEngine.UI.Button>();claim.GetComponentInChildren<TextMeshProUGUI>().fontSize=16;
+            }
+        }
+        public void ShowMissions()
+        {
+            for(int i=0;i<4;i++)
+            {
+                missionStates[i].text=Mathf.Min(game.Account.MissionProgress(i),SquadRushAccount.MissionGoal(i))+" / "+SquadRushAccount.MissionGoal(i)+"   ジェム +"+SquadRushAccount.MissionGems(i);
+                missionClaims[i].interactable=game.Account.CanClaimMission(i);missionClaims[i].GetComponentInChildren<TextMeshProUGUI>().text=game.Account.MissionClaimed(i)?"受取済み":"受け取る";
+            }
+            OpenPage(FrontEndPage.Missions);
+        }
+        void BuildRecruitmentPage()
+        {
+            PageText("GachaTitle",gachaPage,"特殊部隊ガチャ",28,Color.white,.855f,50);
+            var banner=Panel("RecruitmentBanner",gachaPage,new Color(.16f,.12f,.26f),new Vector2(.05f,.58f),new Vector2(.95f,.825f));
+            // Character sprites are loaded again here because the recruitment page is built before account pages.
+            Illustration("RecruitAkane",banner,RequiredIllustration("akane"),new Vector2(.02f,.04f),new Vector2(.43f,.96f));
+            Illustration("RecruitMio",banner,RequiredIllustration("mio"),new Vector2(.57f,.04f),new Vector2(.98f,.96f));
+            BoxText("RecruitmentCaption",banner,"新キャラ\nアカネ / ミオ",19,gold,new Vector2(.28f,.20f),new Vector2(.72f,.75f));
+            gachaPity=BoxText("GachaPity",gachaPage,"",19,gold,new Vector2(.04f,.505f),new Vector2(.96f,.58f));
+            ticketMode=PageButton("UseTickets",gachaPage,"チケット",new Vector2(.09f,.44f),new Vector2(.48f,.50f),slate,()=>{useTickets=true;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
+            gemMode=PageButton("UseGems",gachaPage,"ジェム",new Vector2(.52f,.44f),new Vector2(.91f,.50f),slate,()=>{useTickets=false;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
+            var one=PageButton("DrawOne",gachaPage,"1回引く",new Vector2(.08f,.33f),new Vector2(.47f,.42f),blue,()=>game.DrawGacha(1,useTickets));drawOne=one.GetComponent<UnityEngine.UI.Button>();
+            var ten=PageButton("DrawTen",gachaPage,"10回引く",new Vector2(.53f,.33f),new Vector2(.92f,.42f),gold,()=>game.DrawGacha(10,useTickets));drawTen=ten.GetComponent<UnityEngine.UI.Button>();ten.GetComponentInChildren<TextMeshProUGUI>().color=ink;
+            gachaCost=PageText("GachaCost",gachaPage,"",16,new Color(.77f,.86f,.94f),.302f,30);
+            PageButton("GachaRates",gachaPage,"提供割合",new Vector2(.05f,.225f),new Vector2(.335f,.28f),slate,ShowGachaRates).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            PageButton("GachaCharacters",gachaPage,"キャラ",new Vector2(.355f,.225f),new Vector2(.64f,.28f),slate,game.OpenCharacters).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            PageButton("GachaEquipment",gachaPage,"装備",new Vector2(.66f,.225f),new Vector2(.945f,.28f),slate,game.OpenEquipment).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            gachaNotice=BoxText("GachaNotice",gachaPage,"通常は基本武器またはコイン\nチケット・ジェムはゲーム内報酬で獲得",16,new Color(.66f,.79f,.89f),new Vector2(.04f,.16f),new Vector2(.96f,.215f));
+            lastDrawReceipt=PageButton("LastDrawReceipt",gachaPage,"前回の結果",new Vector2(.27f,.112f),new Vector2(.73f,.155f),slate,()=>ShowDrawResults(game.Account.LastResults)).GetComponent<UnityEngine.UI.Button>();lastDrawReceipt.GetComponentInChildren<TextMeshProUGUI>().fontSize=15;
+        }
+        void RefreshRecruitment()
+        {
+            gachaPity.text="キャラ確定まであと "+(90-game.Account.Pity)+"回\n次回のキャラ率 "+(SquadRushAccount.CharacterChance(game.Account.Pity+1)*100).ToString("0.##")+"%";
+            lastDrawReceipt.interactable=game.Account.LastResults.Length>0;
+            ticketMode.image.color=useTickets?new Color(.37f,.30f,.57f):slate;gemMode.image.color=!useTickets?new Color(.15f,.40f,.54f):slate;
+            drawOne.interactable=game.Account.CanDraw(1,useTickets);drawTen.interactable=game.Account.CanDraw(10,useTickets);
+            gachaCost.text=useTickets?"1回：チケット1枚 / 10回：10枚":"1回：ジェム100個 / 10回：1000個";
+        }
+        void BuildAccountOverlays()
+        {
+            drawOverlay=Panel("DrawResults",frontRoot,new Color(.01f,.02f,.05f,.96f),Vector2.zero,Vector2.one);drawOverlay.GetComponent<UnityEngine.UI.Image>().raycastTarget=true;drawOverlay.gameObject.SetActive(false);
+            ratesOverlay=Panel("RatesOverlay",frontRoot,new Color(.01f,.02f,.05f,.97f),Vector2.zero,Vector2.one);ratesOverlay.GetComponent<UnityEngine.UI.Image>().raycastTarget=true;
+            PageText("RatesTitle",ratesOverlay,"提供割合・天井",27,gold,.87f,50);
+            BoxText("RatesSummary",ratesOverlay,"キャラ枠 合計0.5%\n通常時：基本武器49.75% / コイン49.75%\nキャラは未所持を優先して均等抽選",16,Color.white,new Vector2(.045f,.725f),new Vector2(.955f,.82f));
+            var rates=new StringBuilder();rates.Append("1～79連目  0.5%\n");for(int pull=80;pull<=90;pull++)rates.Append(pull).Append("連目  ").Append((SquadRushAccount.CharacterChance(pull)*100).ToString("0.##")).Append("%\n");
+            BoxText("RatesTable",ratesOverlay,rates.ToString().TrimEnd(),17,new Color(.76f,.87f,.95f),new Vector2(.08f,.33f),new Vector2(.92f,.725f));
+            BoxText("RatesNotes",ratesOverlay,"キャラ排出で天井をリセット。10連も1回ずつ判定。\n通常の武器・コインは残り確率を半分ずつ。\n武器：ノーマルのライフル2種から均等。\n全キャラ所持後の重複はコイン1000個。",14,new Color(.68f,.81f,.90f),new Vector2(.04f,.185f),new Vector2(.96f,.325f));
+            PageButton("CloseRates",ratesOverlay,"閉じる",new Vector2(.22f,.09f),new Vector2(.78f,.16f),slate,()=>ratesOverlay.gameObject.SetActive(false));ratesOverlay.gameObject.SetActive(false);
+        }
+        void ShowGachaRates(){ratesOverlay.gameObject.SetActive(true);ratesOverlay.SetAsLastSibling();}
+        void HideAccountOverlays(){if(drawOverlay!=null)drawOverlay.gameObject.SetActive(false);if(ratesOverlay!=null)ratesOverlay.gameObject.SetActive(false);}
+        public void ShowDrawResults(SquadRushDrawResult[] results)
+        {
+            // Results have a fixed upper bound of ten; rebuild only this receipt, never the menu hierarchy.
+            for(int i=drawOverlay.childCount-1;i>=0;i--){var child=drawOverlay.GetChild(i).gameObject;child.SetActive(false);if(Application.isPlaying)Destroy(child);else DestroyImmediate(child);}
+            PageText("DrawResultsTitle",drawOverlay,results.Length+"回ガチャ結果",28,gold,.88f,50);
+            for(int i=0;i<results.Length;i++)
+            {
+                var result=results[i];float x=.055f+(i%2)*.46f,y=.725f-(i/2)*.115f;
+                var card=Panel("DrawResult"+i,drawOverlay,result.kind==DrawKind.Character?new Color(.35f,.26f,.12f):slate,new Vector2(x,y),new Vector2(x+.43f,y+.103f));
+                if(result.kind==DrawKind.Character||result.kind==DrawKind.Weapon)Illustration("ResultArt"+i,card,result.kind==DrawKind.Character?characterPortraits[result.id]:itemIllustrations[result.id],new Vector2(.025f,.08f),new Vector2(.35f,.93f));
+                else BoxText("CoinArt"+i,card,"●",42,gold,new Vector2(.025f,.08f),new Vector2(.35f,.93f));
+                var label=BoxText("ResultLabel"+i,card,result.Label,16,Color.white,new Vector2(.36f,.06f),new Vector2(.98f,.95f));label.enableAutoSizing=true;label.fontSizeMin=11;label.fontSizeMax=16;
+            }
+            PageButton("CloseDrawResults",drawOverlay,"結果を確認",new Vector2(.20f,.10f),new Vector2(.80f,.18f),blue,()=>drawOverlay.gameObject.SetActive(false));
+            drawOverlay.gameObject.SetActive(true);drawOverlay.SetAsLastSibling();RefreshWallet();
+        }
+        void BuildSkillHud()
+        {
+            var button=PageButton("CharacterSkill",battleRoot,"",new Vector2(.61f,.105f),new Vector2(.96f,.195f),new Color(.20f,.40f,.50f),()=>game.ActivateCharacterSkill());
+            skillButton=button.GetComponent<UnityEngine.UI.Button>();skillAction=button.GetComponentInChildren<TextMeshProUGUI>();skillAction.fontSize=18;
+        }
+        void RefreshSkillHud()
+        {
+            if(skillButton==null||game.Account==null)return;
+            skillButton.interactable=game.State==RunState.Playing&&game.SkillCooldownRemaining<=0;
+            skillAction.text=SquadRushCharacters.Skill(game.Account.SelectedCharacter)+"\n"+(game.SkillCooldownRemaining>0?Mathf.CeilToInt(game.SkillCooldownRemaining)+"秒":"発動する");
+        }
+    }
+}

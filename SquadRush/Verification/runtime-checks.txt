@@ -1,3 +1,4 @@
+PASS Commander tint and scenery shader compile without errors
 PASS All 96 allies share the new body and leg meshes
 PASS Rounded soldier stays within 6500 triangles and three solid renderers
 PASS Generated character surfaces have valid vertices and smooth normals
@@ -7,7 +8,13 @@ PASS Scene starts with a three-ally squad and menu
 PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog
 PASS Home exposes a direct sortie and persistent navigation
-PASS Gacha navigation shows a placeholder without granting items
+PASS Gacha navigation displays recruitment without granting items
+PASS New profile cannot draw without earned tickets or gems
+PASS Published gacha rates and pity table fit their controls
+PASS Locked character inspection shows the real skill but prevents selection
+PASS Home opens a claimable login bonus
+PASS Login button grants exact currency and disables a second claim
+PASS Incomplete daily missions cannot be claimed through the UI
 PASS Equipment uses a 2D anime hero rather than the 3D portrait
 PASS All six equipment items have distinct illustration sprites
 PASS Equipment screen prevents equipping unearned items
@@ -66,3 +73,17 @@ PASS Home and selection share the stage 5 illustration
 PASS Home and selection share the stage 6 illustration
 PASS Six distinct stage illustrations replace the former 3D menu portrait
 PASS Stage artwork, reward and navigation labels fit
+PASS Earned gem balance enables both draw sizes
+PASS Guaranteed character gem draw spends only the selected currency and resets pity
+PASS Character draw receipt labels fit
+PASS Selecting the newly acquired character updates the actual active character and portrait
+PASS Equipment page uses the selected character illustration
+PASS Battle skill button activates the selected character effect and displays cooldown
+PASS Reload preserves acquired character, selection, balances and pity
+PASS Last draw receipt can be reviewed after reloading
+PASS Ten-ticket UI draw crosses pity, grants ten results and leaves gems untouched
+PASS Ten-result receipt fits its cards
+PASS Exhausted ticket mode does not fall back to spending gems
+PASS Gem mode remains available after tickets run out
+PASS Completed draw mission becomes claimable
+PASS Mission UI grants 50 gems exactly once

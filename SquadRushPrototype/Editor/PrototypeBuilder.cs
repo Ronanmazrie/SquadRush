@@ -113,6 +113,7 @@ namespace SquadRush.Editor
             characters = new string(characters.Where(c => c >= 32 && !char.IsSurrogate(c) && !font.HasCharacter(c)).Distinct().ToArray());
             if (characters.Length == 0) return;
             font.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+            font.isMultiAtlasTexturesEnabled=true;
             // TMP drops the runtime source reference for a saved static atlas; restore it only while baking.
             var serializedFont = new SerializedObject(font);
             serializedFont.FindProperty("m_SourceFontFile").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NotoSansCJKjp-Regular.otf");
@@ -148,7 +149,7 @@ namespace SquadRush.Editor
             }
             Font source = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NotoSansCJKjp-Regular.otf");
             if (source == null) throw new InvalidOperationException("Japanese font has not been imported.");
-            TMP_FontAsset font = TMP_FontAsset.CreateFontAsset(source, 48, 5, GlyphRenderMode.SDFAA, 1024, 1024, TMPro.AtlasPopulationMode.Dynamic, false);
+            TMP_FontAsset font = TMP_FontAsset.CreateFontAsset(source, 48, 5, GlyphRenderMode.SDFAA, 1024, 1024, TMPro.AtlasPopulationMode.Dynamic, true);
             if (font == null) throw new InvalidOperationException("Could not create Japanese font atlas.");
             string characters = new string(Enumerable.Range(32, 95).Select(n => (char)n).ToArray()) + "×←→Ⅱ";
             foreach (string file in Directory.GetFiles(Path.Combine(Application.dataPath, "Scripts"), "*.cs", SearchOption.AllDirectories)) characters += File.ReadAllText(file);
@@ -184,7 +185,7 @@ namespace SquadRush.Editor
                 game.OpenStages(); game.SelectStage(999);
                 Expect(game.Hud.CurrentPage == FrontEndPage.Stages && game.StageNumber == 1, "Stage selection restricts play to unlocked stages", checks);
                 game.OpenGacha(); game.Tick(1, false);
-                Expect(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0 && game.Elapsed == 0, "Gacha is a non-playing placeholder with no rewards", checks);
+                Expect(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0 && game.Elapsed == 0, "Gacha browsing is non-playing and grants no free rewards", checks);
                 game.OpenEquipment(); game.ToggleEquipment(0);
                 Expect(game.Equipment.WeaponPower == 0 && !game.Equipment.IsEquipped(0), "Unowned gear cannot be equipped", checks);
                 game.Begin(); game.Tick(0.2f, false);
@@ -318,12 +319,13 @@ namespace SquadRush.Editor
                 }
                 finally { PlayerPrefs.DeleteKey(legacy); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(legacy)); }
                 VerifyFusion(storageKey+".fusion",checks);
+                AccountVerifier.Verify(game,storageKey+".account-check",checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output);
                 File.WriteAllLines(Path.Combine(output, "gameplay-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " gameplay scenarios passed.");
             }
-            finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.Save(); }
+            finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(storageKey));PlayerPrefs.Save(); }
         }
         static void VerifyFusion(string key,System.Collections.Generic.List<string> checks)
         {

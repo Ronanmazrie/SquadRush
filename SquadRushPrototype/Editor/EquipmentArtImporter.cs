@@ -6,7 +6,7 @@ namespace SquadRush.Editor
 {
     public static class EquipmentArtImporter
     {
-        static readonly string[] Names={"hero","scout-rifle","ranger-vest","quick-magazine","assault-rifle","guardian-vest","rapid-magazine"};
+        static readonly string[] Names={"hero","akane","mio","scout-rifle","ranger-vest","quick-magazine","assault-rifle","guardian-vest","rapid-magazine"};
         public static void Prepare()
         {
             string[] stages={"desert-outpost","forest-checkpoint","snow-radar","desert-refinery","forest-bridge","snow-fortress"};
@@ -14,7 +14,7 @@ namespace SquadRush.Editor
             foreach(string name in Names)
             {
                 string path="Assets/Resources/EquipmentArt/"+name+".png";
-                Import(path,name=="hero"?1024:512);
+                Import(path,(name=="hero"||name=="akane"||name=="mio")?1024:512);
             }
         }
         static void Import(string path,int size)

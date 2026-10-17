@@ -1,20 +1,20 @@
-Squad Rush 0.10.0 — Equipment fusion / stage-art browser verification
+Squad Rush 0.11.0 — Characters, gacha and rewards browser verification
 Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
-Build: WebGL, gzip with decompression fallback
-Build result: Succeeded (14,546,154 bytes)
-Host: localhost HTTP server without Content-Encoding (GitHub Pages equivalent)
+Build: WebGL / gzip / decompression fallback
+Build result: Succeeded (16,885,451 bytes)
 Browser: ChatGPT in-app Chromium, 390 x 844 viewport
+Local host: HTTP without Content-Encoding, matching GitHub Pages deployment
 
-PASS: Home displays the selected stage environment illustration and a clear sortie action.
-PASS: Stage selection displays the same stage illustration, location title, stage timing and a repeatable gear reward.
-PASS: Equipment retains the 2D anime hero and displays a compact five-column inventory with quantities.
-PASS: All five columns fit at 390 x 844; the adaptive grid corrects horizontal clipping at narrow aspect ratios.
-PASS: Item inspection displays the current effect, comparison, source, owned quantity, three-copy fusion cost and resulting rarity/effect.
-PASS: Unowned equipment has disabled Equip and Merge controls.
-PASS: No browser console errors or warnings during navigation and reload.
+PASS: Home displays the stage illustration, wallet and direct Characters / Login / Missions entries.
+PASS: Login opens the seven-day schedule; claiming adds exactly 100 gems and one ticket, then disables the claim button.
+PASS: Ticket mode consumes one ticket, grants the displayed 200-coin result, leaves 100 gems untouched and advances pity to 1.
+PASS: After tickets run out, draw buttons disable without automatically spending gems.
+PASS: Explicitly switching to gems displays the 100/1000-gem prices and enables only affordable draws.
+PASS: A one-gem-currency draw consumes exactly 100 gems, leaves tickets at zero, grants the displayed 200 coins and advances pity to 2.
+PASS: All observed Home, Login, Gacha and result labels fit the phone viewport.
 
-76 gameplay and 68 Play-mode scenarios pass (144 total). Coverage includes v1 save migration, duplicate rewards, all rarity tiers, exact material consumption, equipped result preservation, saving/reload, real projectile damage, armor/support bonuses, refusing fusion during combat even with sufficient materials, 30 stacks and scrolling to legendary gear, six distinct stage illustrations and 390 x 844 text/column bounds.
-Verification saves use isolated GUID keys. Public player saves are never cleared.
+120 gameplay and 89 Play-mode scenarios pass (209 total). Coverage includes exact probability boundaries, pulls 80 and 90, ten-pull pity reset, currency choice, duplicate rewards, committed-draw recovery, login calendar rollover, claim idempotency, stage and mission gems, active character selection, actual combat skills, pause/reset, 390 x 844 result layout, shaders, and previous equipment/progression checks.
+Tests use isolated GUID profiles. The public player save is never cleared or used for test gacha spending.
 
-Desktop browser at mobile viewport size. Physical Android/iPhone input, performance and Safari remain untested.
+Desktop browser at mobile viewport size. Physical Android/iPhone controls, performance and Safari remain untested. Native iOS distribution is not available.

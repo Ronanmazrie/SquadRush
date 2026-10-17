@@ -3,6 +3,7 @@ Shader "SquadRush/Toon"
     Properties
     {
         _Flash ("Hit flash", Range(0,1)) = 0
+        _UniformTint ("Commander uniform", Color) = (1,1,1,0)
         _Weathering ("Surface weathering", Range(0,1)) = 0
         _SurfaceGrain ("Surface grain", 2D) = "gray" {}
         _OutlineWidth ("Outline width", Float) = 0.009
@@ -50,6 +51,7 @@ Shader "SquadRush/Toon"
             sampler2D _SurfaceGrain;
             UNITY_INSTANCING_BUFFER_START(Props)
                 UNITY_DEFINE_INSTANCED_PROP(float, _Flash)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _UniformTint)
             UNITY_INSTANCING_BUFFER_END(Props)
             v2f vert(appdata v)
             {
@@ -71,6 +73,9 @@ Shader "SquadRush/Toon"
                 float spec=pow(saturate(dot(n,normalize(l+eye))),40)*_SpecularStrength;
                 float shadow=SHADOW_ATTENUATION(i);
                 fixed3 surface=i.color.rgb;
+                float4 commanderTint=UNITY_ACCESS_INSTANCED_PROP(Props,_UniformTint);
+                float cloth=step(surface.r*1.15,surface.b)*step(surface.g*1.03,surface.b);
+                surface=lerp(surface,surface.b*commanderTint.rgb,cloth*commanderTint.a);
                 if (_Weathering > 0.01)
                 {
                     // One cached texture fetch supplies both scales of object-space dirt.

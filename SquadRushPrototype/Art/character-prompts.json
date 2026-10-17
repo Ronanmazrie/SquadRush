@@ -1,0 +1,19 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "date": "2026-10-17",
+  "assets": [
+    {
+      "name": "akane",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-52b805b1-453c-4397-9f84-2be046cb8532.png",
+      "prompt": "Use case: illustration-story. Original transparent character portrait sprite for a Japanese mobile squad shooter. Create Akane, an adult female demolition squad commander with short fiery auburn hair, orange-red tactical helmet with dark goggles pushed up, red and charcoal modest full-body tactical uniform, compact armored vest and sturdy boots. Confident energetic smile, relaxed standing pose, full body including helmet and boots entirely within frame. Cute anime chibi proportions, large head about half total height, expressive eyes, confident dark clean outlines, polished cel shading, gently textured fabric. Match the visual language of a friendly blue-uniform chibi soldier icon. No weapon in hands, no lettering, no logo, no scenery, genuinely transparent background, no halo or opaque backdrop. Standalone original game asset.",
+      "file": "Assets/Resources/EquipmentArt/akane.png"
+    },
+    {
+      "name": "mio",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-de1f5974-4d16-45a4-a2d8-87376dcb44db.png",
+      "prompt": "Use case: illustration-story. Original transparent character portrait sprite for a Japanese mobile squad shooter. Create Mio, an adult female communications specialist with silver bob hair, emerald eyes, a mint-teal tactical helmet and small headset, mint green and charcoal modest full-body tactical uniform, compact armored vest, utility pouches and sturdy boots. Calm friendly smile, relaxed standing pose, full body including helmet and boots entirely within frame. Cute anime chibi proportions, large head about half total height, expressive eyes, confident dark clean outlines, polished cel shading, gently textured fabric. Match a friendly blue-uniform chibi soldier icon. No weapon in hands, no text, logos, scenery, medical cross or watermark. Genuinely transparent background without halo or opaque backdrop. Standalone original game asset.",
+      "file": "Assets/Resources/EquipmentArt/mio.png"
+    }
+  ]
+}

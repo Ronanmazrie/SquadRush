@@ -10,6 +10,12 @@ namespace SquadRush
         public MeshRenderer[] ColoredRenderers;
         float flashTime, hitTime;
         MaterialPropertyBlock hitProperties;
+        Color uniform=new Color(1,1,1,0);
+        public void SetUniform(Color color)
+        {
+            uniform=color;if(hitProperties==null)hitProperties=new MaterialPropertyBlock();
+            hitProperties.SetColor("_UniformTint",uniform);foreach(var renderer in ColoredRenderers)renderer.SetPropertyBlock(hitProperties);
+        }
         public void Fire() { flashTime = 0.075f; Muzzle.gameObject.SetActive(true); }
         public void Hit() { hitTime = 0.12f; }
         public void ResetPose()
@@ -19,6 +25,7 @@ namespace SquadRush
             Body.localPosition = Vector3.zero; Body.localRotation = Quaternion.identity;
             LeftLeg.localRotation = RightLeg.localRotation = Quaternion.identity;
             hitProperties.SetFloat("_Flash", 0);
+            hitProperties.SetColor("_UniformTint",uniform);
             foreach (var renderer in ColoredRenderers) renderer.SetPropertyBlock(hitProperties);
         }
         public void Animate(float time, float dt, float phase, float lean = 0)

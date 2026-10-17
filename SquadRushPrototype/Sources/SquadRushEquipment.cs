@@ -32,6 +32,7 @@ namespace SquadRush
         {
             public int version = 2, owned;
             public int[] quantities;
+            public string lastDrawTransaction;
             public int weapon = -1, armor = -1, support = -1;
         }
         SaveData data;
@@ -87,6 +88,12 @@ namespace SquadRush
         {
             if(id<0||id>=Count||rarity<0||rarity>=RarityCount||Quantity(id,rarity)>=999999)return false;
             data.quantities[id+rarity*Count]++; Save();return true;
+        }
+        public void GrantDraw(string transaction,int[] weapons)
+        {
+            if(string.IsNullOrEmpty(transaction)||data.lastDrawTransaction==transaction)return;
+            foreach(int id in weapons)if(id>=0&&id<Count)data.quantities[id]=Mathf.Min(999999,data.quantities[id]+1);
+            data.lastDrawTransaction=transaction;Save();
         }
         public bool Toggle(int id,int rarity=0)
         {

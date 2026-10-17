@@ -61,8 +61,16 @@ namespace SquadRush.Editor
                 Require(game.Hud.CurrentPage == FrontEndPage.Home && !play.gameObject.activeInHierarchy, "Home replaces the old opening dialog", checks);
                 Require(Button(game, "HomeSortie").gameObject.activeInHierarchy && Button(game, "HomeCommand").gameObject.activeInHierarchy && Button(game, "HomeEquipment").gameObject.activeInHierarchy, "Home exposes a direct sortie and persistent navigation", checks);
                 Click(game, "HomeGacha");
-                Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation shows a placeholder without granting items", checks);
+                Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation displays recruitment without granting items", checks);
                 Capture(game, "gacha.png");
+                Require(!Button(game,"DrawOne").interactable&&!Button(game,"DrawTen").interactable,"New profile cannot draw without earned tickets or gems",checks);
+                Click(game,"GachaRates");Capture(game,"gacha-rates.png");RequireTextFits(game,"Published gacha rates and pity table fit their controls",checks);Click(game,"CloseRates");
+                Click(game,"GachaCharacters");Click(game,"Character1");
+                Require(!Button(game,"SelectCharacter").interactable&&UiText(game,"CharacterSkillDescription").text.Contains("範囲攻撃"),"Locked character inspection shows the real skill but prevents selection",checks);
+                Capture(game,"characters-locked.png");Click(game,"HomeCommand");Click(game,"HomeLogin");
+                Require(Button(game,"ClaimLogin").interactable,"Home opens a claimable login bonus",checks);Click(game,"ClaimLogin");
+                Require(game.Account.Gems==100&&game.Account.Tickets==1&&!Button(game,"ClaimLogin").interactable,"Login button grants exact currency and disables a second claim",checks);Capture(game,"login.png");
+                Click(game,"HomeCommand");Click(game,"HomeMissions");Require(!Button(game,"ClaimMission0").interactable,"Incomplete daily missions cannot be claimed through the UI",checks);Capture(game,"missions.png");Click(game,"HomeGacha");
                 Click(game, "GachaEquipment");
                 var illustratedHero=UiArt(game,"EquipmentHeroIllustration");
                 Require(illustratedHero.sprite!=null && illustratedHero.transform.parent.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Equipment uses a 2D anime hero rather than the 3D portrait",checks);
@@ -208,6 +216,29 @@ namespace SquadRush.Editor
                 }
                 Require(stageSprites.Count==6&&game.Hud.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Six distinct stage illustrations replace the former 3D menu portrait",checks);
                 game.ConfigureVerification(storageKey);game.OpenStages();RequireTextFits(game,"Stage artwork, reward and navigation labels fit",checks);
+                string accountUiKey=storageKey+".accountUI";
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(accountUiKey),"{\"version\":1,\"characters\":1,\"gems\":1100,\"tickets\":10,\"pity\":89}");
+                game.ConfigureVerification(accountUiKey);game.OpenGacha();Click(game,"UseGems");
+                Require(Button(game,"DrawOne").interactable&&Button(game,"DrawTen").interactable,"Earned gem balance enables both draw sizes",checks);
+                Click(game,"DrawOne");yield return null;
+                Require(game.Account.Gems==1000&&game.Account.Tickets==10&&game.Account.Pity==0&&game.Account.LastResults[0].kind==DrawKind.Character,"Guaranteed character gem draw spends only the selected currency and resets pity",checks);
+                int earned=game.Account.LastResults[0].id;
+                Capture(game,"gacha-character-result.png");RequireTextFits(game,"Character draw receipt labels fit",checks);Click(game,"CloseDrawResults");
+                Click(game,"GachaCharacters");Click(game,"Character"+earned);Click(game,"SelectCharacter");
+                Require(game.Account.SelectedCharacter==earned&&UiArt(game,"CharacterPreview").sprite==UiArt(game,"CharacterPortrait"+earned).sprite,"Selecting the newly acquired character updates the actual active character and portrait",checks);
+                Capture(game,"characters.png");Click(game,"HomeEquipment");Require(UiArt(game,"EquipmentHeroIllustration").sprite==UiArt(game,"CharacterPortrait"+earned).sprite,"Equipment page uses the selected character illustration",checks);
+                game.Begin();game.SpawnTarget(TargetKind.Enemy,-3,25,1);Click(game,"CharacterSkill");
+                Require(game.SkillActivations==1&&!Button(game,"CharacterSkill").interactable&&(earned==1?game.Kills==1:game.SkillBuffRemaining>0),"Battle skill button activates the selected character effect and displays cooldown",checks);
+                Capture(game,"character-skill.png");game.ShowHome();game.ConfigureVerification(accountUiKey);
+                Require(game.Account.SelectedCharacter==earned&&game.Account.Gems==1000&&game.Account.Tickets==10,"Reload preserves acquired character, selection, balances and pity",checks);
+                game.OpenGacha();Click(game,"LastDrawReceipt");yield return null;Require(UiText(game,"ResultLabel0").text.Contains(SquadRushCharacters.Name(earned)),"Last draw receipt can be reviewed after reloading",checks);Click(game,"CloseDrawResults");
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(accountUiKey),"{\"version\":1,\"characters\":1,\"gems\":1000,\"tickets\":10,\"pity\":88}");
+                game.ConfigureVerification(accountUiKey);game.OpenGacha();Click(game,"UseTickets");Click(game,"DrawTen");yield return null;
+                Require(game.Account.LastResults.Length==10&&game.Account.LastResults.Any(r=>r.kind==DrawKind.Character)&&game.Account.Tickets==0&&game.Account.Gems==1000,"Ten-ticket UI draw crosses pity, grants ten results and leaves gems untouched",checks);
+                Capture(game,"gacha-ten-results.png");Capture(game,"gacha-mobile.png",390,844);RequireTextFits(game,"Ten-result receipt fits its cards",checks);Click(game,"CloseDrawResults");
+                Require(!Button(game,"DrawOne").interactable&&!Button(game,"DrawTen").interactable,"Exhausted ticket mode does not fall back to spending gems",checks);
+                Click(game,"UseGems");Require(Button(game,"DrawOne").interactable&&Button(game,"DrawTen").interactable,"Gem mode remains available after tickets run out",checks);
+                game.OpenMissions();Require(Button(game,"ClaimMission2").interactable,"Completed draw mission becomes claimable",checks);Click(game,"ClaimMission2");Require(game.Account.Gems==1050&&!Button(game,"ClaimMission2").interactable,"Mission UI grants 50 gems exactly once",checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
@@ -215,7 +246,7 @@ namespace SquadRush.Editor
             finally
             {
                 if (touch != null) InputSystem.RemoveDevice(touch);
-                PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.Save();
+                PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey));PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(storageKey));PlayerPrefs.DeleteKey(storageKey+".accountUI");PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey+".accountUI"));PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(storageKey+".accountUI"));PlayerPrefs.Save();
                 SessionState.SetBool(Pending, false);
             }
         }
@@ -228,6 +259,7 @@ namespace SquadRush.Editor
         }
         static void VerifyCharacterMeshes(SquadRushGame game, System.Collections.Generic.List<string> checks)
         {
+            Require(!ShaderUtil.ShaderHasError(Shader.Find("SquadRush/Toon")),"Commander tint and scenery shader compile without errors",checks);
             var allies=game.GetComponentsInChildren<SquadRushTrooper>(true).Where(t=>t.name=="Ally").ToArray();
             var rig=allies[0]; Mesh body=rig.Body.GetComponent<MeshFilter>().sharedMesh, leg=rig.LeftLeg.GetComponent<MeshFilter>().sharedMesh;
             int triangles=(body.triangles.Length+2*leg.triangles.Length)/3;
@@ -269,10 +301,10 @@ namespace SquadRush.Editor
                 Canvas.ForceUpdateCanvases();
                 foreach (TMP_Text text in game.GetComponentsInChildren<TMP_Text>()) text.ForceMeshUpdate();
                 Canvas.ForceUpdateCanvases(); view.Render();
-                if(name=="equipment-mobile.png")
+                if(name.EndsWith("-mobile.png"))
                 {
                     var scroll=game.Hud.GetComponentInChildren<UnityEngine.UI.ScrollRect>();
-                    foreach(var card in scroll.content.GetComponentsInChildren<UnityEngine.UI.Button>())
+                    if(name=="equipment-mobile.png")foreach(var card in scroll.content.GetComponentsInChildren<UnityEngine.UI.Button>())
                     {
                         Bounds bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,card.transform);
                         if(bounds.min.x<scroll.viewport.rect.xMin-.5f||bounds.max.x>scroll.viewport.rect.xMax+.5f)throw new InvalidOperationException("Mobile inventory clips column: "+card.name);

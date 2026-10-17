@@ -54,6 +54,7 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -De
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeLauncher.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/DistributionBuilder.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/EquipmentArtImporter.cs') -Destination $taskEditor
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/AccountVerifier.cs') -Destination $taskEditor
 New-Item -ItemType Directory -Force -Path (Join-Path $taskResources 'EquipmentArt') | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Art') -Filter '*.png' | Copy-Item -Destination (Join-Path $taskResources 'EquipmentArt') -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $taskResources 'StageArt') | Out-Null

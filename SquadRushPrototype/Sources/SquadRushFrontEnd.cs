@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SquadRush
 {
-    public enum FrontEndPage { Hidden, Home, Stages, Equipment, Gacha }
+    public enum FrontEndPage { Hidden, Home, Stages, Equipment, Gacha, Characters, Login, Missions }
 
     public sealed partial class SquadRushHud
     {
@@ -25,19 +25,18 @@ namespace SquadRush
             frontRoot = Panel("FrontEnd", safeRoot, new Color(0.035f, 0.065f, 0.11f, 0.98f), Vector2.zero, Vector2.one);
             frontRoot.GetComponent<UnityEngine.UI.Image>().raycastTarget = true;
             homePage = Page("HomePage"); stagesPage = Page("StagesPage"); equipmentPage = Page("EquipmentPage"); gachaPage = Page("GachaPage");
-            LoadEquipmentIllustrations(); BuildHomePage(); BuildStagesPage(); BuildEquipmentPage(); BuildGachaPage();
-            BuildCommandHeader(); BuildNavigation(); BuildItemDetail(); frontRoot.gameObject.SetActive(false);
+            LoadEquipmentIllustrations(); BuildHomePage(); BuildStagesPage(); BuildEquipmentPage(); BuildGachaPage(); BuildAccountPages();
+            BuildCommandHeader(); BuildNavigation(); BuildItemDetail(); BuildAccountOverlays(); frontRoot.gameObject.SetActive(false);
         }
         void BuildCommandHeader()
         {
-            var header = Panel("CommandHeader", frontRoot, ink, new Vector2(0, 0.90f), Vector2.one);
-            DrawIcon("CommanderAvatar", header, SquadIcon.Helmet, new Vector2(0.025f, 0.12f), new Vector2(0.19f, 0.96f));
-            BoxText("CommandTitle", header, "SQUAD RUSH", 22, Color.white, new Vector2(0.21f, 0.47f), new Vector2(0.57f, 0.96f));
-            BoxText("CommandSubtitle", header, "部隊本部", 15, new Color(0.54f, 0.75f, 0.90f), new Vector2(0.21f, 0.08f), new Vector2(0.57f, 0.48f));
-            var stagePlate = Panel("Card", header, slate, new Vector2(0.59f, 0.12f), new Vector2(0.77f, 0.92f));
-            profileStage = BoxText("ProfileStage", stagePlate, "", 15, Color.white, Vector2.zero, Vector2.one);
-            var bagPlate = Panel("Card", header, slate, new Vector2(0.79f, 0.12f), new Vector2(0.975f, 0.92f));
-            profileBag = BoxText("ProfileBag", bagPlate, "", 15, gold, Vector2.zero, Vector2.one);
+            var header=Panel("CommandHeader",frontRoot,ink,new Vector2(0,.90f),Vector2.one);
+            DrawIcon("CommanderAvatar",header,SquadIcon.Helmet,new Vector2(.02f,.12f),new Vector2(.145f,.94f));
+            BoxText("CommandTitle",header,"SQUAD RUSH",17,Color.white,new Vector2(.16f,.50f),new Vector2(.55f,.98f));
+            profileStage=BoxText("ProfileStage",header,"",13,Color.white,new Vector2(.57f,.50f),new Vector2(.76f,.98f));
+            profileBag=BoxText("ProfileBag",header,"",13,gold,new Vector2(.77f,.50f),new Vector2(.98f,.98f));
+            walletLabels=new TextMeshProUGUI[3];
+            for(int i=0;i<3;i++)walletLabels[i]=BoxText("Wallet"+i,header,"",13,i==0?new Color(.48f,.88f,1):i==1?new Color(.77f,.68f,1):gold,new Vector2(.15f+i*.275f,.02f),new Vector2(.42f+i*.275f,.49f));
         }
         void BuildHomePage()
         {
@@ -46,9 +45,10 @@ namespace SquadRush
             homeStageArt=StagePicture("HomeStageIllustration",homePage,new Vector2(0.055f,0.405f),new Vector2(0.945f,0.785f));
             Panel("LocationShade",homePage,new Color(.02f,.04f,.07f,.82f),new Vector2(.055f,.405f),new Vector2(.945f,.49f));
             homeLocation=BoxText("HomeLocation",homePage,"",25,Color.white,new Vector2(0.08f,0.42f),new Vector2(0.92f,0.48f));
-            homeStatus = PageText("HomeStatus", homePage, "", 21, new Color(0.76f, 0.86f, 0.94f), 0.34f, 65);
+            homeStatus = PageText("HomeStatus", homePage, "", 19, new Color(0.76f, 0.86f, 0.94f), 0.36f, 60);
             var sortie = PageButton("HomeSortie", homePage, "出撃", new Vector2(0.19f, 0.17f), new Vector2(0.81f, 0.26f), gold, game.PlaySelectedStage);
             var label = sortie.GetComponentInChildren<TextMeshProUGUI>(); label.color = ink; label.fontSize = 32; label.fontStyle = FontStyles.Bold;
+            HomeAccountButtons();
             PageText("HomeHint", homePage, "ステージを選んで、部隊と出撃しよう", 17, new Color(0.53f, 0.70f, 0.82f), 0.135f, 29);
         }
         void BuildStagesPage()
@@ -71,7 +71,7 @@ namespace SquadRush
         {
             PageText("EquipmentTitle", equipmentPage, "装備", 28, Color.white, 0.855f, 50);
             Panel("Card",equipmentPage,new Color(0.10f,0.19f,0.25f),new Vector2(0.035f,0.625f),new Vector2(0.965f,0.835f));
-            Illustration("EquipmentHeroIllustration",equipmentPage,heroIllustration,new Vector2(0.28f,0.625f),new Vector2(0.72f,0.83f));
+            equipmentHeroImage=Illustration("EquipmentHeroIllustration",equipmentPage,heroIllustration,new Vector2(0.28f,0.625f),new Vector2(0.72f,0.83f));
             equippedButtons=new UnityEngine.UI.Button[3]; equippedLabels=new TextMeshProUGUI[3]; equippedEmptyLabels=new TextMeshProUGUI[3]; equippedIcons=new UnityEngine.UI.Image[3];
             for(int i=0;i<3;i++)
             {
@@ -97,15 +97,7 @@ namespace SquadRush
             BuildCompactInventory();
         }
 
-        void BuildGachaPage()
-        {
-            PageText("GachaTitle", gachaPage, "ガチャ", 28, Color.white, 0.85f, 50);
-            var card = Panel("Card", gachaPage, new Color(0.16f, 0.14f, 0.24f), new Vector2(0.12f, 0.43f), new Vector2(0.88f, 0.78f));
-            DrawIcon("SupplyPreview", card, SquadIcon.Supply, new Vector2(0.25f, 0.35f), new Vector2(0.75f, 0.94f));
-            PageText("ComingSoon", card, "COMING SOON", 26, new Color(0.79f, 0.69f, 0.94f), 0.23f, 55);
-            PageText("GachaNotice", gachaPage, "ガチャは準備中です\n今はステージクリアで\n装備を入手できます", 22, new Color(0.76f, 0.84f, 0.93f), 0.33f, 110);
-            PageButton("GachaEquipment", gachaPage, "装備を見る", new Vector2(0.18f, 0.18f), new Vector2(0.82f, 0.25f), slate, game.OpenEquipment);
-        }
+        void BuildGachaPage() => BuildRecruitmentPage();
         void BuildNavigation()
         {
             var bar = Panel("BottomNavigation", frontRoot, ink, Vector2.zero, new Vector2(1, 0.105f));
@@ -181,11 +173,13 @@ namespace SquadRush
         }
         void OpenPage(FrontEndPage page)
         {
+            HideAccountOverlays();
             CurrentPage = page; menu.SetActive(false); battleRoot.gameObject.SetActive(false); frontRoot.gameObject.SetActive(true); itemDetail.gameObject.SetActive(false);
             homePage.gameObject.SetActive(page == FrontEndPage.Home); stagesPage.gameObject.SetActive(page == FrontEndPage.Stages);
             equipmentPage.gameObject.SetActive(page == FrontEndPage.Equipment); gachaPage.gameObject.SetActive(page == FrontEndPage.Gacha);
-            profileStage.text = "STAGE\n" + game.UnlockedStage.ToString("D2"); profileBag.text = "装備\n" + game.Equipment.OwnedCount + "個";
-            int active = page == FrontEndPage.Gacha ? 0 : page == FrontEndPage.Equipment ? 2 : 1;
+            ShowAccountPage(page);RefreshWallet();
+            profileStage.text = "STAGE " + game.UnlockedStage.ToString("D2"); profileBag.text = "装備 " + game.Equipment.OwnedCount + "個";
+            int active = page == FrontEndPage.Gacha ? 0 : page == FrontEndPage.Equipment || page == FrontEndPage.Characters ? 2 : 1;
             for (int i = 0; i < tabs.Length; i++) { tabs[i].image.color = i == active ? new Color(0.13f, 0.35f, 0.46f) : slate; tabAccents[i].gameObject.SetActive(i == active); tabLabels[i].color = i == active ? gold : Color.white; }
         }
         public void ShowHome()
@@ -200,7 +194,7 @@ namespace SquadRush
             selectedStage.text = "STAGE " + game.StageNumber.ToString("D2"); stageBiome.text = StageLocation(game.StageNumber);
             stageInfo.text = game.StageDuration.ToString("0") + "秒 ＋ ボス戦\n初期の仲間 " + (game.Stage.StartingAllies + game.Equipment.StartingAllies) + "人";
             EquipmentItem reward = SquadRushEquipment.StageReward(game.StageNumber); stageReward.text = reward.Name;
-            rewardCaption.text = "クリアごとに装備 ×1（合成素材）";
+            rewardCaption.text = "毎回 装備×1・ジェム100 / 初クリア＋100";rewardCaption.fontSize=14;
             unlockedInfo.text = "解放済み  STAGE 01 ～ " + game.UnlockedStage.ToString("D2");
             previousStage.interactable = game.StageNumber > 1; nextStage.interactable = game.StageNumber < game.UnlockedStage; OpenPage(FrontEndPage.Stages);
         }
@@ -208,6 +202,7 @@ namespace SquadRush
         {
             equipmentStats[0].text=game.WeaponDamage.ToString(); equipmentStats[1].text="+"+game.Equipment.StartingAllies;
             equipmentStats[2].text="+"+Mathf.RoundToInt(game.Equipment.FireRateBonus*100)+"%";
+            equipmentHeroImage.sprite=characterPortraits[game.Account.SelectedCharacter];
             bagCount.text="所持 "+game.Equipment.OwnedCount+"個";
             RefreshCompactInventory();
             for(int i=0;i<3;i++)
@@ -221,7 +216,7 @@ namespace SquadRush
             }
             OpenPage(FrontEndPage.Equipment);
         }
-        public void ShowGacha() => OpenPage(FrontEndPage.Gacha);
+        public void ShowGacha() {RefreshRecruitment();OpenPage(FrontEndPage.Gacha);}
         public void HideFrontEnd()
         { if (frontRoot == null) return; CurrentPage = FrontEndPage.Hidden; frontRoot.gameObject.SetActive(false); battleRoot.gameObject.SetActive(true); }
     }
