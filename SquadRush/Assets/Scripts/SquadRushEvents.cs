@@ -82,6 +82,7 @@ namespace SquadRush
         void RefreshNavigation(bool force=false)
         {
             if(tabs==null||game.Account==null)return;
+            navigationRoot.gameObject.SetActive(game.State!=RunState.Playing&&game.State!=RunState.Paused);
             int active=CurrentPage==FrontEndPage.Gacha?3:CurrentPage==FrontEndPage.Equipment?1:CurrentPage==FrontEndPage.Characters?2:CurrentPage==FrontEndPage.Missions||CurrentPage==FrontEndPage.Login?4:CurrentPage==FrontEndPage.Mail?5:0;
             if(!force&&lastNav==active&&lastNavState==game.State&&Time.unscaledTime<nextNavRefresh)return;
             lastNav=active;lastNavState=game.State;nextNavRefresh=Time.unscaledTime+.5f;

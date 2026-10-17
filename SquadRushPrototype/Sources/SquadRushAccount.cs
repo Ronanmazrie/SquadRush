@@ -37,6 +37,7 @@ namespace SquadRush
             public int observedDay=-1,lastLoginDay=-1,loginDays,dailyClears,dailyKills,dailyPulls,dailyClaims,permanentClaims;
             public string pendingTransaction;
             public int[] pendingWeapons;
+            public int pendingUpgradeItem,pendingUpgradeLevel;
             public SquadRushDrawResult[] lastResults;
             public bool releaseCampaignClaimed;
             public int eventPity;
@@ -59,7 +60,7 @@ namespace SquadRush
             data.eventPity=Mathf.Clamp(data.eventPity,0,89);
             if(!OwnsCharacter(data.selectedCharacter))data.selectedCharacter=0;
             if(!existed)data.bestClear=Mathf.Max(0,completedStages);
-            if(saveMigration)RecoverDraw();ObserveDay();if(!existed&&saveMigration)Save();
+            if(saveMigration){RecoverDraw();RecoverUpgrade();}ObserveDay();if(!existed&&saveMigration)Save();
         }
         int Today=>(int)(clock().ToOffset(TimeSpan.FromHours(9)).Date-new DateTime(1970,1,1)).TotalDays;
         void ObserveDay()
@@ -100,7 +101,7 @@ namespace SquadRush
         public SquadRushDrawResult[] Draw(int count,bool tickets,Func<double> sample=null,DrawBanner banner=DrawBanner.Permanent)
         {
             if(banner!=DrawBanner.Permanent&&banner!=DrawBanner.AkaneEvent)return Array.Empty<SquadRushDrawResult>();
-            RecoverDraw();ObserveDay();if(!CanDraw(count,tickets))return Array.Empty<SquadRushDrawResult>();
+            RecoverDraw();RecoverUpgrade();ObserveDay();if(!CanDraw(count,tickets))return Array.Empty<SquadRushDrawResult>();
             // Sample before mutating balances; injected samples are used only by deterministic Editor checks.
             var rolls=new double[count*3];for(int i=0;i<rolls.Length;i++){rolls[i]=(sample??random.NextDouble)();if(double.IsNaN(rolls[i])||rolls[i]<0||rolls[i]>=1)throw new ArgumentOutOfRangeException(nameof(sample));}
             if(tickets)data.tickets-=count;else data.gems-=count*GemCost;
@@ -134,6 +135,23 @@ namespace SquadRush
             if(string.IsNullOrEmpty(data.pendingTransaction))return;
             equipment.GrantDraw(data.pendingTransaction,data.pendingWeapons??Array.Empty<int>());
             data.pendingTransaction=null;data.pendingWeapons=null;Save();
+        }
+        public bool CanUpgradeEquipment(int id)=>equipment.Owns(id)&&equipment.Level(id)<SquadRushEquipment.MaxLevel&&Coins>=equipment.UpgradeCost(id);
+        public bool UpgradeEquipment(int id)
+        {
+            RecoverUpgrade();
+            if(!CanUpgradeEquipment(id))return false;
+            data.coins-=equipment.UpgradeCost(id);
+            data.pendingUpgradeItem=id;data.pendingUpgradeLevel=equipment.Level(id)+1;
+            // Persist payment and its target together before touching the inventory record.
+            Save();RecoverUpgrade();return true;
+        }
+        void RecoverUpgrade()
+        {
+            if(data.pendingUpgradeLevel==0)return;
+            // Applying an absolute target is idempotent if interrupted after the inventory save.
+            equipment.ApplyPaidLevel(data.pendingUpgradeItem,data.pendingUpgradeLevel);
+            data.pendingUpgradeItem=0;data.pendingUpgradeLevel=0;Save();
         }
         public bool ClaimLogin()
         {

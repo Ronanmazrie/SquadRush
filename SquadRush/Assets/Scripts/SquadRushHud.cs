@@ -10,7 +10,7 @@ namespace SquadRush
         SquadRushGame game;
         RectTransform safeRoot;
         RectTransform battleRoot;
-        GameObject menu;
+        GameObject menu,pauseExit;
         TextMeshProUGUI count, kills, phase, title, description, actionText, toast, stageLabel, weapon;
         UnityEngine.UI.Image progress;
         float toastTime;
@@ -81,6 +81,8 @@ namespace SquadRush
             action.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             actionText = action.GetComponentInChildren<TextMeshProUGUI>();
             SetAnchors(description.rectTransform,new Vector2(.08f,.29f),new Vector2(.92f,.62f));
+            pauseExit=PageButton("Retreat",card,"撤退する",new Vector2(.20f,.025f),new Vector2(.80f,.11f),new Color(.28f,.21f,.24f),game.ShowHome);
+            pauseExit.GetComponentInChildren<TextMeshProUGUI>().fontSize=19;pauseExit.SetActive(false);
             BuildFrontEnd();BuildSkillHud();
             if (Object.FindFirstObjectByType<EventSystem>() == null)
             {
@@ -121,7 +123,7 @@ namespace SquadRush
         {
             HideFrontEnd();
             title.text = heading.StartsWith("SQUAD") ? "SQUAD\n<color=#53CFFF>RUSH</color>" : heading; title.fontSize = heading.StartsWith("SQUAD") ? 53 : 34;
-            description.fontSize=18;description.text = body; actionText.text = action; menu.SetActive(true);RefreshNavigation(true);
+            pauseExit.SetActive(game.State==RunState.Paused);description.fontSize=18;description.text = body; actionText.text = action; menu.SetActive(true);RefreshNavigation(true);
         }
         public void HideMenu() { menu.SetActive(false); toastTime = 0; toast.text = ""; }
         public void Flash(string message) { toast.text = message; toast.alpha = 1; toastTime = 1.7f; }

@@ -1,23 +1,22 @@
-Squad Rush 0.14.0 — Six-tab navigation, event gacha, mail and random loot
+Squad Rush 0.15.0 — Coin equipment levels, tougher enemies and battle navigation
 Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
-Build: WebGL / gzip / decompression fallback
-Build result: Succeeded (16,967,647 bytes)
+Build: WebGL / gzip / decompression fallback / autoSyncPersistentDataPath true
+Build result: Succeeded (16,979,570 bytes)
 Browser: ChatGPT in-app Chromium, 390 x 844 viewport
-Local hosts: HTTP without Content-Encoding, matching GitHub Pages deployment
+Local host: HTTP without Content-Encoding, matching GitHub Pages deployment
 
-PASS: Existing localhost:8767 save retains Stage 01, five equipment copies, 50 gems, 0 tickets and 1400 coins.
-PASS: Six bottom tabs remain visible. Stage screen uses inline previous/next arrows; old account and campaign shortcuts are absent.
-PASS: Direct Mail navigation shows the old release gift as already received, with no extra ten-ticket grant.
-PASS: Permanent gacha has 78 draws to guarantee from the prior save, while the new event starts at 90. Neither page displays character probability or a rates link.
-PASS: A fresh disposable localhost:8768 profile receives exactly ten tickets from Mail, with no gem balance or automatic draw.
-PASS: Event ten-pull consumes the ten tickets, displays ten actual results (seven weapons and three 200-coin results), leaves gems at zero and saves 600 coins / seven equipment copies.
-PASS: Result screen retains all six tabs; tapping Gacha leaves the receipt directly without a separate close action.
-PASS: Permanent pity remains 90 draws to guarantee, while event pity becomes 80.
-PASS: Reload preserves equipment, 600 coins, permanent pity 90 and event pity 80. Browser error / warning logs are empty.
-PASS: Unity captures at 390 x 844 verify Stage, Equipment, Characters, both gacha pages, Missions, Login, Mail, receipts and Stage 12 clear without text overflow.
+PASS: Existing disposable localhost:8768 profile retains Stage 01, seven equipment copies, 0 gems, 0 tickets and 600 coins.
+PASS: Legacy gear starts at Lv.1. Detail shows the next bonus, 100-coin cost and fusion separately.
+PASS: Clicking Upgrade spends exactly 100 coins (600 -> 500), sets Scout Rifle to Lv.2 and increases its bonus from +1 to +2 without consuming equipment.
+PASS: Equipping the leveled rifle shows weapon power 3. Reload preserves Lv.2, equipped state, inventory and 500 coins.
+PASS: Fusing three of the five normal rifles produces a good rifle, keeps Lv.2, leaves two normal copies, and raises the equipped bonus to +3. Coins remain 500.
+PASS: Battle uses weapon power 4 and hides all six bottom tabs. Pause also hides the tabs and offers Continue / Retreat.
+PASS: Retreat returns to Stage selection, restores all six tabs and leaves the coin balance unchanged.
+PASS: Browser warning and error logs are empty.
+PASS: Unity captures at 390 x 844 verify upgrade preview, purchase, insufficient funds, battle and pause without text overflow.
 
-148 gameplay and 100 Play-mode scenarios pass (248 total). Coverage includes independent banner pity, featured event character, exact spending, legacy claim receipt, invalid banners, stage-specific random drop bounds and eligible types, six direct navigation destinations, no duplicate shortcuts, constant navigation visibility, pause exit, actual Stage 12 random reward, and prior equipment / skills / combat / saves.
-Tests use GUID profiles in Editor and disposable localhost profiles in browser. Public player saves are not cleared or used for claims or gacha spending.
+164 gameplay and 108 Play-mode scenarios pass (272 total). Coverage includes weapon/armor/support levels, exact coin costs, next-level prices, exact balance and insufficient funds, Lv.20 cap, invalid/unowned items, shared type levels, fusion retention, old saves, reload, interruptions before and after equipment persistence, combat spending guard and actual projectile damage. Enemy health and hidden/restored navigation are verified alongside previous gacha, missions, mail, skills and random drops.
+Tests use GUID profiles in Editor and a disposable localhost profile in browser. Public player saves are not cleared or used for spending or reward claims.
 
 Desktop browser at mobile viewport size. Physical Android/iPhone controls, performance and Safari remain untested. Native iOS distribution is not available.

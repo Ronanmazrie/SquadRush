@@ -26,11 +26,11 @@ PASS Six equipment illustrations remain distinct
 PASS Locked equipment shows the earliest random-drop stage
 PASS Item inspection fits
 PASS Stage screen prevents selecting locked stages
-PASS Battle keeps all six bottom tabs visible and prevents navigation during a run
+PASS Battle hides all six bottom tabs
 PASS Play-mode ground moves with terrain distance
 PASS Keyboard input moves the squad
 PASS Touch drag moves the squad
-PASS Pause button freezes the run
+PASS Pause freezes the run and keeps navigation hidden while offering retreat
 PASS Continue button resumes the run
 PASS Enemies, squad and automatic bullets run in Play mode
 PASS Visible progress bar follows the current stage duration
@@ -49,7 +49,7 @@ PASS Equipped slot illustration and power value reflect the actual rifle
 PASS Equipment page labels fit their visible controls
 PASS The equipped weapon slot opens its own removable item detail
 PASS An earlier unlocked stage starts with permanent equipped bonuses
-PASS Pause screen returns cleanly to Home
+PASS Retreat returns cleanly to Home and restores navigation
 PASS Reload restores both the equipped rifle and equipment UI
 PASS Equipment button also unequips the rifle
 PASS Stage page fits already-owned reward and navigation labels
@@ -98,3 +98,11 @@ PASS Bottom navigation leaves draw results directly without an extra close step
 PASS Reload preserves both banner counters and the already-received legacy gift
 PASS Stage twelve boss grants one actual rare or epic drop
 PASS Higher-rarity clear reward fits beside persistent navigation
+PASS Owned equipment previews its next level and actual effect
+PASS Upgrade button charges the displayed 100 coins and updates damage and detail in place
+PASS Upgrade keeps other currencies and immediately previews the next level
+PASS Exact remaining coin balance upgrades once and then disables insufficient funds
+PASS Inventory level badge and equipped power refresh after coin spending
+PASS Reload preserves equipment level and refreshed inspection UI
+PASS Leveled gear drives actual combat while bottom navigation stays hidden
+PASS Stage clear restores usable bottom navigation

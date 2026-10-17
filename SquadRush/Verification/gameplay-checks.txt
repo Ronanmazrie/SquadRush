@@ -22,14 +22,15 @@ PASS Zero allies ends the run
 PASS Retry clears the run
 PASS Pause freezes simulation
 PASS Resume
-PASS Opening wave enemies spawn with three health
+PASS Opening wave enemies spawn with five health
 PASS Normal enemy health increases gradually with stage difficulty
 PASS Normal enemy survives the first two basic shots
-PASS Third basic shot defeats the approaching enemy
+PASS Normal enemy also survives the third basic shot
+PASS Fifth basic shot defeats the tougher approaching enemy
 PASS Destroying a crate grants four allies
 PASS Power crate doubles base bullet damage without adding allies
 PASS Weapon power applies to the whole squad volley
-PASS Power upgrade defeats a normal enemy in two shots
+PASS Power upgrade defeats a tougher normal enemy in three shots
 PASS Rapid-fire crate reduces the real firing interval
 PASS Retry starts with base weapons
 PASS Maximum power upgrade converts excess crates to allies
@@ -146,3 +147,18 @@ PASS Starting a new attempt resets skill cooldown and buffs
 PASS Akane's area skill damages and defeats real enemies across both lanes
 PASS Mio's active skill increases real firing speed for six seconds
 PASS Mio's temporary firing bonus expires without accumulating permanently
+PASS Legacy equipment defaults to level one without altering its bonuses
+PASS Invalid and unowned equipment cannot consume coins
+PASS First coin upgrade spends exactly 100 and increases the equipped weapon without consuming copies
+PASS Coin levels strengthen equipped armor and support as well as weapons
+PASS Each new level raises the next coin cost by 100
+PASS Insufficient coins cannot raise levels or reduce the balance
+PASS Equipment spending preserves gems, tickets and both gacha counters
+PASS Fusion retains paid levels and applies the combined rarity and level bonus
+PASS New copies and other rarities share the trained equipment type level
+PASS Reload restores paid levels, equipped fusion and the exact coin balance
+PASS Maximum level blocks further spending
+PASS An interruption after payment recovers the committed upgrade without charging again
+PASS Recovery after the equipment save cannot duplicate an upgrade or payment
+PASS Coin upgrades are blocked during combat even with sufficient funds
+PASS Real combat projectiles include the saved coin upgrade bonus

@@ -114,12 +114,50 @@ namespace SquadRush.Editor
                 game.ChangeSquad(997);for(int i=0;i<121;i++)game.Tick(.05f,false);
                 Check(game.SkillBuffRemaining==0&&Mathf.Abs(game.FireRateMultiplier-1)<.001f,"Mio's temporary firing bonus expires without accumulating permanently",checks);
                 game.ShowHome();game.SelectCharacter(0);
+                VerifyUpgrades(game,key+".upgrade",checks);
             }
             finally
             {
                 foreach(string name in names){PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(name));PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(name));}
                 PlayerPrefs.DeleteKey(key);PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(key));PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(key));PlayerPrefs.Save();
             }
+        }
+        static void VerifyUpgrades(SquadRushGame game,string key,List<string> checks)
+        {
+            try
+            {
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(key),"{\"version\":1,\"coins\":600,\"gems\":321,\"tickets\":2,\"pity\":7,\"eventPity\":9}");
+                var gear=new SquadRushEquipment(key);for(int id=0;id<3;id++)gear.Acquire(id);gear.Acquire(0);gear.Acquire(0);
+                var account=new SquadRushAccount(gear,key);
+                Check(gear.Level(0)==1&&gear.UpgradeCost(0)==100&&gear.WeaponPower==0,"Legacy equipment defaults to level one without altering its bonuses",checks);
+                Check(!account.UpgradeEquipment(-1)&&!account.UpgradeEquipment(6)&&!account.UpgradeEquipment(3)&&account.Coins==600,"Invalid and unowned equipment cannot consume coins",checks);
+                gear.Toggle(0);gear.Toggle(1);gear.Toggle(2);
+                Check(account.UpgradeEquipment(0)&&gear.Level(0)==2&&gear.WeaponPower==2&&account.Coins==500&&gear.OwnedCount==5,"First coin upgrade spends exactly 100 and increases the equipped weapon without consuming copies",checks);
+                Check(account.UpgradeEquipment(1)&&gear.StartingAllies==4&&account.UpgradeEquipment(2)&&Mathf.Abs(gear.FireRateBonus-.2f)<.001f,"Coin levels strengthen equipped armor and support as well as weapons",checks);
+                Check(gear.UpgradeCost(0)==200&&account.UpgradeEquipment(0)&&gear.Level(0)==3&&account.Coins==100,"Each new level raises the next coin cost by 100",checks);
+                Check(!account.UpgradeEquipment(0)&&gear.Level(0)==3&&account.Coins==100,"Insufficient coins cannot raise levels or reduce the balance",checks);
+                Check(account.Gems==321&&account.Tickets==2&&account.Pity==7&&account.EventPity==9,"Equipment spending preserves gems, tickets and both gacha counters",checks);
+                Check(gear.Merge(0,0)&&gear.Level(0)==3&&gear.IsEquipped(0,1)&&gear.WeaponPower==4&&gear.Quantity(0)==0,"Fusion retains paid levels and applies the combined rarity and level bonus",checks);
+                gear.Acquire(0);Check(gear.Level(0)==3&&gear.CurrentValue(0,0)==3&&gear.CurrentValue(0,1)==4,"New copies and other rarities share the trained equipment type level",checks);
+                gear=new SquadRushEquipment(key);account=new SquadRushAccount(gear,key);
+                Check(gear.Level(0)==3&&gear.WeaponPower==4&&account.Coins==100,"Reload restores paid levels, equipped fusion and the exact coin balance",checks);
+                string saved=PlayerPrefs.GetString(SquadRushEquipment.StorageKey(key));
+                PlayerPrefs.SetString(SquadRushEquipment.StorageKey(key),saved.Replace("\"levels\":[3,2,2,1,1,1]","\"levels\":[20,2,2,1,1,1]"));
+                gear=new SquadRushEquipment(key);account=new SquadRushAccount(gear,key);
+                Check(gear.Level(0)==20&&!account.UpgradeEquipment(0)&&account.Coins==100&&gear.UpgradeCost(0)==0,"Maximum level blocks further spending",checks);
+                gear.Acquire(3);
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(key),"{\"version\":1,\"coins\":0,\"pendingUpgradeItem\":3,\"pendingUpgradeLevel\":2}");
+                account=new SquadRushAccount(gear,key);
+                Check(gear.Level(3)==2&&account.Coins==0,"An interruption after payment recovers the committed upgrade without charging again",checks);
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(key),"{\"version\":1,\"coins\":500,\"pendingUpgradeItem\":3,\"pendingUpgradeLevel\":2}");
+                account=new SquadRushAccount(gear,key);account=new SquadRushAccount(gear,key);
+                Check(gear.Level(3)==2&&account.Coins==500,"Recovery after the equipment save cannot duplicate an upgrade or payment",checks);
+                game.ConfigureVerification(key);game.ToggleEquipment(3);game.Begin();int level=game.Equipment.Level(3);
+                Check(!game.UpgradeEquipment(3)&&game.Account.Coins==500&&game.Equipment.Level(3)==level,"Coin upgrades are blocked during combat even with sufficient funds",checks);
+                game.Tick(.02f,false);Check(game.WeaponDamage==5&&game.LastVolleyDamage==game.SquadCount*5,"Real combat projectiles include the saved coin upgrade bonus",checks);
+                game.ShowHome();
+            }
+            finally{PlayerPrefs.DeleteKey(key);PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(key));PlayerPrefs.DeleteKey(SquadRushAccount.StorageKey(key));}
         }
     }
 }

@@ -134,16 +134,16 @@ namespace SquadRush
         {
             itemDetail=Panel("EquipmentDetail",frontRoot,new Color(0.01f,0.025f,0.05f,0.88f),Vector2.zero,Vector2.one);
             itemDetail.GetComponent<UnityEngine.UI.Image>().raycastTarget=true;
-            var card=Panel("Card",itemDetail,slate,new Vector2(0.075f,0.16f),new Vector2(0.925f,0.86f));
+            var card=Panel("Card",itemDetail,slate,new Vector2(0.055f,0.12f),new Vector2(0.945f,0.88f));
             PageButton("CloseEquipmentDetail",card,"×",new Vector2(0.85f,0.91f),new Vector2(0.97f,0.985f),ink,()=>itemDetail.gameObject.SetActive(false));
-            detailTitle=BoxText("DetailTitle",card,"",25,Color.white,new Vector2(0.06f,0.82f),new Vector2(0.91f,0.95f));
-            var frame=Panel("DetailArtFrame",card,gold,new Vector2(0.29f,0.59f),new Vector2(0.71f,0.81f)); detailFrame=frame.GetComponent<UnityEngine.UI.Image>();
+            detailTitle=BoxText("DetailTitle",card,"",23,Color.white,new Vector2(0.035f,0.845f),new Vector2(0.89f,0.97f));
+            var frame=Panel("DetailArtFrame",card,gold,new Vector2(0.33f,0.66f),new Vector2(0.67f,0.84f)); detailFrame=frame.GetComponent<UnityEngine.UI.Image>();
             Panel("DetailArtSurface",frame,new Color(0.07f,0.12f,0.19f),new Vector2(0.025f,0.025f),new Vector2(0.975f,0.975f));
             detailIllustration=Illustration("DetailIllustration",frame,null,new Vector2(0.06f,0.06f),new Vector2(0.94f,0.94f));
-            detailEffect=BoxText("DetailEffect",card,"",25,gold,new Vector2(0.06f,0.50f),new Vector2(0.94f,0.58f));
-            detailComparison=BoxText("DetailComparison",card,"",18,Color.white,new Vector2(0.06f,0.43f),new Vector2(0.94f,0.50f));
-            Panel("DetailRule",card,new Color(0.25f,0.40f,0.50f),new Vector2(0.08f,0.414f),new Vector2(0.92f,0.417f));
-            detailSource=BoxText("DetailSource",card,"",17,new Color(0.72f,0.85f,0.94f),new Vector2(0.06f,0.32f),new Vector2(0.94f,0.40f));
+            detailEffect=BoxText("DetailEffect",card,"",23,gold,new Vector2(0.04f,0.59f),new Vector2(0.96f,0.66f));
+            detailComparison=BoxText("DetailComparison",card,"",16,Color.white,new Vector2(0.04f,0.54f),new Vector2(0.96f,0.59f));
+            Panel("DetailRule",card,new Color(0.25f,0.40f,0.50f),new Vector2(0.08f,0.537f),new Vector2(0.92f,0.539f));
+            detailSource=BoxText("DetailSource",card,"",14,new Color(0.72f,0.85f,0.94f),new Vector2(0.04f,0.485f),new Vector2(0.96f,0.535f));
             var action=PageButton("EquipmentAction",card,"",new Vector2(0.12f,0.035f),new Vector2(0.88f,0.125f),blue,()=>game.ToggleEquipment(selectedItem,selectedRarity));
             applyEquipment=action.GetComponent<UnityEngine.UI.Button>(); detailAction=action.GetComponentInChildren<TextMeshProUGUI>();
             BuildFusionControls(card);
@@ -158,8 +158,8 @@ namespace SquadRush
         void InspectItem(int id,int rarity=0)
         {
             selectedItem=id; selectedRarity=rarity; var item=SquadRushEquipment.Item(id); bool owned=game.Equipment.Quantity(id,rarity)>0;
-            detailTitle.text=SquadRushEquipment.RarityName(rarity)+" / "+item.SlotName+"\n"+item.Name;
-            detailEffect.text=SquadRushEquipment.Effect(id,rarity);
+            detailTitle.text=SquadRushEquipment.RarityName(rarity)+" / "+item.SlotName+" / Lv."+game.Equipment.Level(id)+"\n"+item.Name;
+            detailEffect.text=SquadRushEquipment.Effect(id,rarity,game.Equipment.Level(id));
             detailIllustration.sprite=itemIllustrations[id]; detailFrame.color=RarityColor(rarity); UpdateDetailComparison(id,rarity);
             detailSource.text=(rarity==0?"STAGE "+(id<3?1:4).ToString("D2")+"～ ランダムドロップ":"高難度ドロップ / 合成")+"  /  所持 "+game.Equipment.Quantity(id,rarity)+"個";
             applyEquipment.interactable=owned; detailAction.text=game.Equipment.IsEquipped(id,rarity)?"装備を外す":owned?"装備する":"未入手";
@@ -232,7 +232,7 @@ namespace SquadRush
                 equippedButtons[i].image.color=equipped?RarityColor(game.Equipment.EquippedRarity(slot)):new Color(0.25f,0.39f,0.48f);
                 equippedIcons[i].sprite=equipped?itemIllustrations[id]:null; equippedIcons[i].enabled=equipped;
                 equippedEmptyLabels[i].gameObject.SetActive(!equipped);
-                equippedLabels[i].text=(slot==EquipmentSlot.Weapon?"武器":slot==EquipmentSlot.Armor?"防具":"サポート")+"\n"+(equipped?SquadRushEquipment.RarityName(game.Equipment.EquippedRarity(slot)):"未装備");
+                equippedLabels[i].text=(slot==EquipmentSlot.Weapon?"武器":slot==EquipmentSlot.Armor?"防具":"サポート")+(equipped?" Lv."+game.Equipment.Level(id):"")+"\n"+(equipped?SquadRushEquipment.RarityName(game.Equipment.EquippedRarity(slot)):"未装備");
                 equippedLabels[i].color=equipped?gold:new Color(0.68f,0.82f,0.89f);
             }
             OpenPage(FrontEndPage.Equipment);

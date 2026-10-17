@@ -38,17 +38,18 @@ namespace SquadRush
         {
             public int version = 2, owned;
             public int[] quantities;
+            public int[] levels;
             public string lastDrawTransaction;
             public int weapon = -1, armor = -1, support = -1;
         }
         SaveData data;
         readonly string key;
         public static int Count => catalog.Length;
-        public const int RarityCount = 5, MergeCost = 3;
+        public const int RarityCount = 5, MergeCost = 3, MaxLevel = 20;
         public static int EntryCount => Count * RarityCount;
         public static string RarityName(int rarity) => new[] { "ノーマル", "グッド", "レア", "エピック", "レジェンド" }[Mathf.Clamp(rarity, 0, RarityCount-1)];
-        public static int Value(int id, int rarity) => Item(id).Value * new[] { 1, 2, 3, 5, 8 }[Mathf.Clamp(rarity, 0, RarityCount-1)];
-        public static string Effect(int id, int rarity) { var item=Item(id); return (item.Slot==EquipmentSlot.Weapon?"弾の威力 +":item.Slot==EquipmentSlot.Armor?"初期の仲間 +":"連射速度 +")+Value(id,rarity)+(item.Slot==EquipmentSlot.Support?"%":""); }
+        public static int Value(int id, int rarity, int level=1) => Item(id).Value * (new[] { 1, 2, 3, 5, 8 }[Mathf.Clamp(rarity, 0, RarityCount-1)]+Mathf.Clamp(level,1,MaxLevel)-1);
+        public static string Effect(int id, int rarity, int level=1) { var item=Item(id); return (item.Slot==EquipmentSlot.Weapon?"弾の威力 +":item.Slot==EquipmentSlot.Armor?"初期の仲間 +":"連射速度 +")+Value(id,rarity,level)+(item.Slot==EquipmentSlot.Support?"%":""); }
         public static EquipmentItem Item(int id) => catalog[id];
         public static EquipmentItem StageReward(int stage) => catalog[(Mathf.Max(1, stage) - 1) % catalog.Length];
         public static int DropMinRarity(int stage)=>Mathf.Clamp((Mathf.Max(1,stage)-4)/3,0,4);
@@ -76,6 +77,9 @@ namespace SquadRush
             }
             for(int i=0;i<EntryCount;i++) data.quantities[i]=Mathf.Clamp(data.quantities[i],0,999999);
             data.version=2; data.owned=0;
+            // Levels belong to the equipment type, so copies and rarity fusion retain training.
+            if(data.levels==null||data.levels.Length!=Count)data.levels=new int[Count];
+            for(int id=0;id<Count;id++)data.levels[id]=Mathf.Clamp(data.levels[id],1,MaxLevel);
             data.weapon = Validate(data.weapon, EquipmentSlot.Weapon);
             data.armor = Validate(data.armor, EquipmentSlot.Armor);
             data.support = Validate(data.support, EquipmentSlot.Support);
@@ -98,7 +102,15 @@ namespace SquadRush
         public int WeaponPower => Bonus(EquipmentSlot.Weapon);
         public int StartingAllies => Bonus(EquipmentSlot.Armor);
         public float FireRateBonus => Bonus(EquipmentSlot.Support) / 100f;
-        int Bonus(EquipmentSlot slot) { int id = Equipped(slot); return Owns(id) ? Value(id,EquippedRarity(slot)) : 0; }
+        public int Level(int id)=>id>=0&&id<Count?data.levels[id]:1;
+        public int UpgradeCost(int id)=>Owns(id)&&Level(id)<MaxLevel?Level(id)*100:0;
+        public int CurrentValue(int id,int rarity)=>Value(id,rarity,Level(id));
+        internal void ApplyPaidLevel(int id,int targetLevel)
+        {
+            if(!Owns(id)||targetLevel<2||targetLevel>MaxLevel||Level(id)>=targetLevel)return;
+            data.levels[id]=targetLevel;Save();
+        }
+        int Bonus(EquipmentSlot slot) { int id = Equipped(slot); return Owns(id) ? CurrentValue(id,EquippedRarity(slot)) : 0; }
         public bool Acquire(int id,int rarity=0)
         {
             if(id<0||id>=Count||rarity<0||rarity>=RarityCount||Quantity(id,rarity)>=999999)return false;

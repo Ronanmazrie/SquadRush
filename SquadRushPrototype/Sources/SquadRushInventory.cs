@@ -6,8 +6,8 @@ namespace SquadRush
     public sealed partial class SquadRushHud
     {
         UnityEngine.UI.ScrollRect inventoryScroll;
-        UnityEngine.UI.Button mergeButton;
-        TextMeshProUGUI mergePreview,mergeLabel;
+        UnityEngine.UI.Button mergeButton,upgradeButton;
+        TextMeshProUGUI mergePreview,mergeLabel,upgradePreview,upgradeLabel;
         RectTransform inventoryContent;
         static Color RarityColor(int rarity) => new[] { new Color(.72f,.77f,.82f),new Color(.31f,.85f,.48f),new Color(.25f,.66f,1),new Color(.73f,.40f,1),new Color(1,.75f,.23f) }[Mathf.Clamp(rarity,0,4)];
         void BuildCompactInventory()
@@ -40,6 +40,7 @@ namespace SquadRush
                 var label=button.GetComponentInChildren<TextMeshProUGUI>();label.text=ItemCaption(id);label.fontSize=12;label.enableAutoSizing=true;label.fontSizeMin=9;label.fontSizeMax=12;
                 SetAnchors(label.rectTransform,new Vector2(.015f,.18f),new Vector2(.985f,.40f));
                 inventoryStates[entry]=BoxText("ItemState"+entry,button.transform,"",11,Color.white,new Vector2(.015f,.005f),new Vector2(.985f,.18f));
+                BoxText("ItemLevel"+entry,button.transform,"",11,gold,new Vector2(.01f,.76f),new Vector2(.42f,.99f));
                 var tag=Panel("QuantityBadge",button.transform,new Color(.025f,.05f,.09f,.95f),new Vector2(.40f,.75f),new Vector2(.98f,.99f));
                 var quantity=BoxText("ItemQuantity"+entry,tag,"",13,Color.white,Vector2.zero,Vector2.one);quantity.enableAutoSizing=true;quantity.fontSizeMin=8;quantity.fontSizeMax=13;
             }
@@ -56,6 +57,7 @@ namespace SquadRush
                 inventoryIllustrations[entry].color=n>0?Color.white:new Color(.43f,.48f,.53f);
                 inventoryStates[entry].text=equipped?"装備中":n==0?"未入手":game.Equipment.CanMerge(id,r)?"合成可能 ↑":SquadRushEquipment.RarityName(r);
                 inventoryStates[entry].color=equipped?gold:RarityColor(r);
+                inventoryCards[entry].transform.Find("ItemLevel"+entry).GetComponent<TextMeshProUGUI>().text=n>0?"Lv."+game.Equipment.Level(id):"";
                 var badge=inventoryCards[entry].transform.Find("QuantityBadge").GetComponentInChildren<TextMeshProUGUI>();badge.text="×"+n;
             }
             UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(inventoryContent);
@@ -63,21 +65,34 @@ namespace SquadRush
         }
         void BuildFusionControls(Transform card)
         {
-            mergePreview=BoxText("MergePreview",card,"",16,new Color(.73f,.85f,.93f),new Vector2(.045f,.225f),new Vector2(.955f,.315f));
+            upgradePreview=BoxText("UpgradePreview",card,"",15,new Color(.73f,.85f,.93f),new Vector2(.035f,.405f),new Vector2(.965f,.485f));
+            var upgrade=PageButton("EquipmentUpgrade",card,"",new Vector2(.12f,.315f),new Vector2(.88f,.40f),gold,()=>
+            {
+                int id=selectedItem,r=selectedRarity;if(game.UpgradeEquipment(id))InspectItem(id,r);
+            });
+            upgradeButton=upgrade.GetComponent<UnityEngine.UI.Button>();upgradeLabel=upgrade.GetComponentInChildren<TextMeshProUGUI>();upgradeLabel.fontSize=20;upgradeLabel.color=ink;
+            ButtonIcon(upgrade,SquadIcon.Coin,.20f);
+            mergePreview=BoxText("MergePreview",card,"",15,new Color(.73f,.85f,.93f),new Vector2(.045f,.225f),new Vector2(.955f,.315f));
             var action=PageButton("EquipmentMerge",card,"",new Vector2(.12f,.135f),new Vector2(.88f,.22f),new Color(.30f,.57f,.32f),()=>
             {
                 int id=selectedItem,r=selectedRarity;
                 if(game.MergeEquipment(id,r)) InspectItem(id,r+1);
             });
-            mergeButton=action.GetComponent<UnityEngine.UI.Button>();mergeLabel=action.GetComponentInChildren<TextMeshProUGUI>();mergeLabel.fontSize=23;
+            mergeButton=action.GetComponent<UnityEngine.UI.Button>();mergeLabel=action.GetComponentInChildren<TextMeshProUGUI>();mergeLabel.fontSize=21;
             ButtonIcon(action,SquadIcon.Merge,.23f);
         }
         void RefreshFusionControls()
         {
+            int level=game.Equipment.Level(selectedItem),cost=game.Equipment.UpgradeCost(selectedItem);
+            bool owned=game.Equipment.Owns(selectedItem),levelMax=level>=SquadRushEquipment.MaxLevel;
+            upgradeButton.interactable=game.Account.CanUpgradeEquipment(selectedItem);
+            upgradePreview.text=!owned?"入手するとレベルアップできます":levelMax?"最高レベルです / 同じ種類でレベル共通":
+                "Lv."+level+" → Lv."+(level+1)+"  /  "+SquadRushEquipment.Effect(selectedItem,selectedRarity,level+1)+"\n同じ種類でレベル共通・合成後も引き継ぎ";
+            upgradeLabel.text=!owned?"未入手":levelMax?"Lv.20 MAX":"強化 "+cost.ToString("N0")+"コイン"+(game.Account.Coins<cost?" / 不足":"");
             int n=game.Equipment.Quantity(selectedItem,selectedRarity);
             bool max=selectedRarity==SquadRushEquipment.RarityCount-1;
             mergeButton.interactable=game.Equipment.CanMerge(selectedItem,selectedRarity);
-            mergePreview.text=max?"最高レアリティです":SquadRushEquipment.RarityName(selectedRarity)+" ×3 → "+SquadRushEquipment.RarityName(selectedRarity+1)+" ×1\n"+SquadRushEquipment.Effect(selectedItem,selectedRarity+1);
+            mergePreview.text=max?"最高レアリティです":SquadRushEquipment.RarityName(selectedRarity)+" ×3 → "+SquadRushEquipment.RarityName(selectedRarity+1)+" ×1\n"+SquadRushEquipment.Effect(selectedItem,selectedRarity+1,level);
             mergeLabel.text=max?"強化完了":n>=3?"3個を合成する":"素材 "+n+" / 3個";
         }
     }

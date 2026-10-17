@@ -157,6 +157,11 @@ namespace SquadRush
             if (State != RunState.Ready || !Equipment.Toggle(id,rarity)) return;
             UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowEquipment();
         }
+        public bool UpgradeEquipment(int id)
+        {
+            if(State!=RunState.Ready||!Account.UpgradeEquipment(id))return false;
+            UpdateWeapons();SetSquad(Stage.StartingAllies+Equipment.StartingAllies);Hud.UpdateStats();Hud.ShowEquipment();return true;
+        }
         public bool MergeEquipment(int id,int rarity)
         {
             if(State!=RunState.Ready||!Equipment.Merge(id,rarity))return false;
@@ -489,7 +494,7 @@ namespace SquadRush
         public void TogglePause()
         {
             if (State == RunState.Playing)
-            { State = RunState.Paused; dragging = false; Hud.ShowMenu("一時停止", "下のタブを選ぶと\n戦闘を終了して移動します。", "つづける"); }
+            { State = RunState.Paused; dragging = false; Hud.ShowMenu("一時停止", "つづけるで戦闘を再開します。\n撤退すると報酬は獲得できません。", "つづける"); }
             else if (State == RunState.Paused) { State = RunState.Playing; Hud.HideMenu(); }
         }
         void OnApplicationPause(bool paused) { if (paused && State == RunState.Playing) TogglePause(); }

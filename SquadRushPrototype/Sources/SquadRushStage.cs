@@ -18,7 +18,7 @@ namespace SquadRush
         public float Duration => 40 + Mathf.Min(Difficulty, 6) * 3;
         public int StartingAllies => 3 + Mathf.Min(Difficulty / 3, 5);
         public int BossHealth => 180 + Difficulty * 50 + Mathf.Clamp(Number-6,0,6)*45;
-        public int EnemyHealth => 3 + Mathf.Min(Difficulty / 4, 3)+Mathf.Min(3,Mathf.Max(0,Number-6)/2);
+        public int EnemyHealth => 5 + Mathf.Min(Difficulty / 4, 3)+Mathf.Min(3,Mathf.Max(0,Number-6)/2);
         public float WaveInterval(float progress) => Mathf.Max(0.7f, Mathf.Lerp(2.6f, 1.5f, progress) / (1 + Difficulty * 0.045f+Mathf.Max(0,Mathf.Min(Number,12)-6)*.025f));
         public Color Ground => Biome == LandscapeBiome.Desert ? new Color(0.76f, 0.62f, 0.40f) : Biome == LandscapeBiome.Forest ? new Color(0.28f, 0.43f, 0.25f) : new Color(0.83f, 0.9f, 0.96f);
         public Color Fog => Biome == LandscapeBiome.Desert ? new Color(0.78f, 0.71f, 0.60f) : Biome == LandscapeBiome.Forest ? new Color(0.57f, 0.69f, 0.59f) : new Color(0.78f, 0.87f, 0.96f);
