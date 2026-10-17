@@ -28,7 +28,7 @@ namespace SquadRush
     // Offline prototype economy. All acquisition, spending, pity and reward claims share one save.
     public sealed class SquadRushAccount
     {
-        public const int GemCost=100,WeaponCoinValue=200,DuplicateCoins=1000;
+        public const int GemCost=100,WeaponCoinValue=200,DuplicateCoins=1000,ReleaseCampaignTickets=10;
         const int WalletLimit=9999999;
         [Serializable] sealed class SaveData
         {
@@ -37,6 +37,7 @@ namespace SquadRush
             public string pendingTransaction;
             public int[] pendingWeapons;
             public SquadRushDrawResult[] lastResults;
+            public bool releaseCampaignClaimed;
         }
         readonly string key;
         readonly SquadRushEquipment equipment;
@@ -72,6 +73,14 @@ namespace SquadRush
         public bool CanClaimLogin {get{ObserveDay();return Today==data.observedDay&&data.lastLoginDay<data.observedDay;}}
         public int LoginGems=>LoginDay==7?300:100;
         public int LoginTickets=>LoginDay==7?3:1;
+        public bool ReleaseCampaignClaimed=>data.releaseCampaignClaimed;
+        public bool CanClaimReleaseCampaign=>!data.releaseCampaignClaimed&&data.tickets<=WalletLimit-ReleaseCampaignTickets;
+        public bool ClaimReleaseCampaign()
+        {
+            if(!CanClaimReleaseCampaign)return false;
+            // Reward and receipt share one persisted record, including for existing v1 saves.
+            data.tickets+=ReleaseCampaignTickets;data.releaseCampaignClaimed=true;Save();return true;
+        }
         public bool OwnsCharacter(int id)=>id>=0&&id<SquadRushCharacters.Count&&(data.characters&(1<<id))!=0;
         public bool SelectCharacter(int id){if(!OwnsCharacter(id))return false;data.selectedCharacter=id;Save();return true;}
         public static double CharacterChance(int pull)

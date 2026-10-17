@@ -6,6 +6,9 @@ PASS Natural body and boots fit the existing ground and portrait framing
 PASS Reusing a soldier resets stride, body pose and muzzle flash
 PASS Scene starts with a three-ally squad and menu
 PASS All 21 icons are distinct, bounded, finite and do not intercept touches
+PASS Home campaign opens the event section without automatically granting or drawing
+PASS Permanent tab isolates the existing recruitment controls from event rewards
+PASS Event tab hides permanent draw controls
 PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog
 PASS Home exposes a direct sortie and persistent navigation
@@ -88,3 +91,8 @@ PASS Exhausted ticket mode does not fall back to spending gems
 PASS Gem mode remains available after tickets run out
 PASS Completed draw mission becomes claimable
 PASS Mission UI grants 50 gems exactly once
+PASS Event claim grants ten tickets once and preserves gems, pity and pull count
+PASS Campaign action selects ticket mode in permanent gacha without triggering a draw
+PASS Free campaign tickets pay for exactly ten real permanent-gacha results without gems
+PASS Reloaded UI keeps the release gift received and prevents a second claim
+PASS Home campaign shows its received state after claiming

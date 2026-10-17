@@ -8,7 +8,7 @@ namespace SquadRush.Editor
         static void Check(bool value,string label,List<string> checks){if(!value)throw new InvalidOperationException(label);checks.Add("PASS "+label);}
         public static void Verify(SquadRushGame game,string key,List<string> checks)
         {
-            string[] names={key+".clock",key+".draw",key+".pity",key+".journal",key+".legacy"};
+            string[] names={key+".clock",key+".draw",key+".pity",key+".journal",key+".legacy",key+".campaign",key+".cap"};
             try
             {
                 var now=new DateTimeOffset(2026,10,17,14,59,0,TimeSpan.Zero);
@@ -64,10 +64,27 @@ namespace SquadRush.Editor
                 PlayerPrefs.SetString(SquadRushEquipment.StorageKey(names[4]),"{\"version\":1,\"owned\":7,\"weapon\":0,\"armor\":1,\"support\":2}");
                 gear=new SquadRushEquipment(names[4]);account=new SquadRushAccount(gear,names[4],3);Check(gear.OwnedCount==3&&gear.WeaponPower==1&&account.SelectedCharacter==0&&account.Gems==0&&account.MissionProgress(3)==3,"Existing equipment migrates without free currency or lost progress, and unlocks the permanent stage mission",checks);
 
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(names[5]),"{\"version\":1,\"gems\":321,\"tickets\":2,\"coins\":400,\"characters\":3,\"selectedCharacter\":1,\"pity\":79}");
+                gear=new SquadRushEquipment(names[5]);account=new SquadRushAccount(gear,names[5],utcNow:()=>now);
+                Check(account.CanClaimReleaseCampaign&&!account.ReleaseCampaignClaimed&&account.Tickets==2,"Existing v1 profiles become eligible without an automatic campaign grant",checks);
+                Check(account.ClaimReleaseCampaign()&&account.Tickets==12&&account.ReleaseCampaignClaimed&&account.Gems==321&&account.Coins==400&&account.Pity==79&&account.TotalPulls==0&&account.SelectedCharacter==1,"Release gift adds exactly ten tickets without spending, drawing or changing character and pity",checks);
+                Check(!account.ClaimReleaseCampaign()&&account.Tickets==12,"Repeated release-campaign claims cannot duplicate tickets",checks);
+                now=now.AddDays(20);account=new SquadRushAccount(gear,names[5],utcNow:()=>now);
+                Check(account.ReleaseCampaignClaimed&&!account.CanClaimReleaseCampaign&&!account.ClaimReleaseCampaign()&&account.Tickets==12,"Campaign claim survives reload and calendar rollover",checks);
+                result=account.Draw(10,true,()=>.999999);
+                Check(result.Length==10&&account.Tickets==2&&account.Gems==321&&account.TotalPulls==10&&account.Pity==89,"Gift tickets fund a full permanent ten-pull and advance its existing pity",checks);
+                Check(account.CanClaimLogin&&account.ClaimLogin()&&account.Tickets==3&&!account.CanClaimReleaseCampaign,"Login rewards and campaign receipts remain independent",checks);
+                var freshGift=new SquadRushAccount(new SquadRushEquipment(names[6]),names[6]);Check(freshGift.ClaimReleaseCampaign()&&freshGift.Tickets==10&&freshGift.Gems==0,"New profiles also receive one free ten-pull without a gem balance",checks);
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(names[6]),"{\"version\":1,\"tickets\":9999990}");account=new SquadRushAccount(new SquadRushEquipment(names[6]),names[6]);
+                Check(!account.CanClaimReleaseCampaign&&!account.ClaimReleaseCampaign()&&!account.ReleaseCampaignClaimed&&account.Tickets==9999990,"Ticket cap defers the gift without discarding tickets or marking it received",checks);
+                PlayerPrefs.SetString(SquadRushAccount.StorageKey(names[6]),"{\"version\":1,\"tickets\":9999989}");account=new SquadRushAccount(new SquadRushEquipment(names[6]),names[6]);
+                Check(account.ClaimReleaseCampaign()&&account.Tickets==9999999,"Exactly ten available wallet slots allow the complete campaign gift",checks);
+
                 game.ShowHome();int allies=game.SquadCount;game.Begin();allies=game.SquadCount;
                 Check(game.ActivateCharacterSkill()&&game.SquadCount==Mathf.Min(1000,allies+3)&&!game.ActivateCharacterSkill(),"Ren's actual skill supplies three allies and enforces cooldown",checks);
                 game.TogglePause();float cooldown=game.SkillCooldownRemaining;game.Tick(5,false);Check(game.SkillCooldownRemaining==cooldown,"Pausing freezes character skill cooldown",checks);game.TogglePause();
                 Check(!game.SelectCharacter(1)&&game.DrawGacha(1,true).Length==0,"Character switching and gacha spending are blocked during combat",checks);
+                game.OpenEvents();Check(!game.ClaimReleaseCampaign()&&!game.Account.ReleaseCampaignClaimed&&game.Hud.CurrentPage==FrontEndPage.Hidden,"Campaign opening and claiming are blocked during combat",checks);
                 game.Begin();Check(game.SkillCooldownRemaining==0&&game.SkillBuffRemaining==0,"Starting a new attempt resets skill cooldown and buffs",checks);
                 // Give the isolated verification profile the two earned character results.
                 PlayerPrefs.SetString(SquadRushAccount.StorageKey(key),"{\"version\":1,\"characters\":7}");game.ConfigureVerification(key);game.SelectCharacter(1);game.Begin();

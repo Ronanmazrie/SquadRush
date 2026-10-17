@@ -39,6 +39,12 @@ namespace SquadRush
         public void OpenCharacters(){if(State==RunState.Ready)Hud.ShowCharacters();}
         public void OpenLogin(){if(State==RunState.Ready)Hud.ShowLogin();}
         public void OpenMissions(){if(State==RunState.Ready)Hud.ShowMissions();}
+        public void OpenEvents(){if(State==RunState.Ready)Hud.ShowEvents();}
+        public bool ClaimReleaseCampaign()
+        {
+            if(State!=RunState.Ready)return false;
+            bool claimed=Account.ClaimReleaseCampaign();Hud.ShowEvents();return claimed;
+        }
         public SquadRushDrawResult[] DrawGacha(int count,bool tickets)
         {
             if(State!=RunState.Ready)return System.Array.Empty<SquadRushDrawResult>();

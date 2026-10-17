@@ -111,9 +111,19 @@ PASS Acquired character selection persists
 PASS Recovering a draw already granted before interruption never duplicates items or charges again
 PASS Pending committed draw rewards finish once after reload
 PASS Existing equipment migrates without free currency or lost progress, and unlocks the permanent stage mission
+PASS Existing v1 profiles become eligible without an automatic campaign grant
+PASS Release gift adds exactly ten tickets without spending, drawing or changing character and pity
+PASS Repeated release-campaign claims cannot duplicate tickets
+PASS Campaign claim survives reload and calendar rollover
+PASS Gift tickets fund a full permanent ten-pull and advance its existing pity
+PASS Login rewards and campaign receipts remain independent
+PASS New profiles also receive one free ten-pull without a gem balance
+PASS Ticket cap defers the gift without discarding tickets or marking it received
+PASS Exactly ten available wallet slots allow the complete campaign gift
 PASS Ren's actual skill supplies three allies and enforces cooldown
 PASS Pausing freezes character skill cooldown
 PASS Character switching and gacha spending are blocked during combat
+PASS Campaign opening and claiming are blocked during combat
 PASS Starting a new attempt resets skill cooldown and buffs
 PASS Akane's area skill damages and defeats real enemies across both lanes
 PASS Mio's active skill increases real firing speed for six seconds

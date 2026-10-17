@@ -57,6 +57,7 @@ namespace SquadRush
             var label = sortie.GetComponentInChildren<TextMeshProUGUI>(); label.color = ink; label.fontSize = 32; label.fontStyle = FontStyles.Bold;
             DrawIcon("SortieIcon",sortie.transform,SquadIcon.Battle,new Vector2(.23f,.15f),new Vector2(.40f,.85f));SetAnchors(label.rectTransform,new Vector2(.43f,.04f),new Vector2(.78f,.96f));
             HomeAccountButtons();
+            BuildHomeCampaign();
             PageText("HomeHint", homePage, "ステージを選んで、部隊と出撃しよう", 17, new Color(0.53f, 0.70f, 0.82f), 0.135f, 29);
         }
         void BuildStagesPage()
@@ -231,7 +232,7 @@ namespace SquadRush
             }
             OpenPage(FrontEndPage.Equipment);
         }
-        public void ShowGacha() {RefreshRecruitment();OpenPage(FrontEndPage.Gacha);}
+        public void ShowGacha() {RefreshRecruitment();SetGachaSection(false);OpenPage(FrontEndPage.Gacha);}
         public void HideFrontEnd()
         { if (frontRoot == null) return; CurrentPage = FrontEndPage.Hidden; frontRoot.gameObject.SetActive(false); battleRoot.gameObject.SetActive(true); }
     }

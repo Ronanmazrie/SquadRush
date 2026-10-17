@@ -25,6 +25,7 @@ namespace SquadRush
             if(walletLabels==null)return;
             walletLabels[0].text=game.Account.Gems.ToString("N0");walletLabels[1].text=game.Account.Tickets.ToString("N0");walletLabels[2].text=game.Account.Coins.ToString("N0");
             foreach(var label in walletLabels){label.enableAutoSizing=true;label.fontSizeMin=9;label.fontSizeMax=15;}
+            RefreshCampaignNotices();
             if(homeNotifications!=null){homeNotifications[0].gameObject.SetActive(game.Account.CanClaimLogin);bool claimable=false;for(int i=0;i<4;i++)claimable|=game.Account.CanClaimMission(i);homeNotifications[1].gameObject.SetActive(claimable);}
         }
         void HomeAccountButtons()
@@ -133,24 +134,25 @@ namespace SquadRush
         }
         void BuildRecruitmentPage()
         {
-            PageText("GachaTitle",gachaPage,"特殊部隊ガチャ",28,Color.white,.855f,50);
-            var banner=Panel("RecruitmentBanner",gachaPage,new Color(.16f,.12f,.26f),new Vector2(.05f,.58f),new Vector2(.95f,.825f));
+            BuildGachaSections();
+            var banner=Panel("RecruitmentBanner",permanentGacha,new Color(.16f,.12f,.26f),new Vector2(.05f,.58f),new Vector2(.95f,.775f));
             // Character sprites are loaded again here because the recruitment page is built before account pages.
             Illustration("RecruitAkane",banner,RequiredIllustration("akane"),new Vector2(.02f,.04f),new Vector2(.43f,.96f));
             Illustration("RecruitMio",banner,RequiredIllustration("mio"),new Vector2(.57f,.04f),new Vector2(.98f,.96f));
             BoxText("RecruitmentCaption",banner,"新キャラ\nアカネ / ミオ",19,gold,new Vector2(.28f,.20f),new Vector2(.72f,.75f));
-            gachaPity=BoxText("GachaPity",gachaPage,"",19,gold,new Vector2(.04f,.505f),new Vector2(.96f,.58f));
-            ticketMode=PageButton("UseTickets",gachaPage,"チケット",new Vector2(.09f,.44f),new Vector2(.48f,.50f),slate,()=>{useTickets=true;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
-            gemMode=PageButton("UseGems",gachaPage,"ジェム",new Vector2(.52f,.44f),new Vector2(.91f,.50f),slate,()=>{useTickets=false;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
+            gachaPity=BoxText("GachaPity",permanentGacha,"",19,gold,new Vector2(.04f,.505f),new Vector2(.96f,.58f));
+            ticketMode=PageButton("UseTickets",permanentGacha,"チケット",new Vector2(.09f,.44f),new Vector2(.48f,.50f),slate,()=>{useTickets=true;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
+            gemMode=PageButton("UseGems",permanentGacha,"ジェム",new Vector2(.52f,.44f),new Vector2(.91f,.50f),slate,()=>{useTickets=false;RefreshRecruitment();}).GetComponent<UnityEngine.UI.Button>();
             ButtonIcon(ticketMode.gameObject,SquadIcon.Ticket);ButtonIcon(gemMode.gameObject,SquadIcon.Gem);
-            var one=PageButton("DrawOne",gachaPage,"1回引く",new Vector2(.08f,.33f),new Vector2(.47f,.42f),blue,()=>game.DrawGacha(1,useTickets));drawOne=one.GetComponent<UnityEngine.UI.Button>();
-            var ten=PageButton("DrawTen",gachaPage,"10回引く",new Vector2(.53f,.33f),new Vector2(.92f,.42f),gold,()=>game.DrawGacha(10,useTickets));drawTen=ten.GetComponent<UnityEngine.UI.Button>();ten.GetComponentInChildren<TextMeshProUGUI>().color=ink;
-            gachaCost=PageText("GachaCost",gachaPage,"",16,new Color(.77f,.86f,.94f),.302f,30);
-            PageButton("GachaRates",gachaPage,"提供割合",new Vector2(.05f,.225f),new Vector2(.335f,.28f),slate,ShowGachaRates).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
-            PageButton("GachaCharacters",gachaPage,"キャラ",new Vector2(.355f,.225f),new Vector2(.64f,.28f),slate,game.OpenCharacters).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
-            PageButton("GachaEquipment",gachaPage,"装備",new Vector2(.66f,.225f),new Vector2(.945f,.28f),slate,game.OpenEquipment).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
-            gachaNotice=BoxText("GachaNotice",gachaPage,"通常は基本武器またはコイン\nチケット・ジェムはゲーム内報酬で獲得",16,new Color(.66f,.79f,.89f),new Vector2(.04f,.16f),new Vector2(.96f,.215f));
-            lastDrawReceipt=PageButton("LastDrawReceipt",gachaPage,"前回の結果",new Vector2(.27f,.112f),new Vector2(.73f,.155f),slate,()=>ShowDrawResults(game.Account.LastResults)).GetComponent<UnityEngine.UI.Button>();lastDrawReceipt.GetComponentInChildren<TextMeshProUGUI>().fontSize=15;
+            var one=PageButton("DrawOne",permanentGacha,"1回引く",new Vector2(.08f,.33f),new Vector2(.47f,.42f),blue,()=>game.DrawGacha(1,useTickets));drawOne=one.GetComponent<UnityEngine.UI.Button>();
+            var ten=PageButton("DrawTen",permanentGacha,"10回引く",new Vector2(.53f,.33f),new Vector2(.92f,.42f),gold,()=>game.DrawGacha(10,useTickets));drawTen=ten.GetComponent<UnityEngine.UI.Button>();ten.GetComponentInChildren<TextMeshProUGUI>().color=ink;
+            gachaCost=PageText("GachaCost",permanentGacha,"",16,new Color(.77f,.86f,.94f),.302f,30);
+            PageButton("GachaRates",permanentGacha,"提供割合",new Vector2(.05f,.225f),new Vector2(.335f,.28f),slate,ShowGachaRates).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            PageButton("GachaCharacters",permanentGacha,"キャラ",new Vector2(.355f,.225f),new Vector2(.64f,.28f),slate,game.OpenCharacters).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            PageButton("GachaEquipment",permanentGacha,"装備",new Vector2(.66f,.225f),new Vector2(.945f,.28f),slate,game.OpenEquipment).GetComponentInChildren<TextMeshProUGUI>().fontSize=17;
+            gachaNotice=BoxText("GachaNotice",permanentGacha,"通常は基本武器またはコイン\nチケット・ジェムはゲーム内報酬で獲得",16,new Color(.66f,.79f,.89f),new Vector2(.04f,.16f),new Vector2(.96f,.215f));
+            lastDrawReceipt=PageButton("LastDrawReceipt",permanentGacha,"前回の結果",new Vector2(.27f,.112f),new Vector2(.73f,.155f),slate,()=>ShowDrawResults(game.Account.LastResults)).GetComponent<UnityEngine.UI.Button>();lastDrawReceipt.GetComponentInChildren<TextMeshProUGUI>().fontSize=15;
+            BuildReleaseCampaign();
         }
         void RefreshRecruitment()
         {
