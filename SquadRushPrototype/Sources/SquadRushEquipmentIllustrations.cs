@@ -35,12 +35,12 @@ namespace SquadRush
         {
             string[] names={"スカウト","レンジャー","クイック","アサルト","ガーディアン","高速"}; return names[id];
         }
-        void UpdateDetailComparison(int id)
+        void UpdateDetailComparison(int id,int rarity)
         {
             EquipmentItem item=SquadRushEquipment.Item(id); int current=game.Equipment.Equipped(item.Slot);
-            int delta=item.Value-(current>=0?SquadRushEquipment.Item(current).Value:0);
+            int delta=SquadRushEquipment.Value(id,rarity)-(current>=0?SquadRushEquipment.Value(current,game.Equipment.EquippedRarity(item.Slot)):0);
             string unit=item.Slot==EquipmentSlot.Support?"%":"";
-            detailComparison.text=game.Equipment.IsEquipped(id)?"現在装備しているアイテム":delta==0?"現在の装備と同じ効果":"現在の装備から "+(delta>0?"+":"")+delta+unit;
+            detailComparison.text=game.Equipment.IsEquipped(id,rarity)?"現在装備しているアイテム":delta==0?"現在の装備と同じ効果":"現在の装備から "+(delta>0?"+":"")+delta+unit;
             detailComparison.color=delta>0?new Color(0.40f,0.92f,0.62f):delta<0?new Color(1,0.50f,0.44f):new Color(0.70f,0.82f,0.90f);
         }
     }

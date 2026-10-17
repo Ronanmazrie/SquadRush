@@ -182,6 +182,32 @@ namespace SquadRush.Editor
                 Capture(game,"equipment-compare.png"); Click(game,"CloseEquipmentDetail"); Click(game,"InventoryItem5");
                 Require(UiText(game,"DetailComparison").text.Contains("+20%") && !Button(game,"EquipmentAction").interactable,"Support comparison uses its own slot and percentage while locked",checks);
                 Click(game,"CloseEquipmentDetail");
+                game.Equipment.Acquire(0);game.Equipment.Acquire(0);game.ToggleEquipment(0);
+                Click(game,"InventoryItem0");
+                Require(Button(game,"EquipmentMerge").interactable&&UiText(game,"MergePreview").text.Contains("×3")&&UiText(game,"MergePreview").text.Contains("+2"),"Fusion previews three consumed copies and the resulting stronger effect",checks);
+                Capture(game,"equipment-fusion-ready.png");Click(game,"EquipmentMerge");
+                Require(game.Equipment.Quantity(0)==0&&game.Equipment.Quantity(0,1)==1&&game.Equipment.IsEquipped(0,1)&&game.WeaponDamage==3,"Fusion button consumes exactly three copies and keeps upgraded gear equipped",checks);
+                Require(!Button(game,"EquipmentMerge").interactable&&UiText(game,"DetailTitle").text.Contains("グッド")&&UiText(game,"DetailEffect").text.Contains("+2"),"Fusion detail switches to the new rarity and disables insufficient materials",checks);
+                RequireTextFits(game,"Fusion detail and upgraded rarity labels fit",checks);Capture(game,"equipment-fusion-result.png");Click(game,"CloseEquipmentDetail");
+                game.Equipment.Acquire(0,1);game.Equipment.Acquire(0,1);game.Begin();int n=game.Equipment.Quantity(0,1);Require(game.Equipment.CanMerge(0,1)&&!game.MergeEquipment(0,1)&&game.Equipment.Quantity(0,1)==n,"Fusion cannot consume equipment during a battle",checks);
+                game.Tick(.02f,false);Require(game.LastVolleyDamage==game.SquadCount*3,"Fused weapon bonus is used by real combat projectiles",checks);game.ShowHome();
+                game.ConfigureVerification(storageKey);Require(game.Equipment.IsEquipped(0,1)&&game.WeaponDamage==3,"Reload keeps the fusion result equipped",checks);
+                for(int r=0;r<SquadRushEquipment.RarityCount;r++)for(int id=0;id<SquadRushEquipment.Count;id++)game.Equipment.Acquire(id,r);
+                game.OpenEquipment();yield return null;Capture(game,"equipment-collection.png");Capture(game,"equipment-mobile.png",390,844);
+                Require(true,"All five inventory columns and labels fit a 390 by 844 phone viewport",checks);
+                var scroll=game.Hud.GetComponentInChildren<UnityEngine.UI.ScrollRect>();
+                Require(scroll!=null&&scroll.content.GetComponent<UnityEngine.UI.GridLayoutGroup>().constraintCount==5&&scroll.content.rect.height>scroll.viewport.rect.height,"Compact five-column collection grows beyond the viewport for all 30 gear stacks",checks);
+                scroll.verticalNormalizedPosition=0;Canvas.ForceUpdateCanvases();yield return null;Capture(game,"equipment-collection-bottom.png");
+                Click(game,"InventoryItem24");Require(UiText(game,"DetailTitle").text.Contains("レジェンド")&&!Button(game,"EquipmentMerge").interactable,"Highest rarity remains inspectable after scrolling and has no further fusion",checks);Click(game,"CloseEquipmentDetail");
+                var stageSprites=new System.Collections.Generic.HashSet<Sprite>();
+                for(int stage=1;stage<=6;stage++)
+                {
+                    game.StartVerificationStage(stage,123);game.Hud.ShowStages();stageSprites.Add(UiArt(game,"StageSelectionIllustration").sprite);
+                    Require(UiArt(game,"HomeStageIllustration").sprite==UiArt(game,"StageSelectionIllustration").sprite,"Home and selection share the stage "+stage+" illustration",checks);
+                    if(stage==4||stage==6){yield return null;Capture(game,"stage-art-"+stage+".png");}
+                }
+                Require(stageSprites.Count==6&&game.Hud.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Six distinct stage illustrations replace the former 3D menu portrait",checks);
+                game.ConfigureVerification(storageKey);game.OpenStages();RequireTextFits(game,"Stage artwork, reward and navigation labels fit",checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
@@ -224,26 +250,36 @@ namespace SquadRush.Editor
             if (!button.gameObject.activeInHierarchy || !button.interactable) throw new InvalidOperationException("Button unavailable: " + name);
             button.onClick.Invoke();
         }
-        static void Capture(SquadRushGame game, string name)
+        static void Capture(SquadRushGame game, string name,int width=540,int height=960)
         {
             game.Hud.UpdateStats();
             var view = game.View;
             var canvas = game.Hud.GetComponentInChildren<Canvas>();
             var safe = (RectTransform)canvas.transform.Find("SafeArea");
-            var texture = new RenderTexture(540, 960, 24) { antiAliasing = 2 };
+            var texture = new RenderTexture(width, height, 24) { antiAliasing = 2 };
             var previous = RenderTexture.active;
-            var image = new Texture2D(540, 960, TextureFormat.RGB24, false);
+            var image = new Texture2D(width, height, TextureFormat.RGB24, false);
             try
             {
                 view.rect = new Rect(0, 0, 1, 1); view.targetTexture = texture;
-                view.aspect = 540f / 960;
+                view.aspect = (float)width/height;
                 view.fieldOfView = 2 * Mathf.Atan(Mathf.Tan(15 * Mathf.Deg2Rad) / view.aspect) * Mathf.Rad2Deg;
                 canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = view; canvas.planeDistance = 1;
                 safe.anchorMin = Vector2.zero; safe.anchorMax = Vector2.one; safe.offsetMin = safe.offsetMax = Vector2.zero;
                 Canvas.ForceUpdateCanvases();
                 foreach (TMP_Text text in game.GetComponentsInChildren<TMP_Text>()) text.ForceMeshUpdate();
                 Canvas.ForceUpdateCanvases(); view.Render();
-                RenderTexture.active = texture; image.ReadPixels(new Rect(0, 0, 540, 960), 0, 0); image.Apply();
+                if(name=="equipment-mobile.png")
+                {
+                    var scroll=game.Hud.GetComponentInChildren<UnityEngine.UI.ScrollRect>();
+                    foreach(var card in scroll.content.GetComponentsInChildren<UnityEngine.UI.Button>())
+                    {
+                        Bounds bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,card.transform);
+                        if(bounds.min.x<scroll.viewport.rect.xMin-.5f||bounds.max.x>scroll.viewport.rect.xMax+.5f)throw new InvalidOperationException("Mobile inventory clips column: "+card.name);
+                    }
+                    foreach(var text in game.Hud.GetComponentsInChildren<TMP_Text>())if(text.isTextOverflowing)throw new InvalidOperationException("Mobile text overflow: "+text.name+"="+text.text);
+                }
+                RenderTexture.active = texture; image.ReadPixels(new Rect(0, 0, width, height), 0, 0); image.Apply();
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification", "Preview");
                 Directory.CreateDirectory(output); File.WriteAllBytes(Path.Combine(output, name), image.EncodeToPNG());
             }

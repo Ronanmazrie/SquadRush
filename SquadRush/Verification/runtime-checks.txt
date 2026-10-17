@@ -48,3 +48,21 @@ PASS Stronger weapon inspection shows its own artwork and true bonus
 PASS Replacing a weapon updates equipped art and real damage together
 PASS Weaker weapon comparison displays the negative difference
 PASS Support comparison uses its own slot and percentage while locked
+PASS Fusion previews three consumed copies and the resulting stronger effect
+PASS Fusion button consumes exactly three copies and keeps upgraded gear equipped
+PASS Fusion detail switches to the new rarity and disables insufficient materials
+PASS Fusion detail and upgraded rarity labels fit
+PASS Fusion cannot consume equipment during a battle
+PASS Fused weapon bonus is used by real combat projectiles
+PASS Reload keeps the fusion result equipped
+PASS All five inventory columns and labels fit a 390 by 844 phone viewport
+PASS Compact five-column collection grows beyond the viewport for all 30 gear stacks
+PASS Highest rarity remains inspectable after scrolling and has no further fusion
+PASS Home and selection share the stage 1 illustration
+PASS Home and selection share the stage 2 illustration
+PASS Home and selection share the stage 3 illustration
+PASS Home and selection share the stage 4 illustration
+PASS Home and selection share the stage 5 illustration
+PASS Home and selection share the stage 6 illustration
+PASS Six distinct stage illustrations replace the former 3D menu portrait
+PASS Stage artwork, reward and navigation labels fit

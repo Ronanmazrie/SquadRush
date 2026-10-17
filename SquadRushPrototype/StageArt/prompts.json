@@ -1,0 +1,44 @@
+{
+  "tool": "built-in image_gen",
+  "date": "2026-10-17",
+  "transparent_background": false,
+  "assets": [
+    {
+      "name": "desert-outpost",
+      "file": "Assets/Resources/StageArt/desert-outpost.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-c9ba8422-59c4-42ef-80c6-aea124780f13.png",
+      "prompt": "Use case: illustration-story. Create one original landscape game stage illustration for a mobile squad shooter. Scene: sunlit desert road leading toward a weathered sandstone military outpost, red rust shipping crates, distant dunes, warm ochre and turquoise. Hand-painted anime mobile game environment, confident dark contour lines, attractive cel shading with gentle texture and detailed scenery, stylized yet grounded. Wide landscape composition, roadway entering from bottom center and winding toward destination, no characters, no UI, no text, no logo, no watermark. Cohesive professional game chapter-card art. Saveable standalone asset."
+    },
+    {
+      "name": "forest-checkpoint",
+      "file": "Assets/Resources/StageArt/forest-checkpoint.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-eb66efa2-7f74-49cc-a49a-7468ee763aee.png",
+      "prompt": "Use case: illustration-story. One original wide landscape environment illustration for a mobile squad-shooter stage card: lush pine forest road leading through a mossy military checkpoint, ferns, rusted barriers, dappled emerald light. Detailed hand painted anime environment, crisp ink contours, soft cel shading, gentle weathering, bright professional game art. Road enters bottom center and winds into checkpoint. No characters, no UI, no lettering, no logos or watermarks."
+    },
+    {
+      "name": "snow-radar",
+      "file": "Assets/Resources/StageArt/snow-radar.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-b9c903e0-ceee-430e-8048-55163d386d03.png",
+      "prompt": "Use case: illustration-story. Original wide landscape game stage environment illustration: snow-covered mountain road leading toward a remote radar base, ice blue pines, frosted concrete and a white radar dome. Hand-painted anime environment, crisp dark contour lines, soft cel shading with gentle material detail and snow sparkle, professional mobile squad shooter chapter card. Road enters bottom center and leads into base. No people, no UI, no text, no logo, no watermark."
+    },
+    {
+      "name": "desert-refinery",
+      "file": "Assets/Resources/StageArt/desert-refinery.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-6ce6c333-8d62-45aa-befc-8f10e73c3763.png",
+      "prompt": "Use case: illustration-story. Original wide landscape game stage illustration: desert canyon road leading toward an abandoned refinery with copper pipes and a water tower, sunset orange and deep teal. Detailed hand-painted anime environment with crisp contours and soft cel shading, gentle weathered surfaces, professional mobile squad shooter chapter art. Roadway enters bottom center and winds into refinery among sandstone cliffs. No characters, UI, letters, logos, or watermark."
+    },
+    {
+      "name": "forest-bridge",
+      "file": "Assets/Resources/StageArt/forest-bridge.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-630c4029-1052-4f46-a831-4f2f115f41ec.png",
+      "prompt": "Use case: illustration-story. Original wide landscape mobile squad-shooter game chapter illustration: rainy forest road crossing an old steel bridge above a river, mossy towers and dense pines, misty green and muted blue. Detailed hand-painted anime environment, crisp dark contours, soft cel shading and gently weathered surfaces, cohesive professional game artwork. Road enters bottom center across the bridge toward misty forest outpost. No characters, text, UI, logos, watermark."
+    },
+    {
+      "name": "snow-fortress",
+      "file": "Assets/Resources/StageArt/snow-fortress.png",
+      "source": "C:\\Users\\wakam\\.codex\\generated_images\\01a12e04-9e38-7590-a5d6-82d27adac4ef\\exec-40908106-a152-4259-a1e8-e6b4737c0270.png",
+      "prompt": "Use case: illustration-story. Original wide landscape game chapter illustration: snowy road leading toward a fortified mountain bunker with yellow warning lights, rugged peaks, pale violet dusk and blue ice. Detailed hand-painted anime background, crisp contours, soft cel shading, subtle weathered surfaces, attractive professional mobile squad-shooter art. Road enters bottom center leading toward fortress under snowy peaks, dramatic dusk lighting. No characters, lettering, UI, logos, watermark."
+    }
+  ],
+  "reuse": "Stages 1–6 have six unique images; stages 7+ reuse locations in order with continuing stage numbers, difficulty and progress."
+}

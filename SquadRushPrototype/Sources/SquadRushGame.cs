@@ -149,10 +149,15 @@ namespace SquadRush
         }
         public void PlaySelectedStage()
         { if (State == RunState.Ready && StageNumber <= UnlockedStage) Begin(); }
-        public void ToggleEquipment(int id)
+        public void ToggleEquipment(int id,int rarity=0)
         {
-            if (State != RunState.Ready || !Equipment.Toggle(id)) return;
+            if (State != RunState.Ready || !Equipment.Toggle(id,rarity)) return;
             UpdateWeapons(); SetSquad(Stage.StartingAllies + Equipment.StartingAllies); Hud.UpdateStats(); Hud.ShowEquipment();
+        }
+        public bool MergeEquipment(int id,int rarity)
+        {
+            if(State!=RunState.Ready||!Equipment.Merge(id,rarity))return false;
+            UpdateWeapons();SetSquad(Stage.StartingAllies+Equipment.StartingAllies);Hud.UpdateStats();Hud.ShowEquipment();return true;
         }
         void GenerateLandscape(int seed)
         {
@@ -498,7 +503,7 @@ namespace SquadRush
             {
                 EquipmentItem item = SquadRushEquipment.StageReward(StageNumber);
                 bool received = Equipment.Acquire(item.Id); progress.Complete(StageNumber);
-                reward = "\n" + (received ? "装備入手：" : "入手済み：") + item.Name;
+                reward = "\n" + (received ? "装備入手：" : "所持数上限：") + item.Name + (received?" ×1":"");
             }
             Hud.UpdateStats();
             Hud.ShowMenu(won ? "ステージクリア！" : "もう一度、挑戦！", "STAGE " + StageNumber.ToString("D2") + "  ／  " + Stage.Name + "\n撃破 " + Kills + "体   ／   仲間 " + SquadCount + "人" + reward, won ? "次のステージへ" : "もう一度遊ぶ");

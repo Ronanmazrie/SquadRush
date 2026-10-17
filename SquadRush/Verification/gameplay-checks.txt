@@ -59,6 +59,18 @@ PASS Stage 3 clear awards its defined equipment
 PASS Stage 4 clear awards its defined equipment
 PASS Weapon, armor and support bonuses apply together at sortie
 PASS Changing a weapon replaces only that slot
-PASS Previously owned stage rewards are idempotent
+PASS Repeated stage rewards add copies for fusion
 PASS Reload restores inventory and all three equipment slots on Home
 PASS Existing stage progress grants earlier rewards without auto-equipping or changing progress
+PASS v1 ownership and all equipped slots migrate to one normal copy each
+PASS Reloading migrated gear never grants extra copies
+PASS Insufficient fusion never consumes gear
+PASS Different equipment or rarity cannot substitute as fusion materials
+PASS Three normal copies merge into one good copy and upgrade the equipped weapon
+PASS Three good copies merge into rare gear with a larger gameplay bonus
+PASS Fusion advances rarity tier 2
+PASS Fusion advances rarity tier 3
+PASS Legendary gear is strongest and cannot merge past the maximum rarity
+PASS Fused armor and support increase actual ally and firing bonuses
+PASS Reload preserves rarity quantities and equipped upgraded gear
+PASS Invalid entries and absent lower tiers cannot alter the inventory

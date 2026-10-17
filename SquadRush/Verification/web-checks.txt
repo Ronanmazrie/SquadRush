@@ -1,22 +1,20 @@
-Squad Rush 0.9.0 — Illustrated equipment browser verification
+Squad Rush 0.10.0 — Equipment fusion / stage-art browser verification
 Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
-Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (12,981,665 bytes)
+Build: WebGL, gzip with decompression fallback
+Build result: Succeeded (14,546,154 bytes)
 Host: localhost HTTP server without Content-Encoding (GitHub Pages equivalent)
-Browser: ChatGPT in-app Chromium browser, viewport 390 x 844
+Browser: ChatGPT in-app Chromium, 390 x 844 viewport
 
-PASS: Home retains the 3D soldier, prior stage two, 1/6 owned equipment and equipped rifle.
-PASS: Equipment shows the new 2D anime hero, six distinct equipment illustrations, actual bonus values and visible empty-slot markers.
-PASS: The equipped rifle is shown with its matching picture in the weapon slot and highlighted inventory card.
-PASS: Tapping the empty armor slot opens the Ranger vest picture, full name, +2 starting-allies effect, green +2 difference and Stage 02 source.
-PASS: The unowned Equip action is disabled; clicks on it and on underlying Home navigation do not close or change the detail.
-PASS: Closing returns to the inventory. Tapping the equipped weapon opens its picture, +1 effect, currently-equipped label and Remove action.
-PASS: Remove clears the equipped picture, shows the empty weapon marker and changes actual displayed power from 2 to 1 while keeping the item owned.
-PASS: Owned-item inspection then shows green +1 and Equip; re-equipping restores power 2, its slot picture and equipped highlight.
-PASS: Reload retains stage two, owned equipment and the equipped rifle.
-PASS: No browser console errors or warnings occurred, including after reload.
+PASS: Home displays the selected stage environment illustration and a clear sortie action.
+PASS: Stage selection displays the same stage illustration, location title, stage timing and a repeatable gear reward.
+PASS: Equipment retains the 2D anime hero and displays a compact five-column inventory with quantities.
+PASS: All five columns fit at 390 x 844; the adaptive grid corrects horizontal clipping at narrow aspect ratios.
+PASS: Item inspection displays the current effect, comparison, source, owned quantity, three-copy fusion cost and resulting rarity/effect.
+PASS: Unowned equipment has disabled Equip and Merge controls.
+PASS: No browser console errors or warnings during navigation and reload.
 
-64 gameplay and 50 Play-mode scenarios pass. Additional runtime coverage includes negative weapon comparisons, percentage support comparisons, sprite identity, text fit, real damage after replacement, prior combat/progress and the original 1000-ally checks. Verification keys are isolated and public save data is not cleared.
+76 gameplay and 68 Play-mode scenarios pass (144 total). Coverage includes v1 save migration, duplicate rewards, all rarity tiers, exact material consumption, equipped result preservation, saving/reload, real projectile damage, armor/support bonuses, refusing fusion during combat even with sufficient materials, 30 stacks and scrolling to legendary gear, six distinct stage illustrations and 390 x 844 text/column bounds.
+Verification saves use isolated GUID keys. Public player saves are never cleared.
 
 Desktop browser at mobile viewport size. Physical Android/iPhone input, performance and Safari remain untested.

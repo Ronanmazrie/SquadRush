@@ -306,7 +306,7 @@ namespace SquadRush.Editor
                 game.ShowHome(); game.ToggleEquipment(3);
                 Expect(game.Equipment.IsEquipped(3) && !game.Equipment.IsEquipped(0) && game.Equipment.IsEquipped(1) && game.Equipment.IsEquipped(2), "Changing a weapon replaces only that slot", checks);
                 int ownedBefore = game.Equipment.OwnedCount;
-                Expect(!game.Equipment.Acquire(0) && game.Equipment.OwnedCount == ownedBefore, "Previously owned stage rewards are idempotent", checks);
+                Expect(game.Equipment.Acquire(0) && game.Equipment.OwnedCount == ownedBefore+1, "Repeated stage rewards add copies for fusion", checks);
                 game.ConfigureVerification(storageKey);
                 Expect(game.Equipment.IsEquipped(3) && game.Equipment.IsEquipped(1) && game.Equipment.IsEquipped(2) && game.Hud.CurrentPage == FrontEndPage.Home, "Reload restores inventory and all three equipment slots on Home", checks);
                 string legacy = storageKey + ".legacy";
@@ -317,12 +317,38 @@ namespace SquadRush.Editor
                     Expect(migrated.OwnedCount == 3 && !migrated.IsEquipped(0) && new SquadRushProgress(legacy).ResumeStage == 4, "Existing stage progress grants earlier rewards without auto-equipping or changing progress", checks);
                 }
                 finally { PlayerPrefs.DeleteKey(legacy); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(legacy)); }
+                VerifyFusion(storageKey+".fusion",checks);
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output);
                 File.WriteAllLines(Path.Combine(output, "gameplay-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " gameplay scenarios passed.");
             }
             finally { UnityEngine.Object.DestroyImmediate(root); PlayerPrefs.DeleteKey(storageKey); PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(storageKey)); PlayerPrefs.Save(); }
+        }
+        static void VerifyFusion(string key,System.Collections.Generic.List<string> checks)
+        {
+            try
+            {
+                PlayerPrefs.SetString(SquadRushEquipment.StorageKey(key),"{\"version\":1,\"owned\":7,\"weapon\":0,\"armor\":1,\"support\":2}");
+                var gear=new SquadRushEquipment(key);
+                Expect(gear.OwnedCount==3&&gear.IsEquipped(0,0)&&gear.StartingAllies==2&&gear.FireRateBonus==.1f,"v1 ownership and all equipped slots migrate to one normal copy each",checks);
+                Expect(new SquadRushEquipment(key).OwnedCount==3,"Reloading migrated gear never grants extra copies",checks);
+                Expect(!gear.Merge(0,0)&&gear.Quantity(0)==1,"Insufficient fusion never consumes gear",checks);
+                gear.Acquire(3);gear.Acquire(3);gear.Acquire(0,1);
+                Expect(!gear.CanMerge(0,0)&&gear.Quantity(3)==2&&gear.Quantity(0,1)==1,"Different equipment or rarity cannot substitute as fusion materials",checks);
+                gear.Acquire(0);gear.Acquire(0);
+                Expect(gear.Merge(0,0)&&gear.Quantity(0)==0&&gear.Quantity(0,1)==2&&gear.IsEquipped(0,1)&&gear.WeaponPower==2,"Three normal copies merge into one good copy and upgrade the equipped weapon",checks);
+                gear.Acquire(0,1);gear.Merge(0,1);
+                Expect(gear.Quantity(0,1)==0&&gear.Quantity(0,2)==1&&gear.WeaponPower==3,"Three good copies merge into rare gear with a larger gameplay bonus",checks);
+                for(int r=2;r<4;r++){gear.Acquire(0,r);gear.Acquire(0,r);Expect(gear.Merge(0,r),"Fusion advances rarity tier "+r,checks);}
+                Expect(gear.IsEquipped(0,4)&&gear.WeaponPower==8&&!gear.Merge(0,4),"Legendary gear is strongest and cannot merge past the maximum rarity",checks);
+                gear.Acquire(1);gear.Acquire(1);gear.Merge(1,0);gear.Acquire(2);gear.Acquire(2);gear.Merge(2,0);
+                Expect(gear.StartingAllies==4&&Mathf.Abs(gear.FireRateBonus-.2f)<.001f,"Fused armor and support increase actual ally and firing bonuses",checks);
+                var restored=new SquadRushEquipment(key);
+                Expect(restored.WeaponPower==8&&restored.IsEquipped(0,4)&&restored.StartingAllies==4&&restored.Quantity(3)==2,"Reload preserves rarity quantities and equipped upgraded gear",checks);
+                Expect(!gear.Acquire(-1)&&!gear.Acquire(6)&&!gear.Acquire(0,5)&&!gear.Merge(-1,0)&&!gear.Merge(0,-1)&&!gear.Toggle(0,0),"Invalid entries and absent lower tiers cannot alter the inventory",checks);
+            }
+            finally{PlayerPrefs.DeleteKey(SquadRushEquipment.StorageKey(key));}
         }
         static float GroundOffset(SquadRushGame game, string surface) => game.transform.Find("World/" + surface).GetComponent<Renderer>().sharedMaterial.mainTextureOffset.y;
         static void Expect(bool condition, string name, System.Collections.Generic.List<string> checks)

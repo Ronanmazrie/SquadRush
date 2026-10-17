@@ -4,7 +4,7 @@
 
 ## 現在の状態
 
-Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理64ケース、再生モード50ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
+Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理76ケース、再生モード68ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
 
 Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Personalライセンスの有効化は完了しています。選択したEditorはUnity 6.3 LTS `6000.3.26f1` です。
 
@@ -40,7 +40,7 @@ Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Pers
 Editorのメニューに `Squad Rush` が追加されます。
 
 - `Generate Prototype`：シーンとフォントを生成。
-- `Verify Gameplay Scenarios`：1000人の人数・攻撃力、BOXの武器強化、射撃・ゲート・敗北・ボス撃破、次のステージ、保存再開、ランダム生成と背景再利用など64ケースを確認。
+- `Verify Gameplay Scenarios`：1000人の人数・攻撃力、BOXの武器強化、射撃・ゲート・敗北・ボス撃破、次のステージ、保存再開、ランダム生成と背景再利用など76ケースを確認。
 - `Build Android APK`：`Builds/Android/SquadRush.apk` を生成。Unity Hub / CLIでAndroid Build Support、SDK / NDK、OpenJDKを追加する必要があります。
 - `Export iOS Xcode Project`：`Builds/iOS` にXcodeプロジェクトを出力。iOS Build Supportの追加が必要です。
 
@@ -72,3 +72,6 @@ iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、
 0.8.0では Sources/SquadRushCharacterMeshes.cs で顔・服・手足の曲面を生成します。Sources/SquadRushArt.cs と同じ部分クラスで、再生成時は両方を配置してください。生成に外部サービスやクレジットは不要です。
 
 0.9.0の装備画面では Art/ 内の人物と6種類の装備PNGを使用します。Sources/SquadRushEquipmentIllustrations.cs が画像の読み込みと比較表示、Editor/EquipmentArtImporter.cs がUnityのインポート設定を担当します。生成指示は Art/prompts.json に保存しています。
+
+
+0.10.0: 同じ種類・同じレアリティ3個で1段階上へ合成（全5段階）。再クリア報酬も個数として保存。5列の装備一覧・縦スクロール・個数表示と、6枚のステージ絵を追加。ステージ7以降は6種の絵を繰り返します。旧装備データを引き継ぎます。ガチャは準備中です。

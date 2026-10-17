@@ -1,0 +1,5 @@
+# ステージのイラスト
+
+内蔵image_genで作成したオリジナル環境イラスト6枚です。ステージ1～6に順番に表示し、7以降は絵を繰り返します。ホームとステージ選択で使用します。
+Initialize-Prototype.ps1はこのフォルダーのPNGをResources/StageArtへコピーし、EquipmentArtImporterでSpriteとしてインポートします。
+生成指示・元画像パスはprompts.jsonを参照してください。
