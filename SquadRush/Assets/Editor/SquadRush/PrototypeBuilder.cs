@@ -82,6 +82,7 @@ namespace SquadRush.Editor
 
         public static void PrepareVisuals()
         {
+            EquipmentArtImporter.Prepare();
             EnsureStageGlyphs();
             // Runtime-created materials need serialized representatives so build stripping retains instancing.
             CreateSeed("SquadToon", "SquadRush/Toon");

@@ -1,0 +1,34 @@
+{
+  "mode": "built-in image_gen",
+  "transparent_background": true,
+  "assets": [
+    {
+      "file": "hero.png",
+      "prompt": "Create a production-ready 2D character sprite for the EQUIPMENT inventory screen of an original mobile action game called Squad Rush. ONE original full-body blue infantry hero, isolated on a genuinely transparent background. Cheerful determined chibi anime boy soldier, about 2.75 heads tall, rounded cobalt-blue combat helmet with a tiny blank pale badge, short dark hair, expressive dark eyes, warm light skin, blue fabric uniform, small navy tactical vest and belt pouches, charcoal gloves and rounded boots. Neutral standing paper-doll pose, slight three-quarter front view, both arms naturally bent near his hips, empty hands, both feet and helmet fully visible with generous transparent margins. Polished Japanese mobile-game illustration: bold clean dark-navy ink outlines, soft rounded shapes, crisp flat cel shading with 2-3 values per material, restrained small highlights, strong silhouette readable at 180 pixels high. Charming and confident, not photorealistic and not a 3D render. No weapons, no text, no numbers, no logo, no UI, no frame, no background, no ground shadow, no extra character. This must be a new original soldier design rather than a character from any existing franchise."
+    },
+    {
+      "file": "scout-rifle.png",
+      "prompt": "Create ONE production-ready square 2D equipment item illustration for an original Japanese mobile action-game inventory. Polished chibi anime mobile game style, bold clean dark navy ink contour, crisp cel shading with 2-3 values, small attractive highlights, simple strong silhouette readable at 64 pixels. One isolated item centered, slight three-quarter view, fills about 78 percent of the image with clear margins, genuinely transparent background. No frame, no card, no ground, no backdrop, no text, no numbers, no logo, no human, no glow aura. Illustrated asset, not a 3D render or photograph. Subject: a compact SCOUT RIFLE, short navy and teal-blue body, silver barrel, blue stock and handguard, simple dark grip and magazine, clean friendly stylized proportions. Diagonally oriented from lower left stock to upper right muzzle. Clear complete firearm silhouette."
+    },
+    {
+      "file": "ranger-vest.png",
+      "prompt": "Create ONE production-ready square 2D equipment item illustration for an original Japanese mobile action-game inventory. Polished chibi anime mobile game style, bold clean dark navy ink contour, crisp cel shading with 2-3 values, small attractive highlights, simple strong silhouette readable at 64 pixels. One isolated item centered, slight three-quarter view, fills about 78 percent of the image with clear margins, genuinely transparent background. No frame, no card, no ground, no backdrop, no text, no numbers, no logo, no human, no glow aura. Illustrated asset, not a 3D render or photograph. Subject: a RANGER TACTICAL VEST displayed alone from the front, olive green fabric with dark navy edging, two small symmetrical chest pouches, padded shoulders, silver buckle and a tiny blue accent. Rounded fabric volume and folds, no arms or torso inside, neck opening clearly visible."
+    },
+    {
+      "file": "quick-magazine.png",
+      "prompt": "ONE isolated 2D anime mobile-game equipment icon, genuinely transparent background. Subject: QUICK MAGAZINE, a compact curved navy-blue rifle ammunition magazine with a cyan side panel and three large visible golden brass cartridge tips at the top, a small silver base plate. Three-quarter front view, single object centered, roughly 75 percent of a square canvas with generous margins. Original attractive illustrated game loot, thick clean dark-navy ink outline, crisp flat 2-3 tone cel shading, bold simple shapes readable at 64 pixels, little surface detail, restrained highlights. Match a cobalt-blue chibi infantry soldier's cartoon equipment. NO text, no labels, no numbers, no card or frame, no background, no shadow, no glow aura, no hands, no weapon attached. Not a photograph or 3D render."
+    },
+    {
+      "file": "assault-rifle.png",
+      "prompt": "ONE isolated 2D anime mobile-game equipment illustration on genuinely transparent background. Subject: ASSAULT RIFLE, a beefier advanced infantry rifle with navy-black body, warm gold-orange armored receiver and stock, long silver barrel, blue small optic, thick magazine. Clearly different from a small blue scout rifle. Diagonal silhouette from lower left stock to upper right muzzle, centered single complete item with generous transparent margins on a square canvas. Polished original game loot icon, thick clean dark navy ink outlines, crisp flat cel shading with two or three values, bold simple large shapes readable at 64 pixels, small controlled highlights. No text, no letters, no numbers, no logo, no frame, no card, no background or floor, no shadow or glow, no hands. Illustrated, not photorealistic or 3D rendered."
+    },
+    {
+      "file": "guardian-vest.png",
+      "prompt": "ONE isolated 2D anime mobile-game equipment illustration on genuinely transparent background. Subject: GUARDIAN TACTICAL VEST displayed alone from the front, a sturdy advanced protective vest with dark navy fabric, ivory-silver rounded chest armor plates, warm gold-orange trim, broad padded shoulders, two small navy lower pouches, silver buckles. A clear empty neck opening and no body or arms inside. Looks stronger and clearly different from a soft olive ranger vest. Centered single object filling roughly 75 percent of square canvas with clear margins. Polished original game loot, bold clean dark-navy ink outline, crisp flat cel shading, simplified large rounded shapes readable at 64 pixels, small controlled highlights. No text, symbols, letters or numbers, no logo, no background, no card or frame, no ground, no shadow or glow aura. Not a photo or 3D render."
+    },
+    {
+      "file": "rapid-magazine.png",
+      "prompt": "ONE isolated 2D anime mobile-game equipment illustration on genuinely transparent background. Subject: RAPID MAGAZINE, an advanced extended rifle ammunition magazine, warm golden-orange outer shell with dark navy mechanical ribs, five visible brass cartridge tips at its top, a small emerald green quick-release latch and silver base. Curved compact silhouette, single self-contained object, slight three-quarter front view, centered with generous transparent margins in a square canvas. Visually stronger and clearly different from a basic blue magazine. Original Japanese game loot icon, bold clean dark-navy ink outline, crisp flat cel shading with two or three values, simple attractive shapes readable at 64 pixels, controlled highlights. No text, letters, numbers, logo, frame, card, background, shadow, glow aura, hands or gun. Not photorealistic, not 3D rendered."
+    }
+  ]
+}

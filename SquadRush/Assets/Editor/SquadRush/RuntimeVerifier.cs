@@ -64,7 +64,12 @@ namespace SquadRush.Editor
                 Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation shows a placeholder without granting items", checks);
                 Capture(game, "gacha.png");
                 Click(game, "GachaEquipment");
+                var illustratedHero=UiArt(game,"EquipmentHeroIllustration");
+                Require(illustratedHero.sprite!=null && illustratedHero.transform.parent.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Equipment uses a 2D anime hero rather than the 3D portrait",checks);
+                Require(Enumerable.Range(0,6).Select(i=>UiArt(game,"InventoryIllustration"+i).sprite).Distinct().Count()==6 && Enumerable.Range(0,6).All(i=>UiArt(game,"InventoryIllustration"+i).sprite!=null),"All six equipment items have distinct illustration sprites",checks);
                 Click(game, "InventoryItem0"); Require(game.Hud.CurrentPage == FrontEndPage.Equipment && !Button(game, "EquipmentAction").interactable, "Equipment screen prevents equipping unearned items", checks);
+                Require(UiArt(game,"DetailIllustration").sprite==UiArt(game,"InventoryIllustration0").sprite && UiText(game,"DetailComparison").text.Contains("+1") && UiText(game,"DetailSource").text.Contains("STAGE 01"),"Unowned inspection shows the matching art, positive comparison and source stage",checks);
+                RequireTextFits(game,"Illustrated item detail labels fit their controls",checks);
                 Capture(game, "equipment-locked.png"); Click(game, "CloseEquipmentDetail");
                 Require(game.Hud.CurrentPage == FrontEndPage.Equipment && !Button(game, "EquipmentAction").gameObject.activeInHierarchy, "Closing an item inspection returns to inventory without changing gear", checks);
                 Click(game, "HomeCommand"); Click(game, "HomeStages");
@@ -145,8 +150,9 @@ namespace SquadRush.Editor
                 Require(game.StageNumber == 2 && game.State == RunState.Ready, "Reloading the saved progress offers stage two in the menu", checks);
                 Click(game, "HomeEquipment"); Click(game, "InventoryItem0"); Click(game, "EquipmentAction");
                 Require(game.Equipment.IsEquipped(0) && game.WeaponDamage == 2 && game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "ItemState0").text.Contains("装備中"), "Equipment button equips the earned rifle and updates its state", checks);
+                Require(UiArt(game,"EquippedIllustration0").sprite==UiArt(game,"InventoryIllustration0").sprite && UiText(game,"StatValue0").text=="2","Equipped slot illustration and power value reflect the actual rifle",checks);
                 yield return null; Capture(game, "equipment.png");
-                Require(game.Hud.GetComponentsInChildren<TMP_Text>().Where(t => t.gameObject.activeInHierarchy).All(t => !t.isTextOverflowing), "Equipment page labels fit their visible controls", checks);
+                RequireTextFits(game,"Equipment page labels fit their visible controls",checks);
                 Click(game, "EquippedSlotWeapon"); Capture(game, "equipment-detail.png");
                 Require(Button(game, "EquipmentAction").interactable && Button(game, "EquipmentAction").GetComponentInChildren<TMP_Text>().text == "装備を外す", "The equipped weapon slot opens its own removable item detail", checks);
                 Click(game, "CloseEquipmentDetail");
@@ -167,6 +173,15 @@ namespace SquadRush.Editor
                 Require(game.State == RunState.Playing && game.StageNumber == 2 && game.Hud.CurrentPage == FrontEndPage.Hidden, "Home's central sortie starts the current unlocked stage directly", checks);
                 game.ShowHome();
                 Require(game.Hud.GetComponentsInChildren<TMP_Text>(true).All(t => t.font == null || t.text.All(c => c < 32 || t.font.HasCharacter(c))), "Menu, stage names and Next button have baked Japanese glyphs", checks);
+                game.Equipment.Acquire(3); game.OpenEquipment(); Click(game,"InventoryItem3");
+                Require(UiText(game,"DetailComparison").text.Contains("+2") && UiArt(game,"DetailIllustration").sprite==UiArt(game,"InventoryIllustration3").sprite,"Stronger weapon inspection shows its own artwork and true bonus",checks);
+                Click(game,"EquipmentAction");
+                Require(game.WeaponDamage==3 && UiText(game,"StatValue0").text=="3" && UiArt(game,"EquippedIllustration0").sprite==UiArt(game,"InventoryIllustration3").sprite,"Replacing a weapon updates equipped art and real damage together",checks);
+                Click(game,"InventoryItem0");
+                Require(UiText(game,"DetailComparison").text.Contains("-1"),"Weaker weapon comparison displays the negative difference",checks);
+                Capture(game,"equipment-compare.png"); Click(game,"CloseEquipmentDetail"); Click(game,"InventoryItem5");
+                Require(UiText(game,"DetailComparison").text.Contains("+20%") && !Button(game,"EquipmentAction").interactable,"Support comparison uses its own slot and percentage while locked",checks);
+                Click(game,"CloseEquipmentDetail");
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Verification");
                 Directory.CreateDirectory(output); File.WriteAllLines(Path.Combine(output, "runtime-checks.txt"), checks);
                 Debug.Log("[SquadRush] " + checks.Count + " Play mode scenarios passed.");
@@ -180,6 +195,11 @@ namespace SquadRush.Editor
         }
         static void Require(bool condition, string name, System.Collections.Generic.List<string> checks)
         { if (!condition) throw new InvalidOperationException(name); checks.Add("PASS " + name); }
+        static void RequireTextFits(SquadRushGame game,string name,System.Collections.Generic.List<string> checks)
+        {
+            var overflow=game.Hud.GetComponentsInChildren<TMP_Text>().Where(t=>t.gameObject.activeInHierarchy&&t.isTextOverflowing).Select(t=>t.name+"="+t.text).ToArray();
+            Require(overflow.Length==0,name+(overflow.Length>0?": "+string.Join(", ",overflow):""),checks);
+        }
         static void VerifyCharacterMeshes(SquadRushGame game, System.Collections.Generic.List<string> checks)
         {
             var allies=game.GetComponentsInChildren<SquadRushTrooper>(true).Where(t=>t.name=="Ally").ToArray();
@@ -196,6 +216,8 @@ namespace SquadRush.Editor
         }
         static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         static UnityEngine.UI.Button Button(SquadRushGame game, string name) => game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == name);
+        static UnityEngine.UI.Image UiArt(SquadRushGame game,string name) => game.Hud.GetComponentsInChildren<UnityEngine.UI.Image>(true).Single(i=>i.name==name);
+        static TMP_Text UiText(SquadRushGame game,string name) => game.Hud.GetComponentsInChildren<TMP_Text>(true).Single(t=>t.name==name);
         static void Click(SquadRushGame game, string name)
         {
             var button = Button(game, name);

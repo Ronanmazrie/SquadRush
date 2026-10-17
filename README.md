@@ -7,13 +7,15 @@
 AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
-- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.8.0)
+- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.9.0)
 
 AndroidアプリはAndroid 8.0以降のARM64端末向けです。iPhoneではSafariからブラウザ版を開きます。Android用APKはiPhoneにインストールできません。iPhone用ネイティブアプリは未配布です。
 
 ## 遊び方
 
 0.7.0では、ホームと装備画面の配置を整理しました。画面下の常設タブでガチャ・出撃・装備を切り替え、ホーム中央の出撃ボタンからすぐ遊べます。ステージは上部のステージ名から選択できます。ステージ選択では解放済みのステージへ出撃でき、クリアすると装備を入手します。「装備」では中央の兵士の周囲に3つの装備枠を置き、その下のアイコン一覧から詳細を開いて装備・解除でき、威力・初期人数・連射速度に効果があります。所持品と装備状態は端末内に保存されます。既存のプレイヤーにはクリア済みステージ分の装備を付与します。ガチャは準備中の画面のみで、抽選・消費・課金は実装していません。
+
+0.9.0では、装備画面中央の人物と6種類の装備をアニメ調イラストに変更しました。装備枠・所持品・詳細で同じアイテム絵を使い、所持状態と入手先、現在の同種装備との差分、実際の能力値を確認できます。戦闘とホームの兵士は3Dのままです。素材と生成指示は `SquadRush/Verification/equipment-art-notes.md` に保存しています。
 
 0.8.0では、兵士を曲面で構成したモデルへ更新しました。顔にあご・鼻・目を付け、ヘルメット・服・手足・靴の輪郭を丸くし、歩行時の上下動も抑えています。モデルはローカルで生成し、Tripoの無料診断のみを利用しました。生成・処理のクレジット消費は0です。
 
@@ -44,7 +46,7 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 - `SquadRush/Assets/Resources/*.shader`：兵士の色・陰影と半透明エフェクト。
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
 - `SquadRushEquipment.cs` / `SquadRushFrontEnd.cs`：装備の入手・保存・効果と、ホーム・ステージ・装備・ガチャ準備中の画面。
-- `SquadRush/Verification/`：ゲーム処理64ケースと再生モード41ケースの検証記録、画面プレビュー。
+- `SquadRush/Verification/`：ゲーム処理64ケースと再生モード50ケースの検証記録、画面プレビュー。
 - `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
 - `SquadRushPrototype/`：プロジェクト再生成用のソースキット。
 - `docs/`：GitHub Pagesの配布ページとブラウザ版。
@@ -53,4 +55,4 @@ Editor内の検証に合格しています。ブラウザ版はスマホサイ�
 
 ## 素材
 
-キャラクターと背景はオリジナルのプログラム生成モデルです。参考広告の画像・動画・3Dモデルはゲームへ取り込んでいません。日本語フォントはNoto Sans CJK JP（SIL Open Font License）を使い、ライセンスを `SquadRush/Assets/Fonts/LICENSE.txt` に含めています。Unity TextMeshPro付属フォントのライセンスも対応する素材フォルダーに含めています。
+戦闘のキャラクターと背景はオリジナルのプログラム生成モデルです。装備画面の人物と装備絵は内蔵画像生成ツールで作成し、素材・生成指示を `SquadRush/Verification/equipment-art-notes.md` に記録しています。参考広告の画像・動画・3Dモデルはゲームへ取り込んでいません。日本語フォントはNoto Sans CJK JP（SIL Open Font License）を使い、ライセンスを `SquadRush/Assets/Fonts/LICENSE.txt` に含めています。Unity TextMeshPro付属フォントのライセンスも対応する素材フォルダーに含めています。

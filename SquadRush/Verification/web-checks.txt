@@ -1,19 +1,22 @@
-Squad Rush 0.8.0 — WebGL rounded character smoke check
-Date: 2026-10-16 (Asia/Tokyo)
+Squad Rush 0.9.0 — Illustrated equipment browser verification
+Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL, BuildOptions.None, gzip with decompression fallback
-Build result: Succeeded (11,728,517 bytes)
+Build result: Succeeded (12,981,665 bytes)
 Host: localhost HTTP server without Content-Encoding (GitHub Pages equivalent)
-Browser: Codex in-app Chromium browser, viewport 390 x 844
+Browser: ChatGPT in-app Chromium browser, viewport 390 x 844
 
-PASS: Home loads the new face, curved helmet, rounded sleeves and boots without pink/missing materials or clipping.
-PASS: Previous stage two, 1/6 owned equipment and the equipped Scout rifle are retained.
-PASS: Equipment shows the same new model with its upgraded rifle and correct equipped status.
-PASS: Unowned-item inspection opens its source stage and disabled Equip action; closing returns to the inventory.
-PASS: Bottom Home navigation and Sortie start forest combat with 3 updated allies and equipped weapon power 2.
-PASS: Pause and Return Home work, and the portrait remains correctly posed after returning.
-PASS: No browser console errors or warnings occurred.
+PASS: Home retains the 3D soldier, prior stage two, 1/6 owned equipment and equipped rifle.
+PASS: Equipment shows the new 2D anime hero, six distinct equipment illustrations, actual bonus values and visible empty-slot markers.
+PASS: The equipped rifle is shown with its matching picture in the weapon slot and highlighted inventory card.
+PASS: Tapping the empty armor slot opens the Ranger vest picture, full name, +2 starting-allies effect, green +2 difference and Stage 02 source.
+PASS: The unowned Equip action is disabled; clicks on it and on underlying Home navigation do not close or change the detail.
+PASS: Closing returns to the inventory. Tapping the equipped weapon opens its picture, +1 effect, currently-equipped label and Remove action.
+PASS: Remove clears the equipped picture, shows the empty weapon marker and changes actual displayed power from 2 to 1 while keeping the item owned.
+PASS: Owned-item inspection then shows green +1 and Equip; re-equipping restores power 2, its slot picture and equipped highlight.
+PASS: Reload retains stage two, owned equipment and the equipped rifle.
+PASS: No browser console errors or warnings occurred, including after reload.
 
-64 gameplay and 41 Play-mode checks pass. The runtime checks cover red enemies and boss models, shooting and input, 1000 logical allies, shared meshes, triangle/renderer budgets, valid normals and pooled pose reset. Browser smoke checks retained the previous localhost save and did not clear public save data.
+64 gameplay and 50 Play-mode scenarios pass. Additional runtime coverage includes negative weapon comparisons, percentage support comparisons, sprite identity, text fit, real damage after replacement, prior combat/progress and the original 1000-ally checks. Verification keys are isolated and public save data is not cleared.
 
-Desktop browser at mobile viewport size. Physical Android/iPhone input, device performance and Safari remain untested. No real-device frame-rate claim is made.
+Desktop browser at mobile viewport size. Physical Android/iPhone input, performance and Safari remain untested.

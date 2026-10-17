@@ -8,7 +8,11 @@ PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog
 PASS Home exposes a direct sortie and persistent navigation
 PASS Gacha navigation shows a placeholder without granting items
+PASS Equipment uses a 2D anime hero rather than the 3D portrait
+PASS All six equipment items have distinct illustration sprites
 PASS Equipment screen prevents equipping unearned items
+PASS Unowned inspection shows the matching art, positive comparison and source stage
+PASS Illustrated item detail labels fit their controls
 PASS Closing an item inspection returns to inventory without changing gear
 PASS Home opens stage selection with locked progression
 PASS Stage sortie button starts combat and hides Home
@@ -30,6 +34,7 @@ PASS Boss clear permanently saves the rifle reward
 PASS The clear screen Next button advances to stage two
 PASS Reloading the saved progress offers stage two in the menu
 PASS Equipment button equips the earned rifle and updates its state
+PASS Equipped slot illustration and power value reflect the actual rifle
 PASS Equipment page labels fit their visible controls
 PASS The equipped weapon slot opens its own removable item detail
 PASS An earlier unlocked stage starts with permanent equipped bonuses
@@ -39,3 +44,7 @@ PASS Equipment button also unequips the rifle
 PASS Stage page fits already-owned reward and navigation labels
 PASS Home's central sortie starts the current unlocked stage directly
 PASS Menu, stage names and Next button have baked Japanese glyphs
+PASS Stronger weapon inspection shows its own artwork and true bonus
+PASS Replacing a weapon updates equipped art and real damage together
+PASS Weaker weapon comparison displays the negative difference
+PASS Support comparison uses its own slot and percentage while locked

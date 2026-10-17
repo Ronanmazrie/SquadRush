@@ -4,7 +4,7 @@
 
 ## 現在の状態
 
-Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理64ケース、再生モード41ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
+Unityプロジェクトは隣の `SquadRush` フォルダーに作成済みです。コンパイル、ゲーム処理64ケース、再生モード50ケースの検証が成功しています。画面のプレビューは `SquadRush/Verification/Preview/` に保存しています。このフォルダーは再生成用のソースキットです。
 
 Unity CLI 1.0.0-beta.13の導入、Unityアカウントへのログイン、Personalライセンスの有効化は完了しています。選択したEditorはUnity 6.3 LTS `6000.3.26f1` です。
 
@@ -70,3 +70,5 @@ iPhoneの実機用アプリへ仕上げるには、MacのXcodeと署名設定、
 0.7.0では、下部の常設タブ、中央の兵士と大きな出撃ボタン、装備枠とアイコン一覧・詳細を追加しています。アイコンは Sources/SquadRushUiIcon.cs、兵士のUI表示は Sources/SquadRushPortrait.cs、画面構成は Sources/SquadRushFrontEnd.cs です。
 
 0.8.0では Sources/SquadRushCharacterMeshes.cs で顔・服・手足の曲面を生成します。Sources/SquadRushArt.cs と同じ部分クラスで、再生成時は両方を配置してください。生成に外部サービスやクレジットは不要です。
+
+0.9.0の装備画面では Art/ 内の人物と6種類の装備PNGを使用します。Sources/SquadRushEquipmentIllustrations.cs が画像の読み込みと比較表示、Editor/EquipmentArtImporter.cs がUnityのインポート設定を担当します。生成指示は Art/prompts.json に保存しています。

@@ -53,6 +53,9 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeBuilder.cs') -D
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/RuntimeVerifier.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/PrototypeLauncher.cs') -Destination $taskEditor
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/DistributionBuilder.cs') -Destination $taskEditor
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Editor/EquipmentArtImporter.cs') -Destination $taskEditor
+New-Item -ItemType Directory -Force -Path (Join-Path $taskResources 'EquipmentArt') | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Art') -Filter '*.png' | Copy-Item -Destination (Join-Path $taskResources 'EquipmentArt') -Force
 $taskWebTemplates = Join-Path $taskProject 'Assets/WebGLTemplates'
 New-Item -ItemType Directory -Force -Path $taskWebTemplates | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'WebGLTemplates/SquadRush') -Destination $taskWebTemplates -Recurse -Force
