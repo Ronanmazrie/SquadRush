@@ -36,7 +36,14 @@ namespace SquadRush
             profileStage=BoxText("ProfileStage",header,"",13,Color.white,new Vector2(.57f,.50f),new Vector2(.76f,.98f));
             profileBag=BoxText("ProfileBag",header,"",13,gold,new Vector2(.77f,.50f),new Vector2(.98f,.98f));
             walletLabels=new TextMeshProUGUI[3];
-            for(int i=0;i<3;i++)walletLabels[i]=BoxText("Wallet"+i,header,"",13,i==0?new Color(.48f,.88f,1):i==1?new Color(.77f,.68f,1):gold,new Vector2(.15f+i*.275f,.02f),new Vector2(.42f+i*.275f,.49f));
+            string[] currencies={"ジェム","チケット","コイン"};SquadIcon[] currencyIcons={SquadIcon.Gem,SquadIcon.Ticket,SquadIcon.Coin};
+            for(int i=0;i<3;i++)
+            {
+                float x=.15f+i*.275f;var wallet=Panel("Currency"+i,header,new Color(.09f,.15f,.23f),new Vector2(x,.035f),new Vector2(x+.26f,.48f));
+                DrawIcon("CurrencyIcon"+i,wallet,currencyIcons[i],new Vector2(.015f,.08f),new Vector2(.28f,.92f));
+                BoxText("CurrencyName"+i,wallet,currencies[i],10,new Color(.65f,.78f,.88f),new Vector2(.29f,.50f),new Vector2(.98f,.99f));
+                walletLabels[i]=BoxText("Wallet"+i,wallet,"",15,i==0?new Color(.48f,.88f,1):i==1?new Color(.77f,.68f,1):gold,new Vector2(.28f,.02f),new Vector2(.98f,.57f));
+            }
         }
         void BuildHomePage()
         {
@@ -48,6 +55,7 @@ namespace SquadRush
             homeStatus = PageText("HomeStatus", homePage, "", 19, new Color(0.76f, 0.86f, 0.94f), 0.36f, 60);
             var sortie = PageButton("HomeSortie", homePage, "出撃", new Vector2(0.19f, 0.17f), new Vector2(0.81f, 0.26f), gold, game.PlaySelectedStage);
             var label = sortie.GetComponentInChildren<TextMeshProUGUI>(); label.color = ink; label.fontSize = 32; label.fontStyle = FontStyles.Bold;
+            DrawIcon("SortieIcon",sortie.transform,SquadIcon.Battle,new Vector2(.23f,.15f),new Vector2(.40f,.85f));SetAnchors(label.rectTransform,new Vector2(.43f,.04f),new Vector2(.78f,.96f));
             HomeAccountButtons();
             PageText("HomeHint", homePage, "ステージを選んで、部隊と出撃しよう", 17, new Color(0.53f, 0.70f, 0.82f), 0.135f, 29);
         }
@@ -84,6 +92,7 @@ namespace SquadRush
                 SetAnchors(equippedLabels[i].rectTransform,new Vector2(0.01f,0.015f),new Vector2(0.99f,0.48f));
                 equippedIcons[i]=Illustration("EquippedIllustration"+i,button.transform,null,new Vector2(0.10f,0.40f),new Vector2(0.90f,0.97f));
                 equippedEmptyLabels[i]=BoxText("EmptySlotMarker"+i,button.transform,"＋",36,new Color(0.35f,0.625f,0.64f),new Vector2(0.10f,0.40f),new Vector2(0.90f,0.97f));
+                equippedEmptyLabels[i].text="";var emptyIcon=DrawIcon("EmptySlotIcon"+i,equippedEmptyLabels[i].transform,i==0?SquadIcon.Rifle:i==1?SquadIcon.Vest:SquadIcon.Magazine,Vector2.zero,Vector2.one);emptyIcon.color=new Color(.55f,.65f,.72f,.65f);
             }
             BoxText("LoadoutHint",equipmentPage,"各種類1つ\n装備できます",15,new Color(0.68f,0.82f,0.89f),new Vector2(0.055f,0.64f),new Vector2(0.265f,0.70f));
             equipmentStats=new TextMeshProUGUI[3]; string[] captions={"武器の威力","仲間ボーナス","連射ボーナス"};
@@ -92,7 +101,8 @@ namespace SquadRush
                 float x=0.045f+i*0.308f;
                 var stat=Panel("EquipmentStat"+i,equipmentPage,slate,new Vector2(x,0.54f),new Vector2(x+0.294f,0.615f));
                 BoxText("StatCaption"+i,stat,captions[i],15,new Color(0.65f,0.80f,0.88f),new Vector2(0.02f,0.53f),new Vector2(0.98f,0.96f));
-                equipmentStats[i]=BoxText("StatValue"+i,stat,"",23,gold,new Vector2(0.02f,0.02f),new Vector2(0.98f,0.56f));
+                DrawIcon("StatIcon"+i,stat,i==0?SquadIcon.Target:i==1?SquadIcon.Allies:SquadIcon.Lightning,new Vector2(.08f,.035f),new Vector2(.34f,.57f));
+                equipmentStats[i]=BoxText("StatValue"+i,stat,"",23,gold,new Vector2(0.35f,0.02f),new Vector2(0.95f,0.56f));
             }
             BuildCompactInventory();
         }
@@ -170,6 +180,11 @@ namespace SquadRush
         {
             var iconObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(SquadRushUiIcon)); iconObject.transform.SetParent(parent, false);
             SetAnchors(iconObject.GetComponent<RectTransform>(), min, max); var icon = iconObject.GetComponent<SquadRushUiIcon>(); icon.Kind = kind; icon.raycastTarget = false; return icon;
+        }
+        void ButtonIcon(GameObject button,SquadIcon kind,float textStart=.27f)
+        {
+            DrawIcon(button.name+"Icon",button.transform,kind,new Vector2(.035f,.13f),new Vector2(textStart-.025f,.87f));
+            SetAnchors(button.GetComponentInChildren<TextMeshProUGUI>().rectTransform,new Vector2(textStart,.04f),new Vector2(.98f,.96f));
         }
         void OpenPage(FrontEndPage page)
         {

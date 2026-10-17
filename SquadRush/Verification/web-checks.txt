@@ -1,20 +1,20 @@
-Squad Rush 0.11.0 — Characters, gacha and rewards browser verification
+Squad Rush 0.12.0 — UI icon and browser verification
 Date: 2026-10-17 (Asia/Tokyo)
 Editor: 6000.3.26f1
 Build: WebGL / gzip / decompression fallback
-Build result: Succeeded (16,885,451 bytes)
+Build result: Succeeded (16,891,312 bytes)
 Browser: ChatGPT in-app Chromium, 390 x 844 viewport
 Local host: HTTP without Content-Encoding, matching GitHub Pages deployment
 
-PASS: Home displays the stage illustration, wallet and direct Characters / Login / Missions entries.
-PASS: Login opens the seven-day schedule; claiming adds exactly 100 gems and one ticket, then disables the claim button.
-PASS: Ticket mode consumes one ticket, grants the displayed 200-coin result, leaves 100 gems untouched and advances pity to 1.
-PASS: After tickets run out, draw buttons disable without automatically spending gems.
-PASS: Explicitly switching to gems displays the 100/1000-gem prices and enables only affordable draws.
-PASS: A one-gem-currency draw consumes exactly 100 gems, leaves tickets at zero, grants the displayed 200 coins and advances pity to 2.
-PASS: All observed Home, Login, Gacha and result labels fit the phone viewport.
+PASS: Home displays new currency icons, labelled balances, menu icons and sortie / navigation illustrations.
+PASS: Existing localhost save remains at Stage 01, 50 gems, 0 tickets and 400 coins; pity remains 2.
+PASS: Missions open from Home; the claimed daily draw mission shows 1 / 1, a full bar and the received state.
+PASS: Gacha opens with ticket / gem illustrations, unchanged balances and pity, and unaffordable draw buttons disabled.
+PASS: Browser error / warning logs are empty.
+PASS: Unity captures at 390 x 844 verify Home, recruitment, Characters, Login, Missions, Equipment and ten-result layouts without text overflow.
+PASS: All 21 icons have distinct finite geometry inside their rectangles and do not intercept touches.
 
-120 gameplay and 89 Play-mode scenarios pass (209 total). Coverage includes exact probability boundaries, pulls 80 and 90, ten-pull pity reset, currency choice, duplicate rewards, committed-draw recovery, login calendar rollover, claim idempotency, stage and mission gems, active character selection, actual combat skills, pause/reset, 390 x 844 result layout, shaders, and previous equipment/progression checks.
-Tests use isolated GUID profiles. The public player save is never cleared or used for test gacha spending.
+120 gameplay and 90 Play-mode scenarios pass (210 total), including previous character, pity, rewards, atomic draws, equipment fusion, save migration, stages, skills, pause, input, combat and shader checks.
+Tests use isolated GUID profiles. Public player saves are not cleared or used for gacha spending.
 
 Desktop browser at mobile viewport size. Physical Android/iPhone controls, performance and Safari remain untested. Native iOS distribution is not available.

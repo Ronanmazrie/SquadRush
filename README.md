@@ -7,11 +7,13 @@
 AndroidではAPKをダウンロードしてインストールします。iPhone・Android・PCではブラウザ版も利用できます。
 
 - [遊ぶ・ダウンロードのページ](https://ronanmazrie.github.io/SquadRush/)
-- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.11.0)
+- [Android版APKとリリース情報](https://github.com/Ronanmazrie/SquadRush/releases/tag/v0.12.0)
 
 AndroidアプリはAndroid 8.0以降のARM64端末向けです。iPhoneではSafariからブラウザ版を開きます。Android用APKはiPhoneにインストールできません。iPhone用ネイティブアプリは未配布です。
 
 ## 遊び方
+
+0.12.0で21種類のオリジナルUIアイコンを整備しました。ジェム・チケット・コイン、キャラ・ログイン報酬・ミッション、3種類のスキル、装備の能力値・空き枠・合成・所持状態に、縁取りと陰影のある共通デザインを使っています。通貨は名前と桁区切り付き残高を表示。ホームの受取可能な報酬に目印を付け、ログインの受取済み表示とミッション進捗バーも追加しました。画像の追加ダウンロードを必要としないベクター描画です。
 
 0.11.0でキャラ・ガチャ・ゲーム内通貨を追加しました。初期キャラは現在の青い兵士「レン」です。キャラ画面で選択し、戦闘画面右下のボタンで固有スキルを発動します。
 
@@ -71,7 +73,7 @@ Android用のビルドにはAndroid Build Support、SDK / NDK、OpenJDKが必要
 - `SquadRush/Assets/Editor/SquadRush/`：シーン生成、検証、起動、配布用ビルド。
 - `SquadRushAccount.cs` / `SquadRushAccountUi.cs` / `SquadRushCharacterCombat.cs`：キャラ、ガチャ、天井、通貨、ログイン・ミッションと戦闘スキル。
 - `SquadRushEquipment.cs` / `SquadRushFrontEnd.cs`：装備の入手・保存・効果と、ホーム・ステージ・装備・ガチャ・キャラの画面。
-- `SquadRush/Verification/`：ゲーム処理120ケースと再生モード89ケースの検証記録、画面プレビュー。
+- `SquadRush/Verification/`：ゲーム処理120ケースと再生モード90ケースの検証記録、画面プレビュー。
 - `SquadRush/Builds/Android/`：このPCで作成したAPKとSHA-256（Git管理対象外。GitHub Releasesで配布）。
 - `SquadRushPrototype/`：プロジェクト再生成用のソースキット。
 - `docs/`：GitHub Pagesの配布ページとブラウザ版。

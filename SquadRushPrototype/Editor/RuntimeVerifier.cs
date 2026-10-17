@@ -57,20 +57,23 @@ namespace SquadRush.Editor
                 Require(game.State == RunState.Ready && game.SquadCount == 3, "Scene starts with a three-ally squad and menu", checks);
                 var play = game.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Play");
                 Capture(game, "menu.png");
+                Capture(game,"home-mobile.png",390,844);VerifyIconSet(game,checks);
                 Require(game.Hud.GetComponentsInChildren<SquadRushUiIcon>().All(icon => icon.canvasRenderer != null && icon.GeneratedVertices > 0), "Visible navigation icons have renderers and generated geometry", checks);
                 Require(game.Hud.CurrentPage == FrontEndPage.Home && !play.gameObject.activeInHierarchy, "Home replaces the old opening dialog", checks);
                 Require(Button(game, "HomeSortie").gameObject.activeInHierarchy && Button(game, "HomeCommand").gameObject.activeInHierarchy && Button(game, "HomeEquipment").gameObject.activeInHierarchy, "Home exposes a direct sortie and persistent navigation", checks);
                 Click(game, "HomeGacha");
                 Require(game.Hud.CurrentPage == FrontEndPage.Gacha && game.Equipment.OwnedCount == 0, "Gacha navigation displays recruitment without granting items", checks);
                 Capture(game, "gacha.png");
+                Capture(game,"recruitment-mobile.png",390,844);
                 Require(!Button(game,"DrawOne").interactable&&!Button(game,"DrawTen").interactable,"New profile cannot draw without earned tickets or gems",checks);
                 Click(game,"GachaRates");Capture(game,"gacha-rates.png");RequireTextFits(game,"Published gacha rates and pity table fit their controls",checks);Click(game,"CloseRates");
                 Click(game,"GachaCharacters");Click(game,"Character1");
                 Require(!Button(game,"SelectCharacter").interactable&&UiText(game,"CharacterSkillDescription").text.Contains("範囲攻撃"),"Locked character inspection shows the real skill but prevents selection",checks);
-                Capture(game,"characters-locked.png");Click(game,"HomeCommand");Click(game,"HomeLogin");
+                Capture(game,"characters-locked.png");Capture(game,"characters-mobile.png",390,844);Click(game,"HomeCommand");Click(game,"HomeLogin");
                 Require(Button(game,"ClaimLogin").interactable,"Home opens a claimable login bonus",checks);Click(game,"ClaimLogin");
                 Require(game.Account.Gems==100&&game.Account.Tickets==1&&!Button(game,"ClaimLogin").interactable,"Login button grants exact currency and disables a second claim",checks);Capture(game,"login.png");
-                Click(game,"HomeCommand");Click(game,"HomeMissions");Require(!Button(game,"ClaimMission0").interactable,"Incomplete daily missions cannot be claimed through the UI",checks);Capture(game,"missions.png");Click(game,"HomeGacha");
+                Capture(game,"login-mobile.png",390,844);
+                Click(game,"HomeCommand");Click(game,"HomeMissions");Require(!Button(game,"ClaimMission0").interactable,"Incomplete daily missions cannot be claimed through the UI",checks);Capture(game,"missions.png");Capture(game,"missions-mobile.png",390,844);Click(game,"HomeGacha");
                 Click(game, "GachaEquipment");
                 var illustratedHero=UiArt(game,"EquipmentHeroIllustration");
                 Require(illustratedHero.sprite!=null && illustratedHero.transform.parent.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Length==0,"Equipment uses a 2D anime hero rather than the 3D portrait",checks);
@@ -281,6 +284,32 @@ namespace SquadRush.Editor
             var button = Button(game, name);
             if (!button.gameObject.activeInHierarchy || !button.interactable) throw new InvalidOperationException("Button unavailable: " + name);
             button.onClick.Invoke();
+        }
+        static void VerifyIconSet(SquadRushGame game,System.Collections.Generic.List<string> checks)
+        {
+            var parent=game.Hud.GetComponentsInChildren<RectTransform>(true).Single(r=>r.name=="SafeArea");
+            var sheet=new GameObject("IconVerification",typeof(RectTransform),typeof(UnityEngine.UI.Image));sheet.transform.SetParent(parent,false);
+            var root=sheet.GetComponent<RectTransform>();root.anchorMin=new Vector2(.035f,.115f);root.anchorMax=new Vector2(.965f,.89f);root.offsetMin=root.offsetMax=Vector2.zero;sheet.GetComponent<UnityEngine.UI.Image>().color=new Color(.045f,.08f,.14f);
+            var icons=new System.Collections.Generic.List<SquadRushUiIcon>();int n=0;
+            foreach(SquadIcon kind in Enum.GetValues(typeof(SquadIcon)))
+            {
+                float x=(n%3)/3f,y=1-(n/3+1)/7f;
+                var cell=new GameObject("Sample"+kind,typeof(RectTransform));cell.transform.SetParent(root,false);var rect=cell.GetComponent<RectTransform>();rect.anchorMin=new Vector2(x,y);rect.anchorMax=new Vector2(x+1/3f,y+1/7f);rect.offsetMin=rect.offsetMax=Vector2.zero;
+                var picture=new GameObject("Icon"+kind,typeof(RectTransform),typeof(CanvasRenderer),typeof(SquadRushUiIcon));picture.transform.SetParent(rect,false);var imageRect=picture.GetComponent<RectTransform>();imageRect.anchorMin=new Vector2(.17f,.24f);imageRect.anchorMax=new Vector2(.83f,.98f);imageRect.offsetMin=imageRect.offsetMax=Vector2.zero;var icon=picture.GetComponent<SquadRushUiIcon>();icon.Kind=kind;icon.raycastTarget=false;icons.Add(icon);
+                var caption=new GameObject("Caption"+kind,typeof(RectTransform),typeof(TextMeshProUGUI));caption.transform.SetParent(rect,false);var label=caption.GetComponent<TextMeshProUGUI>();label.font=Resources.Load<TMP_FontAsset>("SquadFont");label.text=kind.ToString();label.fontSize=15;label.alignment=TextAlignmentOptions.Center;label.raycastTarget=false;label.rectTransform.anchorMin=Vector2.zero;label.rectTransform.anchorMax=new Vector2(1,.24f);label.rectTransform.offsetMin=label.rectTransform.offsetMax=Vector2.zero;n++;
+            }
+            Capture(game,"icons.png");
+            Canvas.ForceUpdateCanvases();
+            var fingerprints=new System.Collections.Generic.HashSet<string>();
+            foreach(var icon in icons)
+            {
+                var mesh=icon.canvasRenderer.GetMesh();Rect rect=icon.rectTransform.rect;
+                bool bounded=mesh!=null&&mesh.vertexCount>0&&mesh.vertices.All(p=>!float.IsNaN(p.x)&&!float.IsInfinity(p.x)&&!float.IsNaN(p.y)&&!float.IsInfinity(p.y)&&p.x>=rect.xMin-.01f&&p.x<=rect.xMax+.01f&&p.y>=rect.yMin-.01f&&p.y<=rect.yMax+.01f);
+                if(!bounded||icon.raycastTarget)throw new InvalidOperationException("Invalid decorative icon geometry: "+icon.Kind+" rect="+rect+" mesh="+(mesh==null?"null":mesh.bounds.ToString()));
+                fingerprints.Add(string.Join(",",mesh.vertices.Select(p=>p.ToString("F3")))+string.Join(",",mesh.colors32.Select(c=>c.ToString())));
+            }
+            Require(fingerprints.Count==icons.Count,"All 21 icons are distinct, bounded, finite and do not intercept touches",checks);
+            sheet.SetActive(false);UnityEngine.Object.Destroy(sheet);
         }
         static void Capture(SquadRushGame game, string name,int width=540,int height=960)
         {

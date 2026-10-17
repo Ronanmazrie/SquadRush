@@ -70,6 +70,7 @@ namespace SquadRush
                 if(game.MergeEquipment(id,r)) InspectItem(id,r+1);
             });
             mergeButton=action.GetComponent<UnityEngine.UI.Button>();mergeLabel=action.GetComponentInChildren<TextMeshProUGUI>();mergeLabel.fontSize=23;
+            ButtonIcon(action,SquadIcon.Merge,.23f);
         }
         void RefreshFusionControls()
         {

@@ -5,6 +5,7 @@ PASS Generated character surfaces have valid vertices and smooth normals
 PASS Natural body and boots fit the existing ground and portrait framing
 PASS Reusing a soldier resets stride, body pose and muzzle flash
 PASS Scene starts with a three-ally squad and menu
+PASS All 21 icons are distinct, bounded, finite and do not intercept touches
 PASS Visible navigation icons have renderers and generated geometry
 PASS Home replaces the old opening dialog
 PASS Home exposes a direct sortie and persistent navigation
